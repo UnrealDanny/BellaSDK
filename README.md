@@ -1,4 +1,7 @@
 # BellaSDK
+
+![alt text](https://github.com/UnrealDanny/BellaSDK/blob/main/BellaSDK/Bella%20SDK%20Logo.png)
+
 A number of Unreal Engine blueprints to help you create your next masterpiece with ease!
 
 Задача Bella SDK - создать базовый набор механик для FPS/TPS. Бег, прыжки, спринт, геймплейные механики, взаимодействия.
