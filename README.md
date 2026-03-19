@@ -20,4 +20,6 @@ I want this sweet princess to have everything: all the gameplay mechanics such a
 
 Besides that I also want textures, models (especially barrels), sounds, animations, VFX, elves, good and easy-to-use scripting system, doors that always open AWAY from you! 
 
+As for the story: I asked myself "what's the most honest thing?" A cute, lost, vulnerable girl survivng against insurmountable odds because she's dedicated, confident and (most importantly) has a good soul. That's true. Always has been. 
+
 And most importantly: I just need your help. 
