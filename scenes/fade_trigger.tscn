@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://cxniimsmug8x8"]
+
+[ext_resource type="Script" uid="uid://cqbx5rbyi6txj" path="res://scripts/fade_trigger.gd" id="1_vvyos"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uenon"]
+size = Vector3(4, 4, 4)
+
+[sub_resource type="Animation" id="Animation_vvyos"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:color")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(0, 0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:theme_override_colors/font_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_75h0b"]
+resource_name = "fade_to_black"
+length = 4.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:color")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(0, 0, 0, 0), Color(0, 0, 0, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Label:theme_override_colors/font_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(1.5, 4),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 0), Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_shibv"]
+_data = {
+&"RESET": SubResource("Animation_vvyos"),
+&"fade_to_black": SubResource("Animation_75h0b")
+}
+
+[node name="FadeTrigger" type="Area3D" unique_id=656862380]
+script = ExtResource("1_vvyos")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1017987748]
+shape = SubResource("BoxShape3D_uenon")
+debug_color = Color(0, 0.59607846, 0.7019608, 1)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=218615947]
+layer = 100
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer" unique_id=785563898]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0)
+
+[node name="Label" type="Label" parent="CanvasLayer/ColorRect" unique_id=1647642772]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -122.5
+offset_top = -11.5
+offset_right = 122.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0)
+theme_override_font_sizes/font_size = 50
+text = "Bella Bittersweet: Tunnel Vision"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/ColorRect" unique_id=2063116280]
+libraries/ = SubResource("AnimationLibrary_shibv")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1187317952]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9211128, 0)
+billboard = 1
+text = "Fade Trigger. 
+
+You will have to exit the game 
+after activating it"
+font_size = 80
+outline_size = 15
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

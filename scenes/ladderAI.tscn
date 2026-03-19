@@ -1,0 +1,25 @@
+[gd_scene format=3 uid="uid://wmyjhovjnea4"]
+
+[ext_resource type="Script" uid="uid://144opwatfkav" path="res://scripts/ladder_ai.gd" id="1_y6w7a"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wwku2"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y6w7a"]
+transparency = 1
+albedo_color = Color(0.20392157, 1, 1, 0.16470589)
+emission_energy_multiplier = 8.82
+
+[sub_resource type="BoxMesh" id="BoxMesh_dhcj5"]
+material = SubResource("StandardMaterial3D_y6w7a")
+
+[node name="Ladder" type="Area3D" unique_id=273226209]
+script = ExtResource("1_y6w7a")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=262164524]
+shape = SubResource("BoxShape3D_wwku2")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=115409871]
+mesh = SubResource("BoxMesh_dhcj5")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

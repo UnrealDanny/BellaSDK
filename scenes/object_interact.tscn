@@ -1,0 +1,26 @@
+[gd_scene format=3 uid="uid://bwkd1g0rbfurr"]
+
+[ext_resource type="Script" uid="uid://d3t1mos24dqk6" path="res://scripts/InteractBodyTEST.gd" id="1_fqk80"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_fqk80"]
+radial_segments = 24
+rings = 0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_awjmi"]
+
+[node name="ObjectInteract" type="Node3D" unique_id=492986719]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1462457107 groups=["interactable"]]
+collision_layer = 2
+collision_mask = 2
+script = ExtResource("1_fqk80")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=1748640201]
+mesh = SubResource("CylinderMesh_fqk80")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1557220042]
+shape = SubResource("CylinderShape3D_awjmi")
+
+[node name="Label" type="Label" parent="StaticBody3D" unique_id=652563134 groups=["interactable"]]
+offset_right = 40.0
+offset_bottom = 23.0

@@ -1,0 +1,13 @@
+res://scenes/testbed.tscn
+res://assets/shaders/circle_shader.tres
+res://assets/shaders/SmartOutlineMaterial.gdshader
+res://assets/shaders/outline_shader_adaptable.gdshader
+res://assets/shaders/ui_vignette.gdshader
+res://assets/shaders/zoom_fisheye_blur.gdshader
+res://assets/shaders/outline_shader.gdshader
+res://assets/shaders/UnlitOutlineMaterial.gdshader
+res://assets/shaders/SmartOutlineMaterial.tres
+res://scenes/pickable_box.tscn
+res://scenes/button.tscn
+res://scenes/Player.tscn
+res://scripts/Player.gd

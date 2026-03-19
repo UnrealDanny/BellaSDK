@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://boprvnvbmjjtd"]
+
+[ext_resource type="PackedScene" uid="uid://bplnx6fna4tkj" path="res://assets/weapons/Shotgun/Shotgun_3.fbx" id="1_v4e2y"]
+
+[sub_resource type="Animation" id="Animation_v4e2y"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Shotgun_3:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_dbdpq"]
+resource_name = "shoot"
+length = 0.5
+step = 0.01
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Shotgun_3:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(-0.5, 0, 0), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_fwmej"]
+_data = {
+&"RESET": SubResource("Animation_v4e2y"),
+&"shoot": SubResource("Animation_dbdpq")
+}
+
+[node name="Shotgun" unique_id=1242757144 instance=ExtResource("1_v4e2y")]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="1" unique_id=528207393]
+libraries/ = SubResource("AnimationLibrary_fwmej")
+
+[node name="RayCast3D" type="RayCast3D" parent="." index="2" unique_id=1749682458]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.3, 0.22, 0)
+target_position = Vector3(0, 0, -1)

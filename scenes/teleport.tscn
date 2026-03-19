@@ -1,0 +1,42 @@
+[gd_scene format=3 uid="uid://d1cr6vua8ilv3"]
+
+[ext_resource type="Script" uid="uid://cbd6lh52hb6wh" path="res://scripts/teleport.gd" id="1_w4hbs"]
+[ext_resource type="Shader" uid="uid://urdfn0l44h32" path="res://assets/shaders/circle_shader.tres" id="2_2ayim"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_8vwj3"]
+radius = 1.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_8vwj3"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_kyeu7"]
+render_priority = 0
+shader = ExtResource("2_2ayim")
+shader_parameter/CircleColor = Color(0.65882355, 0.22352941, 0.45490196, 1)
+shader_parameter/Speed = Vector2(0, -0.9)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_jfydb"]
+material = SubResource("ShaderMaterial_kyeu7")
+top_radius = 0.0
+bottom_radius = 1.0
+height = 0.1
+
+[node name="Teleport" type="Area3D" unique_id=498528318]
+script = ExtResource("1_w4hbs")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1870042939]
+shape = SubResource("CylinderShape3D_8vwj3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=184588409]
+transform = Transform3D(1, 0, 0, 0, 0.057121217, 0, 0, 0, 1, 0, -1, 0)
+mesh = SubResource("CylinderMesh_8vwj3")
+
+[node name="CircleEffect" type="MeshInstance3D" parent="." unique_id=804808040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
+mesh = SubResource("CylinderMesh_jfydb")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1493001786]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+billboard = 1
+text = "Simple Teleport"
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

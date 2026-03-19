@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://2m4ug1l4s0de"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_htnmx"]
+size = Vector3(1, 3.5, 1)
+
+[node name="Ladder" type="Node3D" unique_id=396393623]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=70333501]
+
+[node name="LadderArea3D" type="Area3D" parent="." unique_id=176453045]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LadderArea3D" unique_id=1510737577]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1210938, 0)
+shape = SubResource("BoxShape3D_htnmx")
+
+[node name="TopOfLadder" type="Node3D" parent="LadderArea3D" unique_id=1814020652]

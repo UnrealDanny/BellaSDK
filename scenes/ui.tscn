@@ -1,0 +1,111 @@
+[gd_scene format=3 uid="uid://cv4syvckbtm2f"]
+
+[ext_resource type="Script" uid="uid://bu8f1lqdsjgks" path="res://scripts/ui.gd" id="1_nt7q6"]
+[ext_resource type="Shader" uid="uid://bqd5soqdscvly" path="res://assets/shaders/outline_shader_adaptable.gdshader" id="2_x4jx1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_yev5y"]
+shader = ExtResource("2_x4jx1")
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_xlq6p"]
+load_path = "res://.godot/imported/UI_Circle.svg-cd8c28fc9c5e0f9653f2a35a84217264.ctex"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nt7q6"]
+bg_color = Color(0.040375, 0.041947637, 0.037145004, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x4jx1"]
+bg_color = Color(0.012920001, 0.012920001, 0.012920001, 0.2)
+shadow_size = 2
+
+[node name="UI" type="CanvasLayer" unique_id=1944889716]
+script = ExtResource("1_nt7q6")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1663945512]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -16.0
+offset_top = -16.0
+offset_right = 48.0
+offset_bottom = 48.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.5, 0.5)
+size_flags_horizontal = 4
+size_flags_vertical = 4
+
+[node name="CenterDot" type="TextureRect" parent="MarginContainer" unique_id=1855431409]
+material = SubResource("ShaderMaterial_yev5y")
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+texture = SubResource("CompressedTexture2D_xlq6p")
+
+[node name="MarginContainer2" type="MarginContainer" parent="." unique_id=1778643395]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_bottom = 50
+
+[node name="PressToInteract" type="Label" parent="MarginContainer2" unique_id=271107624]
+visible = false
+top_level = true
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_font_sizes/font_size = 35
+text = "Press [E] to Interact"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer3" type="MarginContainer" parent="." unique_id=116442504]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -39.5
+offset_right = 39.5
+offset_bottom = 40.0
+grow_horizontal = 2
+theme_override_constants/margin_top = 30
+
+[node name="NoclipMessageContainer" type="PanelContainer" parent="MarginContainer3" unique_id=842353472]
+visible = false
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_nt7q6")
+
+[node name="NoclipLabelMessage" type="Label" parent="MarginContainer3/NoclipMessageContainer" unique_id=1471769217]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 16
+
+[node name="DebugPanel" type="Panel" parent="." unique_id=2144133476]
+offset_right = 555.0
+offset_bottom = 360.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_x4jx1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="DebugPanel" unique_id=785923227]
+layout_mode = 0
+offset_right = 148.0
+offset_bottom = 109.0
+
+[node name="FullbrightButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=331063187]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
+text = "Fullbright Off"
+alignment = 0
+
+[node name="WireframeButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=821633458]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Wireframe Off"
+alignment = 0
+
+[connection signal="pressed" from="DebugPanel/VBoxContainer/WireframeButton" to="." method="_on_wireframe_button_pressed"]

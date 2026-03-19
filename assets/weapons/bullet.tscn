@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://bf2bx6m0qpl2x"]
+
+[ext_resource type="Script" uid="uid://c3vyupvvdw7jt" path="res://assets/weapons/bullet.gd" id="1_8s1nb"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_08ld0"]
+size = Vector3(0.2, 0.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_j7lam"]
+albedo_color = Color(0.8394554, 0.7224841, 0.3072155, 1)
+emission_enabled = true
+emission = Color(0.75556225, 1, 0.73243827, 1)
+emission_energy_multiplier = 5.0
+
+[node name="Bullet" type="Node3D" unique_id=44645314]
+script = ExtResource("1_8s1nb")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1279993806]
+mesh = SubResource("BoxMesh_08ld0")
+surface_material_override/0 = SubResource("StandardMaterial3D_j7lam")
+
+[node name="RayCast3D" type="RayCast3D" parent="." unique_id=1721124343]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
+target_position = Vector3(-0.5, 0, 0)

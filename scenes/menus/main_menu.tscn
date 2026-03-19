@@ -1,0 +1,170 @@
+[gd_scene format=3 uid="uid://c261acv3ex6c0"]
+
+[ext_resource type="Script" uid="uid://4nkt0134wccl" path="res://scripts/menus/main_menu.gd" id="1_2o76q"]
+[ext_resource type="Texture2D" uid="uid://dutrfuowe3e1q" path="res://assets/images/Concept/Key_art.PNG" id="1_ovrgc"]
+[ext_resource type="FontFile" uid="uid://dg3xyu4f8ta7g" path="res://assets/fonts/kramola/Kramola.otf" id="2_2o76q"]
+[ext_resource type="Script" uid="uid://c06mok6hxvipa" path="res://scripts/menus/fullscreen_control.gd" id="4_6bivr"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6bivr"]
+texture = ExtResource("1_ovrgc")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vn8vg"]
+bg_color = Color(0.08, 0.08, 0.08, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2o76q"]
+bg_color = Color(0.08, 0.08, 0.08, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ovrgc"]
+bg_color = Color(0.25882354, 0.25882354, 0.25882354, 1)
+
+[node name="MainMenu" type="Control" unique_id=1107163054]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2o76q")
+
+[node name="Background" type="Panel" parent="." unique_id=267339091]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxTexture_6bivr")
+
+[node name="MainButtons" type="VBoxContainer" parent="." unique_id=988684812]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -157.0
+offset_top = -10.0
+offset_right = 157.0
+offset_bottom = 214.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="StartGame" type="Button" parent="MainButtons" unique_id=1877365184]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
+text = "Start Game"
+
+[node name="Options" type="Button" parent="MainButtons" unique_id=161708687]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
+text = "Options"
+
+[node name="Exit" type="Button" parent="MainButtons" unique_id=251971665]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
+text = "Exit"
+
+[node name="Name" type="Label" parent="." unique_id=1725804782]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -166.75
+offset_top = -226.0
+offset_right = 166.75
+offset_bottom = -102.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 75
+text = "Bella Bittersweet: Tunnel Vision"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Options" type="Panel" parent="." unique_id=1979166347]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -441.0
+offset_top = -289.0
+offset_right = 441.0
+offset_bottom = 289.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Options" unique_id=760161344]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -147.0
+offset_right = 147.0
+offset_bottom = 94.0
+grow_horizontal = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Options"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Back" type="Button" parent="Options" unique_id=2096337018]
+layout_mode = 0
+offset_left = 284.0
+offset_top = 436.0
+offset_right = 598.0
+offset_bottom = 503.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
+text = "Back
+"
+
+[node name="FullscreenControl" type="CheckButton" parent="Options" unique_id=129794192]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -249.75
+offset_top = -89.0
+offset_right = 249.75
+offset_bottom = 89.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Fullscreen"
+script = ExtResource("4_6bivr")
+
+[connection signal="pressed" from="MainButtons/StartGame" to="." method="_on_start_game_pressed"]
+[connection signal="pressed" from="MainButtons/Options" to="." method="_on_options_pressed"]
+[connection signal="pressed" from="MainButtons/Exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="Options/Back" to="." method="_on_back_options_pressed"]
+[connection signal="toggled" from="Options/FullscreenControl" to="Options/FullscreenControl" method="_on_toggled"]

@@ -1,0 +1,50 @@
+[gd_scene format=3 uid="uid://2mam2k0fdeew"]
+
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_mi6dp"]
+[ext_resource type="Script" uid="uid://buvexotjbssoa" path="res://scripts/button.gd" id="1_rhj8v"]
+[ext_resource type="Material" path="res://assets/shaders/SmartOutlineMaterial.tres" id="2_3q610"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n4pas"]
+albedo_color = Color(1, 0.089999974, 0.089999974, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_n4pas"]
+material = SubResource("StandardMaterial3D_n4pas")
+top_radius = 0.1
+bottom_radius = 0.1
+height = 0.1
+radial_segments = 24
+rings = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_n4pas"]
+size = Vector3(0.3, 0.2, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n4pas"]
+size = Vector3(0.5, 0.3, 0.5)
+
+[node name="Button" type="StaticBody3D" unique_id=1567218577]
+transform = Transform3D(-1, 8.742278e-08, -3.821371e-15, 0, -4.371139e-08, -1, -8.742278e-08, -1, 4.371139e-08, 0, 0, 0)
+collision_layer = 5
+script = ExtResource("1_rhj8v")
+outline_material = ExtResource("2_3q610")
+
+[node name="Button" type="MeshInstance3D" parent="." unique_id=1150992551]
+transform = Transform3D(1, 0, 0, 0, 0.5, -3.5527137e-15, 0, 1.7763568e-15, 1, 0, -0.02, 0)
+mesh = SubResource("CylinderMesh_n4pas")
+
+[node name="ButtonBase" type="MeshInstance3D" parent="." unique_id=1206473435]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0, 0, 0, 1, 0, 0.05, 0)
+mesh = SubResource("BoxMesh_n4pas")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=417024670]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -0.058471676)
+shape = SubResource("BoxShape3D_n4pas")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=1334598762]
+script = ExtResource("1_mi6dp")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="LabelInteract" type="Label3D" parent="." unique_id=1169131663]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.020477e-08, -0.116728954, 0.23551145)
+billboard = 1
+text = "[E]"
+font_size = 16

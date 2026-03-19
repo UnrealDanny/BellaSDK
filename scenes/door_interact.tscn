@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://cd2cusvmsy432"]
+
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_61k36"]
+[ext_resource type="Script" uid="uid://btxdtnedmofnq" path="res://scripts/door_interact.gd" id="1_ypp13"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_5sdfl"]
+size = Vector3(2, 4, 0.1)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_5sdfl"]
+data = PackedVector3Array(-1, 2, 0.049999997, 1, 2, 0.049999997, -1, -2, 0.049999997, 1, 2, 0.049999997, 1, -2, 0.049999997, -1, -2, 0.049999997, 1, 2, -0.049999997, -1, 2, -0.049999997, 1, -2, -0.049999997, -1, 2, -0.049999997, -1, -2, -0.049999997, 1, -2, -0.049999997, 1, 2, 0.049999997, 1, 2, -0.049999997, 1, -2, 0.049999997, 1, 2, -0.049999997, 1, -2, -0.049999997, 1, -2, 0.049999997, -1, 2, -0.049999997, -1, 2, 0.049999997, -1, -2, -0.049999997, -1, 2, 0.049999997, -1, -2, 0.049999997, -1, -2, -0.049999997, 1, 2, 0.049999997, -1, 2, 0.049999997, 1, 2, -0.049999997, -1, 2, 0.049999997, -1, 2, -0.049999997, 1, 2, -0.049999997, -1, -2, 0.049999997, 1, -2, 0.049999997, -1, -2, -0.049999997, 1, -2, 0.049999997, 1, -2, -0.049999997, -1, -2, -0.049999997)
+
+[sub_resource type="Animation" id="Animation_ypp13"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatableBody3D:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_61k36"]
+resource_name = "open"
+length = 0.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("AnimatableBody3D:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 3, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_ypp13"]
+_data = {
+&"RESET": SubResource("Animation_ypp13"),
+&"open": SubResource("Animation_61k36")
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ypp13"]
+size = Vector3(3, 4, 3)
+
+[node name="Door_Interact" type="Node3D" unique_id=1953886748]
+script = ExtResource("1_ypp13")
+
+[node name="AnimatableBody3D" type="AnimatableBody3D" parent="." unique_id=590526470]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="AnimatableBody3D" unique_id=260717805]
+mesh = SubResource("BoxMesh_5sdfl")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="AnimatableBody3D" unique_id=75038255]
+shape = SubResource("ConcavePolygonShape3D_5sdfl")
+
+[node name="Interact_Component" type="Node" parent="AnimatableBody3D" unique_id=1322770221]
+script = ExtResource("1_61k36")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="AnimatableBody3D" unique_id=1921793145]
+root_node = NodePath("../..")
+libraries/ = SubResource("AnimationLibrary_ypp13")
+
+[node name="Detector" type="Area3D" parent="." unique_id=2138923192]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Detector" unique_id=784983238]
+shape = SubResource("BoxShape3D_ypp13")
+
+[node name="Timer" type="Timer" parent="." unique_id=1621730705]
+
+[connection signal="interacted" from="AnimatableBody3D/Interact_Component" to="." method="toggle_open"]
+[connection signal="body_entered" from="Detector" to="." method="_on_detector_body_entered"]
+[connection signal="body_exited" from="Detector" to="." method="_on_detector_body_exited"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

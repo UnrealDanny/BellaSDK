@@ -1,0 +1,79 @@
+[gd_scene format=3 uid="uid://ctri3aks5iaof"]
+
+[ext_resource type="Script" uid="uid://cksgq5vn1tps3" path="res://scripts/door_slide.gd" id="1_4t8ph"]
+[ext_resource type="AudioStream" uid="uid://cxdck4nbtbevc" path="res://assets/sounds/hydraulic_air_release.mp3" id="2_65w8c"]
+
+[sub_resource type="Animation" id="Animation_jl1sf"]
+resource_name = "Open"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DoorBody:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1, 1.5),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 2.5, 0), Vector3(0, 2.5, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_4t8ph"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("DoorBody:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_65w8c"]
+_data = {
+&"Open": SubResource("Animation_jl1sf"),
+&"RESET": SubResource("Animation_4t8ph")
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_65w8c"]
+size = Vector3(2, 3, 4)
+
+[sub_resource type="BoxMesh" id="BoxMesh_jl1sf"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4t8ph"]
+size = Vector3(2, 4, 0.2)
+
+[node name="DoorSlide" type="Node3D" unique_id=1170294867]
+script = ExtResource("1_4t8ph")
+
+[node name="Anim" type="AnimationPlayer" parent="." unique_id=337669782]
+libraries/ = SubResource("AnimationLibrary_65w8c")
+
+[node name="Detector" type="Area3D" parent="." unique_id=851795081]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Detector" unique_id=1420947612]
+shape = SubResource("BoxShape3D_65w8c")
+
+[node name="DoorBody" type="StaticBody3D" parent="." unique_id=631683399]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DoorBody" unique_id=732851716]
+transform = Transform3D(2, 0, 0, 0, 4, 0, 0, 0, 0.2, 0, 0, 0)
+mesh = SubResource("BoxMesh_jl1sf")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorBody" unique_id=502039056]
+shape = SubResource("BoxShape3D_4t8ph")
+
+[node name="CloseTimer" type="Timer" parent="." unique_id=1471713712]
+wait_time = 1.5
+one_shot = true
+
+[node name="DoorSound" type="AudioStreamPlayer3D" parent="." unique_id=1965495306]
+stream = ExtResource("2_65w8c")
+
+[connection signal="body_entered" from="Detector" to="." method="_on_detector_body_entered"]
+[connection signal="body_exited" from="Detector" to="." method="_on_detector_body_exited"]

@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://ccmuvcp1vvusq"]
+
+[ext_resource type="Script" uid="uid://no1ictgdrgj5" path="res://scenes/pickable_box.gd" id="1_bdkj8"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_i5vwy"]
+[ext_resource type="Material" uid="uid://c2niiwlud067p" path="res://assets/shaders/SmartOutlineMaterial.tres" id="2_efo5o"]
+[ext_resource type="Texture2D" uid="uid://cwlrqso5rodpi" path="res://assets/images/dev_textures/standard_9_blue_512.png" id="2_wxffa"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_efo5o"]
+albedo_texture = ExtResource("2_wxffa")
+
+[sub_resource type="BoxMesh" id="BoxMesh_jw31o"]
+material = SubResource("StandardMaterial3D_efo5o")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_i5vwy"]
+
+[node name="PickableBox" type="RigidBody3D" unique_id=181097973]
+mass = 5.0
+script = ExtResource("1_bdkj8")
+outline_material = ExtResource("2_efo5o")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=675138939]
+mesh = SubResource("BoxMesh_jw31o")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2104161458]
+shape = SubResource("BoxShape3D_i5vwy")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=596945312]
+script = ExtResource("1_i5vwy")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1271720927]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6669362, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+text = "[E]"
+
+[connection signal="focused" from="Interact_Component" to="." method="_on_interact_component_focused"]
+[connection signal="unfocused" from="Interact_Component" to="." method="_on_interact_component_unfocused"]
