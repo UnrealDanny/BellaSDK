@@ -536,7 +536,77 @@ func _physics_process(delta: float) -> void:
 			on_ladder = false
 			velocity = -look_dir * 5.0 # Shove player backward
 			velocity.y = 5.0 # And slightly up
+	# --------------------------
+	# MONKEY BARS LOGIC 
+	# -------------------------
+	elif on_monkey_bars:
+		# 1. Force state restrictions
+		sprinting = false
+		crouching = false
+
+		# 2. Get camera directions
+		var look_dir = -cam.global_transform.basis.z # Forward
+		var right_dir = cam.global_transform.basis.x # Right
 		
+		# THE SECRET SAUCE: Flatten the Y axis so looking up/down doesn't move you vertically
+		look_dir.y = 0
+		right_dir.y = 0
+		
+		# Re-normalize so moving diagonally isn't faster
+		look_dir = look_dir.normalized()
+		right_dir = right_dir.normalized()
+
+		# 3. Calculate horizontal movement vector
+		var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
+
+		# 4. Apply speed and lock gravity
+		velocity.x = bar_vel.x * MONKEY_BAR_SPEED
+		velocity.z = bar_vel.z * MONKEY_BAR_SPEED
+		velocity.y = 0.0 # Keeps you perfectly glued to the ceiling height
+		
+		var blend_time = 0.3
+		if Input.is_action_pressed("forward"):
+			# Only call play() if we are coming from a dead stop
+			if camera_anims.assigned_animation != "MonkeMoves":
+				camera_anims.play("MonkeMoves", blend_time)
+			camera_anims.speed_scale = 1.0
+			
+		elif Input.is_action_pressed("backward"):
+			# Only call play() if we are coming from a dead stop
+			if camera_anims.assigned_animation != "MonkeMoves":
+				camera_anims.play("MonkeMoves", blend_time)
+			camera_anims.speed_scale = -1.0
+			
+		else:
+			# We are idle. Crossfade back to the resting pose.
+			if camera_anims.assigned_animation != "RESET":
+				camera_anims.play("RESET", blend_time)
+				camera_anims.speed_scale = 1.0 # Fix the speed so it doesn't try to play RESET backward!
+		#if Input.is_action_pressed("forward"):
+			## Only trigger play() if we aren't already playing it forward
+			#if camera_anims.current_animation != "MonkeMoves" or camera_anims.speed_scale < 0:
+				#camera_anims.speed_scale = 1.0
+				#camera_anims.play("MonkeMoves", blend_time)
+				#
+		#elif Input.is_action_pressed("backward"):
+			## Only trigger if we aren't already playing it backward
+			#if camera_anims.current_animation != "MonkeMoves" or camera_anims.speed_scale > 0:
+				## Set speed to negative to play backward, but STILL use the smooth blend time
+				#camera_anims.speed_scale = -1.0
+				#camera_anims.play("MonkeMoves", blend_time)
+				#
+		#else:
+			## We are idle! Do NOT use stop(). Smoothly lerp back to the default pose.
+			#if camera_anims.current_animation != "RESET":
+				#camera_anims.speed_scale = 1.0
+				#camera_anims.play("RESET", blend_time)
+
+		# 5. Dismount by dropping (Crouch or Jump)
+		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
+			on_monkey_bars = false
+			# Gravity will naturally take over on the very next frame
+		
+
 	# ROPE LOGIC
 	if current_rope != null:
 		sprinting = false
@@ -874,6 +944,20 @@ func enter_ladder() -> void:
 
 func exit_ladder() -> void:
 	on_ladder = false
+	
+# --------------------------------------
+# MONKE BARS
+# --------------------------------------
+var on_monkey_bars: bool = false
+var MONKEY_BAR_SPEED: float = 2.5 # Slower and heavier than the ladder
+
+func enter_monkey_bars() -> void:
+	on_monkey_bars = true
+	# Optional: Snap vertical velocity to 0 the instant they grab the bars
+	velocity.y = 0.0 
+
+func exit_monkey_bars() -> void:
+	on_monkey_bars = false
 	
 # --------------------------------------
 # ROPES

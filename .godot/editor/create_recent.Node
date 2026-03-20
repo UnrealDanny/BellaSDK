@@ -1,5 +1,8 @@
-Label3D
 MeshInstance3D
+CollisionShape3D
+Area3D
+Label3D
+StaticBody3D
 Sprite3D
 Marker3D
 Interact_Component
@@ -9,6 +12,3 @@ CheckButton
 Node
 CheckBox
 Label
-Panel
-VBoxContainer
-CSGBox3D
