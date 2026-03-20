@@ -125,6 +125,11 @@ var was_in_water: bool = false
 var base_light_energy: float = 1.0
 var base_spot_range: float = 10.0
 var is_swimming: bool = false
+@export var float_offset: float = 1.5 # The height from your feet to your neck. Increase to float higher!
+@export var water_drag: float = 0.05 # How "thick" the water feels (slows down movement)
+@export var buoyancy_force: float = 15.0 #
+var current_water_height: float = 0.0
+var head_in_water := false
 
 # DEVTOOLS VARS
 var noclip_speed_multiplier := 4.0
@@ -392,36 +397,6 @@ func _physics_process(delta: float) -> void:
 
 		eyes.position.y = lerp(eyes.position.y, head_bobbing_vector.y * (head_bobbing_current_intensity/2.0), delta * lerp_speed)
 		eyes.position.x = lerp(eyes.position.x, head_bobbing_vector.x * head_bobbing_current_intensity, delta * lerp_speed)
-#
-	#else:
-		## We are falling or jumping through the air! Return to center.
-		#eyes.position.y = lerp(eyes.position.y, 0.0, delta * lerp_speed)
-		#eyes.position.x = lerp(eyes.position.x, 0.0, delta * lerp_speed)
-		
-	#if sprinting and input_dir != Vector2.ZERO:
-		#head_bobbing_current_intensity = head_bobbing_sprinting_intensity
-		#head_bobbing_index += head_bobbing_sprinting_speed * delta
-	#elif walking and input_dir != Vector2.ZERO:
-		#head_bobbing_current_intensity = head_bobbing_walking_intensity
-		#head_bobbing_index += head_bobbing_walking_speed * delta
-	#elif crouching and input_dir != Vector2.ZERO:
-		#head_bobbing_current_intensity = head_bobbing_crouching_intensity
-		#head_bobbing_index += head_bobbing_crouching_speed * delta
-	#else:
-	## Idle — slow subtle breathing bob
-		#head_bobbing_current_intensity = head_bobbing_idle_intensity
-		#head_bobbing_index += head_bobbing_idle_speed * delta
-		#
-	#if is_on_floor():
-		#head_bobbing_vector.y = sin(head_bobbing_index)
-		#head_bobbing_vector.x = sin(head_bobbing_index/2) + 0.5
-		#
-		#eyes.position.y = lerp(eyes.position.y, head_bobbing_vector.y * (head_bobbing_current_intensity/2.0), delta * lerp_speed)
-		#eyes.position.x = lerp(eyes.position.x, head_bobbing_vector.x * head_bobbing_current_intensity, delta * lerp_speed)
-		#
-	#else:
-		#eyes.position.y = lerp(eyes.position.y, 0.0, delta * lerp_speed)
-		#eyes.position.x = lerp(eyes.position.x, 0.0, delta * lerp_speed)
 		
 	# Add the gravity.
 	if not is_on_floor() and !flying:
@@ -446,54 +421,70 @@ func _physics_process(delta: float) -> void:
 				camera_anims.play("jump_landing")
 			else:
 				camera_anims.play("landing")
-	
-	#if is_on_floor() and is_swimming:
-		#if walking:
-			#camera_anims.play("landing_underwater")
-		#else:
-			#if camera_anims.current_animation == "landing_underwater":
-				#camera_anims.stop(true)
-				#print("else")
-	#elif !is_on_floor() and is_swimming and input_dir.length() > 0.1:
-		#camera_anims.play("swimming")
-#
-	#if not camera_anims.is_playing() or camera_anims.current_animation == "RESET":
-		#cam.transform.origin = cam.transform.origin.lerp(Vector3.ZERO, delta * 5.0)
-		#cam.rotation.z = lerp(cam.rotation.z, 0.0, delta * 5.0)
 		
 	var target_anim = ""
 	
-	if not is_on_floor() and is_swimming:
-		if input_dir.length() > 0.1:
-			target_anim = "swimming"
-		elif Input.is_action_pressed("jump") or Input.is_action_pressed("sprint"):
-			target_anim = "swimming_up"
+	if is_swimming:
+		# 1. LATERAL MOVEMENT (Side-to-Side) - Highest Priority
+		if input_dir.x > 0.1: # Moving Right
+			target_anim = "swimming_underwater_sideways_right"
+			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3)
 			
-	elif is_on_floor() and is_swimming:
-		if Input.is_action_pressed("forward") or Input.is_action_pressed("backward"):
-			target_anim = "walking_underwater"
-		else:
-			target_anim = "RESET" 
+		elif input_dir.x < -0.1: # Moving Left
+			target_anim = "swimming_underwater_sideways_left"
+			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3)
+		
+		# 2. FORWARD/BACKWARD MOVEMENT
+			
+		elif abs(input_dir.y) > 0.1:
+			target_anim = "swimming"
+			eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
 
-	# 2. Execute the animation change smoothly
+		# 3. VERTICAL MOVEMENT (Only if submerged)
+		elif (Input.is_action_pressed("jump") or Input.is_action_pressed("sprint")) and head_in_water:
+			target_anim = "swimming_up"
+			eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
+
+		# 4. IDLE / TREADING
+		else:
+			target_anim = "RESET"
+			eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
+			
 	if target_anim != "":
 		if camera_anims.current_animation != target_anim:
-			camera_anims.play(target_anim, 0.3)
-		else:
-			# Play the swimming or landing anim with a quick 0.2s blend for smoothness
-			camera_anims.play(target_anim, 0.2)
-			
-	#var target_z_tilt = 0.0
-	
-	if is_swimming:
-		if input_dir.x > 0.1: # Moving Right
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3)
-			target_anim = "walking_underwater_sideways_right"
-		elif input_dir.x < -0.1: # Moving Left
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3)
-			target_anim = "walking_underwater_sideways_left"
-		else:
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 0), delta * lerp_speed / 3)
+			camera_anims.play(target_anim, 2)
+		
+	#if not is_on_floor() and is_swimming:
+		#if input_dir.length() > 0.1:
+			#target_anim = "swimming"
+		#elif Input.is_action_pressed("jump") or Input.is_action_pressed("sprint") and !head_in_water:
+			#target_anim = "swimming_up"
+			#
+	#elif is_on_floor() and is_swimming:
+		#if Input.is_action_pressed("forward") or Input.is_action_pressed("backward"):
+			#target_anim = "walking_underwater"
+		#else:
+			#target_anim = "RESET" 
+#
+	## 2. Execute the animation change smoothly
+	#if target_anim != "":
+		#if camera_anims.current_animation != target_anim:
+			#camera_anims.play(target_anim, 0.3)
+		#else:
+			## Play the swimming or landing anim with a quick 0.2s blend for smoothness
+			#camera_anims.play(target_anim, 0.2)
+			#
+	##var target_z_tilt = 0.0
+	#
+	#if is_swimming:
+		#if input_dir.x > 0.1: # Moving Right
+			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3)
+			#target_anim = "walking_underwater_sideways_right"
+		#elif input_dir.x < -0.1: # Moving Left
+			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3)
+			#target_anim = "walking_underwater_sideways_left"
+		#else:
+			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 0), delta * lerp_speed / 3)
 		
 			
 	if is_on_floor():
@@ -641,11 +632,6 @@ func _process(delta: float) -> void:
 				held_object = parent_node
 				held_object.pick_up(hold_position, self)
 		
-	#if get_interactable_component_at_shapecast():
-		#get_interactable_component_at_shapecast().hover_cursor(self)
-		#if Input.is_action_just_pressed("interact"):
-			#get_interactable_component_at_shapecast().interact_with()
-			#print("interacting")
 	# INTERACT  /  INTERACT  /  INTERACT  /  INTERACT  /  INTERACT
 			
 	# -------------------------------------- #
@@ -865,12 +851,13 @@ func _handle_water_physics(delta: float) -> bool:
 			break
 			
 # --- 100% SUBMERGED FLASHLIGHT LOGIC ---
-	var head_in_water := false
+	head_in_water = false
 	
 	# Ask the physics engine what is exactly at the camera's coordinate
 	var space_state = get_world_3d().direct_space_state
 	var query = PhysicsPointQueryParameters3D.new()
-	query.position = cam.global_position
+	var chin_offset = Vector3(0.0, 0.2, 0.0)
+	query.position = cam.global_position - chin_offset
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	
@@ -927,11 +914,16 @@ func _handle_water_physics(delta: float) -> bool:
 	var actively_swimming_vertical = false
 	var just_water_jumped = false
 	
-	if Input.is_action_just_pressed("jump") and not head_in_water:
-		# Instantly overwrite velocity.y with a massive burst (adjust the 8.0 to match your game)
-		velocity.y = 8.0 
-		actively_swimming_vertical = true
-		just_water_jumped = true
+	if Input.is_action_just_pressed("jump") and !head_in_water:
+		if interact_shapecast.is_colliding():
+			var collision_normal = interact_shapecast.get_collision_normal(0)
+			if abs(collision_normal.y) < 0.7:
+				print("Vaulting off a wall/ledge!")
+				velocity.y = 12 
+				actively_swimming_vertical = true
+				just_water_jumped = true
+		else:
+			pass
 
 	# 2. MANUAL DIVING / SWIMMING UP
 	elif Input.is_action_pressed("crouch"): 
@@ -945,13 +937,14 @@ func _handle_water_physics(delta: float) -> bool:
 	# 3. AUTO-TREADING WATER (The Anti-Annoyance System)
 	if not actively_swimming_vertical:
 		if head_in_water:
-			# We are deep underwater and not pressing anything. Float to the top!
-			target_velocity.y = 3.0 # Natural buoyancy speed
+			if input_dir == Vector2.ZERO:
+				target_velocity.y = 3.0 # Natural buoyancy speed
+			else:
+				pass
 		else:
-			# Our head is out of the water! Hover perfectly at the neck line.
-			target_velocity.y = 0.0
-			# Only brake the player if they aren't currently rocketing upward from a Water Jump
-			if velocity.y < 1.0:
+			if target_velocity.y < 0.0:
+				target_velocity.y = 0
+			if velocity.y < 1.0 and velocity.y > -4.0:
 				velocity.y = lerpf(velocity.y, 0.0, 10.0 * delta)
 
 	# --- APPLY HORIZONTAL LERP (Steering) ---

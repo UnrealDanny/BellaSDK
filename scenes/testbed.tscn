@@ -82,22 +82,22 @@ albedo_texture = ExtResource("18_f1d65")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lakw3"]
 albedo_texture = ExtResource("18_f1d65")
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_cmbf5"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_k74e2"]
 resource_local_to_scene = true
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_k74e2"]
-resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_cmbf5")
-seamless = true
-as_normal_map = true
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_m0e1v"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_cmbf5")
+noise = SubResource("FastNoiseLite_k74e2")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sx10w"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_sx10w"]
+resource_local_to_scene = true
+noise = SubResource("FastNoiseLite_k74e2")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uvnoq"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -105,9 +105,9 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_k74e2")
+normal_texture = SubResource("NoiseTexture2D_m0e1v")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_m0e1v")
+refraction_texture = SubResource("NoiseTexture2D_sx10w")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
@@ -744,7 +744,7 @@ texture = ExtResource("18_k74e2")
 
 [node name="Label3D" type="Label3D" parent="Objects/Paintings/Sprite3D8" unique_id=2000101014]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.2960663, -0.19800186)
-text = "Михаил - это для тебя. В Godot добавлять новые материалы одно удовольствие!"
+text = "Михаил. Я сделал домашнее задание! "
 font_size = 150
 
 [node name="Mirror" type="CSGBox3D" parent="Objects" unique_id=1572960312]
@@ -1072,7 +1072,7 @@ wanna go up? find the box! (or just activate noclip.
 [node name="WaterMaker3D" parent="." unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_sx10w")
+material = SubResource("StandardMaterial3D_uvnoq")
 
 [node name="PickableBox" parent="." unique_id=181097973 instance=ExtResource("24_k74e2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0937757, 0.5914049, 18.031967)
@@ -1087,4 +1087,4 @@ transform = Transform3D(-0.4208141, 0, 0.90714693, 0, 1, 0, -0.90714693, 0, -0.4
 transform = Transform3D(0.96570414, 0, -0.25964502, 0, 1, 0, 0.25964502, 0, 0.96570414, -5.8178215, 0.5914049, 18.031967)
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.777565, 4.8370695, -5.4990807)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.626152, -3.5058746, -16.678)
