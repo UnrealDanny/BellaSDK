@@ -24,6 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://2db87kewe2f2" path="res://scenes/Player.tscn" id="20_v6x3g"]
 [ext_resource type="PackedScene" uid="uid://ca0wevg1lb4rx" path="res://utils/WaterMaker3D/WaterMaker3D.tscn" id="21_2dnug"]
 [ext_resource type="PackedScene" uid="uid://ccmuvcp1vvusq" path="res://scenes/pickable_box.tscn" id="24_k74e2"]
+[ext_resource type="PackedScene" uid="uid://q22xc6i00ls" path="res://scenes/dev_cylinder.tscn" id="25_m0e1v"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_rwgxs"]
 size = Vector2(10, 10)
@@ -82,22 +83,22 @@ albedo_texture = ExtResource("18_f1d65")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lakw3"]
 albedo_texture = ExtResource("18_f1d65")
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_k74e2"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_m0e1v"]
 resource_local_to_scene = true
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_m0e1v"]
-resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_k74e2")
-seamless = true
-as_normal_map = true
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_sx10w"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_k74e2")
+noise = SubResource("FastNoiseLite_m0e1v")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uvnoq"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_uvnoq"]
+resource_local_to_scene = true
+noise = SubResource("FastNoiseLite_m0e1v")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ue7dh"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -105,9 +106,9 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_m0e1v")
+normal_texture = SubResource("NoiseTexture2D_sx10w")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_sx10w")
+refraction_texture = SubResource("NoiseTexture2D_uvnoq")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
@@ -153,7 +154,7 @@ text = "You can"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8890557, 1.079334, 2.8127737)
 
 [node name="TeleportEnter" parent="InteractiveObjects" unique_id=498528318 node_paths=PackedStringArray("connect_portal") instance=ExtResource("4_k74e2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16.654057, 8.983202, 2.5037928)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.025862, 9.741263, -2.7473521)
 connect_portal = NodePath("../TeleportDestination")
 
 [node name="TeleportDestination" parent="InteractiveObjects" unique_id=621859534 instance=ExtResource("5_m0e1v")]
@@ -176,6 +177,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.708373, 0, 26.734547)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.940326, 26.999271, -3.7289972)
 outline_material = ExtResource("10_xj7km")
 rope_length = 17.4
+
+[node name="PickableBox" parent="InteractiveObjects" unique_id=181097973 instance=ExtResource("24_k74e2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0937757, 0.5914049, 18.031967)
+
+[node name="PickableBox4" parent="InteractiveObjects" unique_id=853151823 instance=ExtResource("24_k74e2")]
+transform = Transform3D(0.9638215, 0, 0.26654872, 0, 1, 0, -0.26654872, 0, 0.9638215, 3.010001, 0.5914052, 5.09166)
+
+[node name="PickableBox3" parent="InteractiveObjects" unique_id=553508920 instance=ExtResource("24_k74e2")]
+transform = Transform3D(-0.4208141, 0, 0.90714693, 0, 1, 0, -0.90714693, 0, -0.4208141, -6.388999, 1.5914047, 17.817892)
+
+[node name="PickableBox2" parent="InteractiveObjects" unique_id=290428867 instance=ExtResource("24_k74e2")]
+transform = Transform3D(0.96570414, 0, -0.25964502, 0, 1, 0, 0.25964502, 0, 0.96570414, -5.8178215, 0.5914049, 18.031967)
 
 [node name="Objects" type="Node3D" parent="." unique_id=469775133]
 
@@ -966,6 +979,11 @@ transform = Transform3D(0.9999999, 0, 1.03316026e-07, 0, 1, 0, -1.03316026e-07, 
 text = "CTRL to crouch"
 font_size = 64
 
+[node name="Crouch3" type="Label3D" parent="Texts" unique_id=1981221016]
+transform = Transform3D(0.9999999, 0, 1.03316026e-07, 0, 1, 0, -1.03316026e-07, 0, 0.9999999, -20.47666, 2.2811322, 0.7550068)
+text = "There is nothing here. Go away!"
+font_size = 64
+
 [node name="Crouch2" type="Label3D" parent="Texts" unique_id=1464636407]
 transform = Transform3D(-1.4702742e-07, 0, 0.9999999, 0, 1, 0, -0.9999999, 0, -1.4702742e-07, -18.93923, 5.189332, 23.43942)
 text = "Если гора не идет к Магомету, 
@@ -1046,6 +1064,20 @@ No pain - no gain
  and unfortunately for pain - I like pain. Let's see who 
 gives up first this time, ya silly bitch!"
 
+[node name="Label3D14" type="Label3D" parent="Texts" unique_id=1432352638]
+transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -17.39427, 1.9890077, -7.182635)
+text = "Some dev tools I always wanted. 
+I will explain to you the concept of 
+LD Atoms later."
+
+[node name="Label3D15" type="Label3D" parent="Texts" unique_id=1188867572]
+transform = Transform3D(-2.1855693e-07, 0, -1, 0, 1, 0, 1, 0, -2.1855693e-07, -17.39427, 11.812738, -4.067454)
+text = "For example this 
+placement of Start and Finish points is called 
+\"SPIRAL\": S and F are located 
+nearby but you still have to walk a mile 
+to get there."
+
 [node name="Label3D5" type="Label3D" parent="Texts" unique_id=805573685]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.226962, 3.4508157, -6.350483)
 billboard = 1
@@ -1102,19 +1134,20 @@ wanna go up? find the box! (or just activate noclip.
 [node name="WaterMaker3D" parent="." unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_uvnoq")
-
-[node name="PickableBox" parent="." unique_id=181097973 instance=ExtResource("24_k74e2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0937757, 0.5914049, 18.031967)
-
-[node name="PickableBox4" parent="." unique_id=853151823 instance=ExtResource("24_k74e2")]
-transform = Transform3D(0.9638215, 0, 0.26654872, 0, 1, 0, -0.26654872, 0, 0.9638215, 3.010001, 0.5914052, 5.09166)
-
-[node name="PickableBox3" parent="." unique_id=553508920 instance=ExtResource("24_k74e2")]
-transform = Transform3D(-0.4208141, 0, 0.90714693, 0, 1, 0, -0.90714693, 0, -0.4208141, -6.388999, 1.5914047, 17.817892)
-
-[node name="PickableBox2" parent="." unique_id=290428867 instance=ExtResource("24_k74e2")]
-transform = Transform3D(0.96570414, 0, -0.25964502, 0, 1, 0, 0.25964502, 0, 0.96570414, -5.8178215, 0.5914049, 18.031967)
+material = SubResource("StandardMaterial3D_ue7dh")
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -31.626152, -3.5058746, -16.678)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.028725, 0.091403246, -4.2721214)
+
+[node name="dev_cylinder" parent="." unique_id=823712635 instance=ExtResource("25_m0e1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.713886, 1.1143469, -7.285309)
+label_text = "Start"
+speed = 2.0
+line_count = 3.0
+
+[node name="dev_cylinder2" parent="." unique_id=1267002505 instance=ExtResource("25_m0e1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.509312, 8.791264, -5.0617256)
+label_text = "Finish"
+line_color = Color(0.7845677, 0, 0, 1)
+speed = -2.0
+line_count = 5.0

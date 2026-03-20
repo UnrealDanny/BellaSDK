@@ -67,3 +67,11 @@ func _on_interact_component_focused() -> void:
 func _on_interact_component_unfocused() -> void:
 	mesh.material_overlay = null
 	label.hide()
+	
+func throw(impulse_vector: Vector3):
+	# 1. Fire your existing drop logic to detach it from the player and wake up the physics
+	drop()
+
+	# 2. Apply the massive burst of speed!
+	# (Assuming PickableObject extends RigidBody3D)
+	apply_central_impulse(impulse_vector)

@@ -9,3 +9,8 @@ res://assets/shaders/SmartOutlineMaterial.gdshader
 res://assets/shaders/OutlineMaterialBoxes.gdshader
 res://scripts/Player.gd
 res://scenes/Player.tscn
+res://scenes/pickable_box.tscn
+res://scenes/pickable_box.gd
+res://scenes/dev_cylinder.tscn
+res://assets/shaders/holographic_scanner.gdshader
+res://scripts/dev_cylinder.gd

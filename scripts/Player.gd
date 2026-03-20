@@ -625,24 +625,34 @@ func _process(delta: float) -> void:
 		current_interactable.hover_cursor(self)
 	
 	if Input.is_action_just_pressed("interact"):
-		
 		# SCENARIO A: Our hands are full. Drop the box!
 		if held_object:
 			held_object.drop()
 			held_object = null
-			
 		# SCENARIO B: Our hands are empty, and we are looking at something
 		elif current_interactable:
 			print("interacting")
-			
-			# Fire the normal signal (for doors, buttons, etc.)
 			current_interactable.interact_with()
-			
-			# Check if this thing is actually a physical box we can carry
 			var parent_node = current_interactable.get_parent()
 			if parent_node is PickableObject:
 				held_object = parent_node
 				held_object.pick_up(hold_position, self)
+				
+	# --- THE NEW THROW MECHANIC ---
+	if Input.is_action_just_pressed("shoot") and held_object:
+		var throw_force = 12.0 # How hard you chuck it (adjust to taste!)
+
+		# In Godot, -Z is always "forward" for cameras
+		# We grab the camera's forward vector so the box goes exactly where you are looking
+		var throw_direction = -cam.global_transform.basis.z.normalized()
+
+		# Optional: Add a slight upward tilt so throws feel more natural, like a basketball shot
+		throw_direction.y += 0.2 
+		throw_direction = throw_direction.normalized()
+
+		# Tell the object to launch itself, then wipe our hands clean
+		held_object.throw(throw_direction * throw_force)
+		held_object = null
 		
 	# INTERACT  /  INTERACT  /  INTERACT  /  INTERACT  /  INTERACT
 			
