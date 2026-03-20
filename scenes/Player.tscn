@@ -261,16 +261,6 @@ target_position = Vector3(0, 2, 0)
 
 [node name="UI" parent="." unique_id=1944889716 instance=ExtResource("2_k2mo6")]
 
-[node name="FlashLightNode" type="Node3D" parent="." unique_id=120381391]
-
-[node name="Flashlight" type="SpotLight3D" parent="FlashLightNode" unique_id=2067377290]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -0.5)
-light_energy = 3.0
-light_projector = ExtResource("3_di6f5")
-shadow_enabled = true
-spot_range = 15.0
-spot_angle = 25.0
-
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 
@@ -287,6 +277,17 @@ collision_mask = 5
 
 [node name="HoldPosition" type="Marker3D" parent="Head/Eyes/Camera3D" unique_id=988079669]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -1)
+
+[node name="FlashLightNode" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=120381391]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.8, 0)
+
+[node name="Flashlight" type="SpotLight3D" parent="Head/Eyes/Camera3D/FlashLightNode" unique_id=2067377290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.5)
+light_energy = 3.0
+light_projector = ExtResource("3_di6f5")
+shadow_enabled = true
+spot_range = 15.0
+spot_angle = 25.0
 
 [node name="CameraAnims" type="AnimationPlayer" parent="Head/Eyes" unique_id=1765016502]
 libraries/ = SubResource("AnimationLibrary_xfc2n")

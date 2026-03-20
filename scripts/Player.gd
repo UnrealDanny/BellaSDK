@@ -20,8 +20,9 @@ extends CharacterBody3D
 @onready var ui_circle_zoom: TextureRect = $UIElements/CanvasLayer/MarginContainer/UICircleZoom
 @onready var ui_circle_zoom_inner: TextureRect = $UIElements/CanvasLayer/MarginContainer/UICircleZoomInner
 
-@onready var flash_light_node: Node3D = $FlashLightNode
-@onready var flashlight: SpotLight3D = $FlashLightNode/Flashlight
+@onready var flash_light_node: Node3D = $Head/Eyes/Camera3D/FlashLightNode
+@onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
+
 
 # SPEED VARS
 
@@ -79,6 +80,9 @@ var flashlight_rotation_smoothness := 10.0
 var flashlight_position_smoothness := 10.0
 @export var sway_amount : float = 5.0
 @export var smooth_speed : float = 10.0
+var mouse_delta := Vector2.ZERO
+var default_flashlight_pos := Vector3.ZERO
+var sway_target := Vector2.ZERO
 
 var bob_freq 	:= 2.0
 var bob_amp 	:= 1.0
@@ -158,6 +162,7 @@ func _ready() -> void:
 	ui_circle_zoom_inner.modulate.a = 0.0
 	ui_circle_zoom_inner.hide()
 	
+	default_flashlight_pos = flash_light_node.position
 	flashlight.visible = false
 	if flashlight:
 		base_light_energy = flashlight.light_energy
@@ -179,7 +184,10 @@ func _input(event: InputEvent) -> void:
 		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
 		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
+		sway_target += event.relative
 
+	if event is InputEventMouseMotion:
+		mouse_delta = event.relative
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
 # --------------------------------------
@@ -377,8 +385,12 @@ func _physics_process(delta: float) -> void:
 		head_bobbing_current_intensity = head_bobbing_walking_intensity * 1.5 
 		head_bobbing_index += ROPE_CLIMB_SPEED * climb_factor * delta * 12.6
 	elif sprinting and input_dir != Vector2.ZERO:
-		head_bobbing_current_intensity = head_bobbing_sprinting_intensity * 1.2
-		head_bobbing_index += head_bobbing_sprinting_speed * 1.2 * delta
+		if abs(input_dir.y) > 0.1:
+			head_bobbing_current_intensity = head_bobbing_sprinting_intensity * 1.2
+			head_bobbing_index += head_bobbing_sprinting_speed * 1.2 * delta
+		else:
+			head_bobbing_current_intensity = head_bobbing_walking_intensity * 0.5
+			head_bobbing_index += head_bobbing_walking_speed * delta
 	elif walking and input_dir != Vector2.ZERO:
 		head_bobbing_current_intensity = head_bobbing_walking_intensity
 		head_bobbing_index += head_bobbing_walking_speed * delta
@@ -603,9 +615,9 @@ func _process(delta: float) -> void:
 		flashlight.visible = not flashlight.visible
 		
 
-		var target_rotation = get_parent().global_transform.basis.get_euler()
-		global_rotation.x = lerp_angle(global_rotation.x, target_rotation.x, smooth_speed * delta)
-		global_rotation.y = lerp_angle(global_rotation.y, target_rotation.y, smooth_speed * delta)
+		#var target_rotation = get_parent().global_transform.basis.get_euler()
+		#global_rotation.x = lerp_angle(global_rotation.x, target_rotation.x, smooth_speed * delta)
+		#global_rotation.y = lerp_angle(global_rotation.y, target_rotation.y, smooth_speed * delta)
 		
 	# INTERACT  /  INTERACT  /  INTERACT  /  INTERACT  /  INTERACT
 	current_interactable = get_interactable_component_at_shapecast()
@@ -693,19 +705,73 @@ func _process(delta: float) -> void:
 		ui.show()
 		
 #FLASHLIGHT SCRIPT
+#func update_flashlight(delta: float) -> void:
+	#flash_light_node.global_position = flash_light_node.global_position.lerp(
+		#cam.global_position,
+		#delta * flashlight_position_smoothness
+	#)
+#
+	#flash_light_node.global_transform.basis = flash_light_node.global_transform.basis.slerp(
+		#cam.global_transform.basis.orthonormalized(),
+		#delta * flashlight_rotation_smoothness
+	#)
+		#
+	#var target_pos = cam.global_position
+		#
+	#var current_f = 0.0
+	#var current_a = 0.0
+	#
+	#if is_on_floor():
+		#var is_actually_moving = velocity.length() > 0.1
+		#
+		#if is_actually_moving:
+			#if sprinting:
+				#current_f = bob_freq * 2.5
+				#current_a = bob_amp * 0.2
+			#elif crouching:
+				#current_f = bob_freq * 3.0
+				#current_a = bob_amp * 0.15
+			#elif walking:
+				#current_f = bob_freq
+				#current_a = bob_amp * 0.20
+		#else: 
+			#if crouching:
+				#current_f = bob_freq * 0.3 # Even slower breathing when crouched
+				#current_a = bob_amp * 0.1  # Smaller movements
+			#else:
+				#current_f = bob_freq * 0.5
+				#current_a = bob_amp * 0.21
+#
+### Only run the math if there is a frequency/amplitude set		
+	#if current_f > 0:
+	## If moving, bob based on speed. If idle, bob at a constant slow rate.
+		#var speed_factor = velocity.length()
+		#if speed_factor < 0.1:
+			## Constant rate for idle (the 2.0 here controls idle "breath" speed)
+			#bob_time += delta * 2.0 * current_f
+		#else:
+			#bob_time += delta * speed_factor * current_f
+		#target_pos += cam.global_transform.basis.x * cos(bob_time * 0.5) * current_a
+		#target_pos += cam.global_transform.basis.y * sin(bob_time) * current_a
+	#else:
+	## This only happens if you are in the air and current_f remains 0.0
+		#bob_time = 0
+		#
+#
+	#flashlight.global_position = flashlight.global_position.lerp(
+		#target_pos, 
+		#delta * flashlight_position_smoothness
+	#)
+#
+	#flashlight.global_transform.basis = flashlight.global_transform.basis.slerp(
+		#cam.global_transform.basis, 
+		#delta * flashlight_rotation_smoothness
+	#)
+	
 func update_flashlight(delta: float) -> void:
-	flash_light_node.global_position = flash_light_node.global_position.lerp(
-		cam.global_position,
-		delta * flashlight_position_smoothness
-	)
-
-	flash_light_node.global_transform.basis = flash_light_node.global_transform.basis.slerp(
-		cam.global_transform.basis.orthonormalized(),
-		delta * flashlight_rotation_smoothness
-	)
-		
-	var target_pos = cam.global_position
-		
+	# 1. Start from your custom offset, NOT Vector3.ZERO!
+	var target_pos = default_flashlight_pos 
+	
 	var current_f = 0.0
 	var current_a = 0.0
 	
@@ -724,38 +790,45 @@ func update_flashlight(delta: float) -> void:
 				current_a = bob_amp * 0.20
 		else: 
 			if crouching:
-				current_f = bob_freq * 0.3 # Even slower breathing when crouched
-				current_a = bob_amp * 0.1  # Smaller movements
+				current_f = bob_freq * 0.3 
+				current_a = bob_amp * 0.1  
 			else:
 				current_f = bob_freq * 0.5
 				current_a = bob_amp * 0.21
 
-## Only run the math if there is a frequency/amplitude set		
 	if current_f > 0:
-	# If moving, bob based on speed. If idle, bob at a constant slow rate.
 		var speed_factor = velocity.length()
 		if speed_factor < 0.1:
-			# Constant rate for idle (the 2.0 here controls idle "breath" speed)
 			bob_time += delta * 2.0 * current_f
 		else:
 			bob_time += delta * speed_factor * current_f
-		target_pos += cam.global_transform.basis.x * cos(bob_time * 0.5) * current_a
-		target_pos += cam.global_transform.basis.y * sin(bob_time) * current_a
+			
+		# Add the bob offsets directly to your default position
+		target_pos.x += cos(bob_time * 0.5) * current_a
+		target_pos.y += sin(bob_time) * current_a
 	else:
-	# This only happens if you are in the air and current_f remains 0.0
 		bob_time = 0
-		
 
-	flashlight.global_position = flashlight.global_position.lerp(
-		target_pos, 
-		delta * flashlight_position_smoothness
+	# --- 2. LOCAL SWAY (The Spring System) ---
+	# Clamp the accumulated mouse movement so the flashlight doesn't snap your neck
+	var max_sway = 150.0 # Adjust this to allow more/less maximum drag
+	sway_target.x = clamp(sway_target.x, -max_sway, max_sway)
+	sway_target.y = clamp(sway_target.y, -max_sway, max_sway)
+
+	# Convert the mouse drag into a tiny rotation target
+	var target_rot = Vector3(
+		-sway_target.y * (sway_amount * -0.002), 
+		-sway_target.x * (sway_amount * -0.002), 
+		0.0
 	)
 
-	flashlight.global_transform.basis = flashlight.global_transform.basis.slerp(
-		cam.global_transform.basis, 
-		delta * flashlight_rotation_smoothness
-	)
-	
+	# --- 3. APPLY LERPS TO THE NODE ---
+	flash_light_node.position = flash_light_node.position.lerp(target_pos, delta * flashlight_position_smoothness)
+	flash_light_node.rotation = flash_light_node.rotation.lerp(target_rot, delta * flashlight_rotation_smoothness)
+
+	# --- 4. THE MAGIC: Drain the spring! ---
+	# This smoothly pulls the target back to zero over time, creating the rubber-band lag effect
+	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
 # --------------------------------------
 # INTERACT
 # --------------------------------------

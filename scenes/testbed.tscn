@@ -533,6 +533,36 @@ use_collision = true
 transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -33.575478, 19.665848, 22.638367)
 use_collision = true
 
+[node name="CSGBox3D73" type="CSGBox3D" parent="Objects" unique_id=1580007531]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, 44.276794, 14.233553, 23.281288)
+use_collision = true
+size = Vector3(1.8502197, 1.0080566, 2.3110352)
+
+[node name="CSGBox3D75" type="CSGBox3D" parent="Objects" unique_id=1887057221]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, 35.100086, 14.233553, 36.574013)
+use_collision = true
+size = Vector3(0.5706177, 0.10479736, 2.3110352)
+
+[node name="CSGBox3D76" type="CSGBox3D" parent="Objects" unique_id=313544284]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, 35.100086, 14.233553, 14.416998)
+use_collision = true
+size = Vector3(0.5706177, 0.10479736, 2.3110352)
+
+[node name="CSGBox3D77" type="CSGBox3D" parent="Objects" unique_id=1980494930]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, 35.100086, 37.039803, 25.383505)
+use_collision = true
+size = Vector3(0.5005493, 0.10479736, 0.24633789)
+
+[node name="CSGBox3D78" type="CSGBox3D" parent="Objects" unique_id=312657994]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, 35.100086, 13.578423, 25.383505)
+use_collision = true
+size = Vector3(0.5005493, 0.10479736, 0.24633789)
+
+[node name="CSGBox3D79" type="CSGBox3D" parent="Objects" unique_id=576737427]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -23.12317, 17.780212, 22.483706)
+use_collision = true
+size = Vector3(0.7796936, 0.23001099, 0.24633789)
+
 [node name="Stairs" type="CSGCombiner3D" parent="Objects" unique_id=721298292]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 12.5, -0.4272058, -5.483359)
 use_collision = true
