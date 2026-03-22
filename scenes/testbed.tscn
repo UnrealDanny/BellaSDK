@@ -916,7 +916,7 @@ size = Vector3(0.26281738, 0.27160645, 2.0092773)
 material = SubResource("StandardMaterial3D_lakw3")
 
 [node name="Ladder2" parent="Objects/Ladder" unique_id=273226209 instance=ExtResource("19_s52xd")]
-transform = Transform3D(1, 0, 0, 0, 9.344138, 0, 0, 0, 2.3995018, -3.6403918, 4.143052, -0.590436)
+transform = Transform3D(0.7507286, 0, 0, 0, 9.344138, 0, 0, 0, 2.3995018, -3.7974422, 4.143052, -0.590436)
 
 [node name="MonkeBar" type="CSGCombiner3D" parent="Objects" unique_id=1836597687]
 transform = Transform3D(-4.371139e-08, 0, 1, -1, -4.371139e-08, -4.371139e-08, 4.371139e-08, -1, 1.9106855e-15, -7.274709, 15.474213, -31.063303)

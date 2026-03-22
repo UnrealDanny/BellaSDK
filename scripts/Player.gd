@@ -156,6 +156,9 @@ var _frames_since_grounded: int = 0
 
 
 func _ready() -> void:
+	Events.debug_menu_toggled.connect(_on_debug_menu_toggled)
+	Events.noclip_ui_button_pressed.connect(toggle_noclip)
+	
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 		
 	ui_circle_zoom.pivot_offset = ui_circle_zoom.size / 2
@@ -173,7 +176,6 @@ func _ready() -> void:
 		base_light_energy = flashlight.light_energy
 		base_spot_range = flashlight.spot_range
 	
-	Events.debug_menu_toggled.connect(_on_debug_menu_toggled)
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	
 func _unhandled_input(event: InputEvent) -> void:
@@ -284,33 +286,72 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("zoom"):
 		input_dir = Vector2.ZERO
 		
+	## NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
+	#
+	#if Input.is_action_just_pressed("noclip"):
+		#toggle_noclip()
+#
+	## 2. Apply Flying Physics
+	#if flying:
+		#var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		#current_speed = sprinting_speed * noclip_speed_multiplier
+		#
+		#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
+				#
+		#if fly_dir:
+			#velocity = fly_dir * current_speed
+		#else:
+			#velocity = Vector3.ZERO
+			#
+	#if Input.is_action_just_pressed("noclip"):
+		#walking = false
+		#sprinting = false
+		#crouching = false
+		#
+		#flying = !flying
+		#noclip_speed_multiplier = 4.0
+		#Events.noclip_toggled.emit(flying)
+#
+		#
+	#if flying:
+		#var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+		#current_speed = sprinting_speed * noclip_speed_multiplier
+		#
+		#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
+		#
+		#standing_collision_shape.disabled = true
+		#crouching_collision_shape.disabled = true
+				#
+		#if fly_dir:
+			#velocity = fly_dir * current_speed
+		#else:
+			#velocity = Vector3.ZERO
+			#direction = Vector3.ZERO
+		#
+	##/ NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
+	
 	# NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
+	
+	# 1. Listen for the hotkey
 	if Input.is_action_just_pressed("noclip"):
-		walking = false
-		sprinting = false
-		crouching = false
-		
-		flying = !flying
-		noclip_speed_multiplier = 4.0
-		Events.noclip_toggled.emit(flying)
+		toggle_noclip()
 
-		
+	# 2. Apply Flying Physics (only runs if flying == true)
 	if flying:
 		var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 		current_speed = sprinting_speed * noclip_speed_multiplier
-		
+
 		Events.noclip_speed_changed.emit(noclip_speed_multiplier)
-		
-		standing_collision_shape.disabled = true
-		crouching_collision_shape.disabled = true
 				
 		if fly_dir:
 			velocity = fly_dir * current_speed
 		else:
 			velocity = Vector3.ZERO
 			direction = Vector3.ZERO
-		
-	#/ NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
+			
+	# / NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
+	
+	
 	if !swimming:
 		if Input.is_action_pressed("left"):
 			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
@@ -1193,6 +1234,25 @@ func enter_updraft(strength: float) -> void:
 func exit_updraft() -> void:
 	in_updraft = false
 	current_updraft_strength = 0.0
+	
+func toggle_noclip() -> void:
+	walking = false
+	sprinting = false
+	crouching = false
+	
+	flying = !flying
+	noclip_speed_multiplier = 4.0
+	
+	# Handle collisions ONCE when toggled, not every frame
+	if flying:
+		standing_collision_shape.disabled = true
+		crouching_collision_shape.disabled = true
+	else:
+		standing_collision_shape.disabled = false
+		crouching_collision_shape.disabled = false
+		
+	# Tell the UI to update its button text and messages
+	Events.noclip_toggled.emit(flying)
 
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:

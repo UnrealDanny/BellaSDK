@@ -4,6 +4,9 @@ extends Node
 signal noclip_toggled(is_flying: bool)
 
 @warning_ignore("unused_signal")
+signal noclip_ui_button_pressed
+
+@warning_ignore("unused_signal")
 signal noclip_speed_changed(speed: float)
 
 @warning_ignore("unused_signal")

@@ -108,4 +108,11 @@ size_flags_vertical = 3
 text = "Wireframe Off"
 alignment = 0
 
+[node name="NoclipButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=720158026]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Noclip Off"
+alignment = 0
+
 [connection signal="pressed" from="DebugPanel/VBoxContainer/WireframeButton" to="." method="_on_wireframe_button_pressed"]
+[connection signal="pressed" from="DebugPanel/VBoxContainer/NoclipButton" to="." method="_on_noclip_button_pressed"]

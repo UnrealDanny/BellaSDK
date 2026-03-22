@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @onready var noclip_message_container: PanelContainer = $MarginContainer3/NoclipMessageContainer
 @onready var noclip_label_message: Label = $MarginContainer3/NoclipMessageContainer/NoclipLabelMessage
+@onready var noclip_button: Button = $DebugPanel/VBoxContainer/NoclipButton
 
 @onready var debug_panel: Panel = $DebugPanel
 
@@ -41,12 +42,24 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 		Events.debug_menu_toggled.emit(is_open)
 
+func _on_noclip_button_pressed() -> void:
+	# Don't change the text here! Just ask the player to toggle noclip.
+	Events.noclip_ui_button_pressed.emit()
 
+# The Player script will emit this signal, guaranteeing the UI is always perfectly synced!
 func _on_noclip_toggled(is_flying: bool) -> void:
-	if is_flying == true:
+	if is_flying:
 		noclip_message_container.show()
+		noclip_button.text = "Noclip ON"
 	else:
 		noclip_message_container.hide()
+		noclip_button.text = "Noclip OFF"
+		
+#func _on_noclip_toggled(is_flying: bool) -> void:
+	#if is_flying == true:
+		#noclip_message_container.show()
+	#else:
+		#noclip_message_container.hide()
 
 func _on_noclip_speed_changed(speed: float) -> void:
 	noclip_label_message.text = "Noclip ON: %.1fx speed" % speed
