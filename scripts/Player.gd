@@ -135,6 +135,11 @@ var is_swimming: bool = false
 var current_water_height: float = 0.0
 var head_in_water := false
 
+# UPDRAFT VARS
+var in_updraft: bool = false
+var current_updraft_strength: float = 0.0
+var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+
 # DEVTOOLS VARS
 var noclip_speed_multiplier := 4.0
 var is_menu_open: bool = false
@@ -646,7 +651,21 @@ func _physics_process(delta: float) -> void:
 			_on_rope_released()
 		else:
 			return
-
+			
+	# --------------------------
+	# VERTICAL MOVEMENT & GRAVITY
+	# -------------------------
+	if in_updraft:
+		# Disable normal gravity and smoothly push the player upward.
+		# We use lerp so you don't instantly snap to top speed; you accelerate into the wind!
+		velocity.y = lerp(velocity.y, current_updraft_strength, delta * 4.0)
+		
+	elif not is_on_floor():
+		# If not in the wind and not on the ground, fall normally
+		velocity.y -= gravity * delta
+		
+		# (Optional: If you jump out of the updraft, you will keep your upward momentum 
+		# naturally until gravity pulls you back down!)
 	# -------------------------------------- #
 	# LAST CHECKS   						 #
 	# -------------------------------------- #
@@ -1166,7 +1185,14 @@ func _handle_water_physics(delta: float) -> bool:
 		#velocity.y = lerpf(velocity.y, target_velocity.y, 4.0 * delta)
 #
 	#return true
+	
+func enter_updraft(strength: float) -> void:
+	in_updraft = true
+	current_updraft_strength = strength
 
+func exit_updraft() -> void:
+	in_updraft = false
+	current_updraft_strength = 0.0
 
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://mttmftrx6fam"]
 
 [ext_resource type="PackedScene" uid="uid://ngftnu23fsfi" path="res://scenes/world_environment.tscn" id="1_ecfbh"]
-[ext_resource type="Texture2D" uid="uid://cudsqe0lf80c8" path="res://assets/images/prototype_textures/PNG/Green/texture_10.png" id="2_dkubq"]
+[ext_resource type="Texture2D" uid="uid://dufts68n1gn2p" path="res://assets/images/dev_textures/standard_7_green_512.png" id="2_uvnoq"]
 [ext_resource type="PackedScene" uid="uid://bwkd1g0rbfurr" path="res://scenes/object_interact.tscn" id="3_cmbf5"]
 [ext_resource type="PackedScene" uid="uid://d1cr6vua8ilv3" path="res://scenes/teleport.tscn" id="4_k74e2"]
 [ext_resource type="PackedScene" uid="uid://dd2fqqtwajwjn" path="res://scenes/teleport_destination.tscn" id="5_m0e1v"]
@@ -24,15 +24,18 @@
 [ext_resource type="PackedScene" uid="uid://2db87kewe2f2" path="res://scenes/Player.tscn" id="20_v6x3g"]
 [ext_resource type="PackedScene" uid="uid://ca0wevg1lb4rx" path="res://utils/WaterMaker3D/WaterMaker3D.tscn" id="21_2dnug"]
 [ext_resource type="PackedScene" uid="uid://ccmuvcp1vvusq" path="res://scenes/pickable_box.tscn" id="24_k74e2"]
+[ext_resource type="PackedScene" uid="uid://ep02e3j752sd" path="res://scenes/ventilator.tscn" id="24_ue7dh"]
+[ext_resource type="PackedScene" uid="uid://dg62o2u1p8i7i" path="res://scenes/updraft_volume.tscn" id="25_jgmty"]
 [ext_resource type="PackedScene" uid="uid://q22xc6i00ls" path="res://scenes/dev_cylinder.tscn" id="25_m0e1v"]
 [ext_resource type="PackedScene" uid="uid://b0n5hga5atr" path="res://scenes/monke_bar.tscn" id="26_sx10w"]
+[ext_resource type="PackedScene" uid="uid://2yaelfmj6lmg" path="res://scenes/dev_arrow.tscn" id="27_uvnoq"]
 
 [sub_resource type="QuadMesh" id="QuadMesh_rwgxs"]
 size = Vector2(10, 10)
 orientation = 1
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rwgxs"]
-albedo_texture = ExtResource("2_dkubq")
+albedo_texture = ExtResource("2_uvnoq")
 uv1_triplanar = true
 uv1_world_triplanar = true
 
@@ -87,22 +90,22 @@ albedo_texture = ExtResource("18_f1d65")
 [sub_resource type="BoxShape3D" id="BoxShape3D_m0e1v"]
 size = Vector3(1, 17.309326, 1.8153076)
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_sx10w"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_jgmty"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_uvnoq"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xj7km"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_sx10w")
+noise = SubResource("FastNoiseLite_jgmty")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ue7dh"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_62djl"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_sx10w")
+noise = SubResource("FastNoiseLite_jgmty")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jgmty"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvpuy"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -110,9 +113,9 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_uvnoq")
+normal_texture = SubResource("NoiseTexture2D_xj7km")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_ue7dh")
+refraction_texture = SubResource("NoiseTexture2D_62djl")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
@@ -122,7 +125,7 @@ uv1_world_triplanar = true
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=1820340566]
-transform = Transform3D(6.257023, 0, 0, 0, 1, 0, 0, 0, 6.425, 7.188077, 0.012071133, -0.011890888)
+transform = Transform3D(6.257023, 0, 0, 0, 1, 0, 0, 0, 6.425, 7.19555, -0.008470058, 0.03533888)
 mesh = SubResource("QuadMesh_rwgxs")
 surface_material_override/0 = SubResource("StandardMaterial3D_rwgxs")
 
@@ -415,6 +418,21 @@ size = Vector3(0.48007202, 5.468689, 1)
 transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, -5.4375734, 11.069575, -58.84502)
 use_collision = true
 size = Vector3(0.48007202, 5.468689, 1)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Objects/CSGBox3D80" unique_id=1797499152]
+transform = Transform3D(1, 0, 0, 3.1238575e-18, 1, -6.714629e-13, 0, 1.865231e-21, 1, 0.10014367, 1.8091601, -0.23277283)
+operation = 2
+size = Vector3(0.07443237, 0.9532471, 1.3010254)
+
+[node name="CSGBox3D83" type="CSGBox3D" parent="Objects" unique_id=1564697487]
+transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 4.3139772, 20.281301, -58.84502)
+use_collision = true
+size = Vector3(0.48007202, 5.468689, 1)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Objects/CSGBox3D83" unique_id=1155739703]
+transform = Transform3D(1, 0, 0, 1.4060747e-18, 1, -3.0109248e-13, 0, 1.865231e-21, 1, 0.11877465, -0.6987175, -0.022399902)
+operation = 2
+size = Vector3(0.15600586, 1.3452148, 1.7764893)
 
 [node name="CSGBox3D81" type="CSGBox3D" parent="Objects" unique_id=1676350029]
 transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, 18.725237, -1.5891717e-07, -0.9309601, -47.74438, -6.2326905e-08, -0.36512044, -7.494047, 8.753565, -23.657927)
@@ -901,7 +919,7 @@ material = SubResource("StandardMaterial3D_lakw3")
 transform = Transform3D(1, 0, 0, 0, 9.344138, 0, 0, 0, 2.3995018, -3.6403918, 4.143052, -0.590436)
 
 [node name="MonkeBar" type="CSGCombiner3D" parent="Objects" unique_id=1836597687]
-transform = Transform3D(-4.371139e-08, 0, 1, -1, -4.371139e-08, -4.371139e-08, 4.371139e-08, -1, 1.9106855e-15, -7.274709, 15.955666, -31.284128)
+transform = Transform3D(-4.371139e-08, 0, 1, -1, -4.371139e-08, -4.371139e-08, 4.371139e-08, -1, 1.9106855e-15, -7.274709, 15.474213, -31.063303)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="Objects/MonkeBar" unique_id=57382706]
 size = Vector3(0.26281738, 0.27160645, 2.0092773)
@@ -982,6 +1000,9 @@ material = SubResource("StandardMaterial3D_7t5mc")
 transform = Transform3D(1, 0, 8.351872e-23, 0, 1, 0, 8.351872e-23, 0, 1, 0, -1.1668282, 0)
 size = Vector3(0.26281738, 0.27160645, 2.0092773)
 material = SubResource("StandardMaterial3D_lakw3")
+
+[node name="MonkeBar" parent="Objects/MonkeBar" unique_id=1142386375 instance=ExtResource("26_sx10w")]
+transform = Transform3D(-8.9483976e-08, -0.474595, 7.756683e-07, 0, -2.0745206e-08, -17.745222, 2.0471547, -2.0745206e-08, 3.3905536e-14, 0.14238262, 5.159605, -0.018045425)
 
 [node name="SwimmingPoolExit" type="CSGCombiner3D" parent="Objects" unique_id=1193732720]
 use_collision = true
@@ -1245,19 +1266,27 @@ wanna go up? find the box! (or just activate noclip.
 
 [node name="Label3D16" type="Label3D" parent="Texts" unique_id=2033174515]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -6.9824877, 11.8539095, -49.066044)
-text = "U MONKE NOW! U-U-UU-U-U-!!!"
+text = "U MONKE NOW! U-U-UU-U-U-!!! 
+AAAAAAAAAAAAAAAAAAA!!!!!"
 
 [node name="Label3D17" type="Label3D" parent="Texts" unique_id=2113720852]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.273758, 11.132977, -20.617027)
 text = "Monke bar"
 
+[node name="Ventilator" parent="Texts" unique_id=1452107114 instance=ExtResource("24_ue7dh")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6718683, 11.039263, -63.830284)
+speed = 20.0
+
+[node name="UpdraftVolume" parent="Texts" unique_id=794249437 instance=ExtResource("25_jgmty")]
+transform = Transform3D(3.6219175, 0, 0, 0, 6.586401, 0, 0, 0, 4.0668445, 1.7757654, 18.42724, -64.04922)
+
 [node name="WaterMaker3D" parent="." unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_jgmty")
+material = SubResource("StandardMaterial3D_vvpuy")
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.028725, 0.091403246, -4.2721214)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.274952, 11.569575, -63.96827)
 
 [node name="dev_cylinder" parent="." unique_id=823712635 instance=ExtResource("25_m0e1v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.713886, 1.1143469, -7.285309)
@@ -1272,5 +1301,11 @@ line_color = Color(0.7845677, 0, 0, 1)
 speed = -2.0
 line_count = 5.0
 
-[node name="MonkeBar" parent="." unique_id=1142386375 instance=ExtResource("26_sx10w")]
-transform = Transform3D(2.0471547, 0, 0, 0, 1, 0, 0, 0, 17.745222, -7.2927547, 15.690056, -36.222908)
+[node name="dev_cylinder3" parent="." unique_id=273335996 instance=ExtResource("25_m0e1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.975079, 0.14140491, -8.221913)
+
+[node name="DevArrow" parent="." unique_id=249012739 instance=ExtResource("27_uvnoq")]
+transform = Transform3D(2, 0, 0, 0, -8.742278e-08, 2, 0, -2, -8.742278e-08, 19.171274, 1.0914047, -10.287005)
+base_color = Color(0.15686275, 0.16470589, 0.80784315, 0.62352943)
+speed = -2.0
+line_count = 1.0

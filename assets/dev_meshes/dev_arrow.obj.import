@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bkdktt4rqjra1"
+path="res://.godot/imported/dev_arrow.obj-1487a93e9b189fc1202bc405667fb0db.mesh"
+
+[deps]
+
+files=["res://.godot/imported/dev_arrow.obj-1487a93e9b189fc1202bc405667fb0db.mesh"]
+
+source_file="res://assets/dev_meshes/dev_arrow.obj"
+dest_files=["res://.godot/imported/dev_arrow.obj-1487a93e9b189fc1202bc405667fb0db.mesh", "res://.godot/imported/dev_arrow.obj-1487a93e9b189fc1202bc405667fb0db.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

@@ -1,4 +1,4 @@
-res://scenes/testbed.tscn
+res://scenes/dev_cylinder.tscn
 res://assets/shaders/circle_shader.tres
 res://assets/shaders/UnlitOutlineMaterial.gdshader
 res://assets/shaders/outline_shader_adaptable.gdshader
@@ -8,8 +8,13 @@ res://assets/shaders/holographic_scanner.gdshader
 res://assets/shaders/outline_shader.gdshader
 res://assets/shaders/SmartOutlineMaterial.gdshader
 res://assets/shaders/OutlineMaterialBoxes.gdshader
-res://scripts/monke_bar.gd
-res://scenes/ladderAI.tscn
+res://scripts/dev_hologram_tool.gd
+res://scenes/testbed.tscn
+res://scenes/dev_arrow.tscn
+res://assets/textures/dev_material_area.tres
+res://scenes/ventilator.tscn
+res://scripts/rotator_component.gd
 res://scenes/Player.tscn
+res://scripts/updraft_volume.gd
+res://scenes/updraft_volume.tscn
 res://scripts/Player.gd
-res://scenes/monke_bar.tscn

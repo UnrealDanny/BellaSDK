@@ -33,6 +33,10 @@ window/stretch/mode="canvas_items"
 
 project/assembly_name="FPS_Test"
 
+[filesystem]
+
+import/blender/enabled=false
+
 [input]
 
 forward={

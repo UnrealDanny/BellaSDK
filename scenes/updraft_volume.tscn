@@ -1,0 +1,104 @@
+[gd_scene format=3 uid="uid://dg62o2u1p8i7i"]
+
+[ext_resource type="Script" uid="uid://banc78j0mbfqh" path="res://scripts/updraft_volume.gd" id="1_2vvrv"]
+[ext_resource type="Material" uid="uid://coniyskrwahs4" path="res://assets/textures/dev_material_area.tres" id="1_a53uw"]
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_82kr7"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_2vvrv"]
+material = ExtResource("1_a53uw")
+
+[sub_resource type="Gradient" id="Gradient_2vvrv"]
+offsets = PackedFloat32Array(0, 0.5203881, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.5203881, 0.5203881, 0.5203881, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_qt4jf"]
+gradient = SubResource("Gradient_2vvrv")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_314x0"]
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+direction = Vector3(0, 1, 0)
+spread = 5.0
+initial_velocity_min = 4.0
+initial_velocity_max = 8.0
+gravity = Vector3(0, 0, 0)
+color_ramp = SubResource("GradientTexture1D_qt4jf")
+collision_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_y1e2o"]
+transparency = 1
+shading_mode = 0
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_wev2t"]
+material = SubResource("StandardMaterial3D_y1e2o")
+size = Vector2(0.03, 0.05)
+
+[sub_resource type="Gradient" id="Gradient_qt4jf"]
+offsets = PackedFloat32Array(0, 0.50097066, 1)
+colors = PackedColorArray(0, 0, 0, 0, 0.50097066, 0.50097066, 0.50097066, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_314x0"]
+gradient = SubResource("Gradient_qt4jf")
+
+[sub_resource type="Curve" id="Curve_y1e2o"]
+_data = [Vector2(0, 0.25802338), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_wev2t"]
+curve = SubResource("Curve_y1e2o")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ikx87"]
+direction = Vector3(0, 1, 0)
+spread = 15.0
+initial_velocity_min = 2.0
+initial_velocity_max = 4.0
+gravity = Vector3(0, 0, 0)
+scale_curve = SubResource("CurveTexture_wev2t")
+color_ramp = SubResource("GradientTexture1D_314x0")
+collision_mode = 2
+
+[sub_resource type="Gradient" id="Gradient_l68ij"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ka0i6"]
+gradient = SubResource("Gradient_l68ij")
+use_hdr = true
+fill = 1
+fill_from = Vector2(0.5496931, 1)
+fill_to = Vector2(0.49447837, 0.00981655)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yexsu"]
+transparency = 1
+albedo_texture = SubResource("GradientTexture2D_ka0i6")
+billboard_mode = 1
+
+[sub_resource type="QuadMesh" id="QuadMesh_gjcmt"]
+material = SubResource("StandardMaterial3D_yexsu")
+
+[node name="UpdraftVolume" type="Area3D" unique_id=1690739398]
+script = ExtResource("1_2vvrv")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1399732228]
+shape = SubResource("CylinderShape3D_82kr7")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1365149769]
+mesh = SubResource("CylinderMesh_2vvrv")
+
+[node name="GPUParticlesCollisionBox3D" type="GPUParticlesCollisionBox3D" parent="." unique_id=690932073]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+size = Vector3(4, 0.1, 4)
+
+[node name="DustParticles" type="GPUParticles3D" parent="." unique_id=578439677]
+amount = 100
+lifetime = 0.01
+process_material = SubResource("ParticleProcessMaterial_314x0")
+draw_pass_1 = SubResource("QuadMesh_wev2t")
+
+[node name="SnomeParticles" type="GPUParticles3D" parent="." unique_id=1719073399]
+process_material = SubResource("ParticleProcessMaterial_ikx87")
+draw_pass_1 = SubResource("QuadMesh_gjcmt")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
+[connection signal="body_exited" from="." to="." method="_on_body_exited"]

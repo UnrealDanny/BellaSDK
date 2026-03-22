@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://2yaelfmj6lmg"]
+
+[ext_resource type="Script" uid="uid://br53r4mu0jo7r" path="res://scripts/dev_hologram_tool.gd" id="1_4dyq1"]
+[ext_resource type="ArrayMesh" uid="uid://bkdktt4rqjra1" path="res://assets/dev_meshes/dev_arrow.obj" id="1_iy5na"]
+[ext_resource type="Shader" uid="uid://g5aps1jw4kxy" path="res://assets/shaders/holographic_scanner.gdshader" id="2_4dyq1"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_tiplq"]
+render_priority = 0
+shader = ExtResource("2_4dyq1")
+
+[node name="DevArrow" type="Node3D" unique_id=249012739 node_paths=PackedStringArray("target_mesh")]
+script = ExtResource("1_4dyq1")
+target_mesh = NodePath("MeshInstance3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1531928673]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
+material_override = SubResource("ShaderMaterial_tiplq")
+instance_shader_parameters/base_color = Color(0, 0.2, 0.8, 0.1)
+instance_shader_parameters/glow_multiplier = 2.0
+instance_shader_parameters/line_color = Color(0, 1, 0, 1)
+instance_shader_parameters/line_count = 2.0
+instance_shader_parameters/line_thickness = 0.1
+instance_shader_parameters/speed = 1.0
+mesh = ExtResource("1_iy5na")
