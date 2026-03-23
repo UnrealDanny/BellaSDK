@@ -30,16 +30,27 @@ func _process(_delta: float) -> void:
 		fps_color = "yellow"
 	else:
 		fps_color = "red"
-		
+			
+	var is_pressing_keys = player.input_dir.length() > 0.1
+
 	var state = "IDLE"
 	if player.flying: state = "NOCLIP"
 	elif player.swimming: state = "SWIMMING"
 	elif player.on_zipline: state = "ZIPLINE"
 	elif player.on_ladder: state = "LADDER"
-	elif player.crouching: state = "CROUCHING"
+	elif player.crouching: state = "CROUCHING" if is_pressing_keys else "CROUCH IDLE"
 	elif player.sprinting: state = "SPRINTING"
-	elif player.is_on_floor(): state = "WALKING"
+	elif player.on_monkey_bars: state = "MONKE"
+	elif player.on_rope: state = "ROPE"
+	elif player.in_updraft: state = "AIRBORNE UPDRAFT"
+	elif player.is_using_zoom: state = "ZOOM"
+	elif player.is_on_floor(): state = "WALKING" if is_pressing_keys else "IDLE"
 	else: state = "AIRBORNE"
+
+	# --- NEW BOOLEAN CHECKS ---
+	# Change these variable names if they differ in your player.gd!
+	var flashlight_str = "ON" if player.flashlight.visible else "OFF"
+	#var interact_str = "YES" if player.is_interacting else "NO"
 
 	var text = ""
 	text += "--- ENGINE ---\n"
@@ -52,6 +63,8 @@ func _process(_delta: float) -> void:
 	text += "VELOCITY: (%.1f, %.1f, %.1f)\n" % [vel.x, vel.y, vel.z]
 	text += "POS: %s\n" % var_to_str(player.global_position).replace("Vector3", "")
 	text += "GROUNDED: %s\n" % ("YES" if player.is_on_floor() else "NO")
+	text += "FLASHLIGHT: %s\n" % flashlight_str
+	#text += "INTERACTING: %s\n" % interact_str
 
 	metrics_label.text = text
 	

@@ -137,6 +137,7 @@ var is_menu_open: bool = false
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
+var is_using_zoom: bool = false
 
 # ZIPLINE VARS
 var zipline_grab_timer: float = 0.0
@@ -318,7 +319,7 @@ func _process(delta: float) -> void:
 	# 1. FLASHLIGHT ANIMATION
 	update_flashlight(delta)
 	if Input.is_action_just_pressed("flashlight"):
-		flashlight.visible = not flashlight.visible
+		flashlight.visible = !flashlight.visible
 		
 	# 2. INTERACT & THROW
 	current_interactable = get_interactable_component_at_shapecast()
@@ -346,8 +347,10 @@ func _process(delta: float) -> void:
 	# 3. CAMERA ZOOM CONTROLS
 	if Input.is_action_just_pressed("zoom"):
 		Events.player_zoomed.emit(true)
+		is_using_zoom = true
 	elif Input.is_action_just_released("zoom"):
 		Events.player_zoomed.emit(false)
+		is_using_zoom = false
 		
 	if Input.is_action_pressed("zoom"):
 		target_fov = zoom_fov
@@ -471,11 +474,13 @@ func exit_monkey_bars() -> void:
 # --------------------------------------
 # ROPES
 # --------------------------------------
+var on_rope: bool = false
 func _on_rope_grabbed(rope_body: RigidBody3D) -> void:
 	current_rope = rope_body
 	velocity = Vector3.ZERO
 	add_collision_exception_with(current_rope)
-
+	on_rope = true
+	
 	# 1. Ask the swinging body exactly where the player is
 	var local_pos = current_rope.to_local(global_position)
 	rope_offset = local_pos.y
@@ -508,6 +513,7 @@ func _on_rope_released() -> void:
 		current_rope.get_parent().on_player_released()
 
 	current_rope = null
+	on_rope = false
 
 # ----------------------------
 # WATER MECHANICS
@@ -563,7 +569,6 @@ func _handle_water_physics(delta: float) -> bool:
 	standing_collision_shape.disabled = false
 	crouching_collision_shape.disabled = true
 	head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
-	#target_fov = base_fov # now zoom works as intended
 
 	# --- TRUE 3D SWIMMING ---
 	input_dir = Input.get_vector("left", "right", "forward", "backward")
@@ -711,7 +716,6 @@ func _on_debug_menu_toggled(is_open: bool) -> void:
 # -------------------------------------------------------------------
 # HELPER FUNCTIONS
 # -------------------------------------------------------------------
-
 func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	# 1. CAMERA TILT
 	if Input.is_action_pressed("left"):
@@ -821,8 +825,6 @@ func _handle_ladder_physics(_delta: float) -> void:
 		velocity.y = 5.0 # And slightly up
 			
 func _handle_monkey_bars_physics(_delta: float) -> void:
-	#elif on_monkey_bars:
-	# 1. Force state restrictions
 	sprinting = false
 	crouching = false
 

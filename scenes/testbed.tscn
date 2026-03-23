@@ -1,7 +1,6 @@
 [gd_scene format=4 uid="uid://mttmftrx6fam"]
 
 [ext_resource type="PackedScene" uid="uid://ngftnu23fsfi" path="res://scenes/world_environment.tscn" id="1_ecfbh"]
-[ext_resource type="LightmapGIData" uid="uid://ccvh4g1vvv2qe" path="res://LightBakes/testbed_lightmap.res" id="2_62djl"]
 [ext_resource type="Texture2D" uid="uid://dufts68n1gn2p" path="res://assets/images/dev_textures/standard_7_green_512.png" id="2_uvnoq"]
 [ext_resource type="PackedScene" uid="uid://bwkd1g0rbfurr" path="res://scenes/object_interact.tscn" id="3_cmbf5"]
 [ext_resource type="PackedScene" uid="uid://d1cr6vua8ilv3" path="res://scenes/teleport.tscn" id="4_k74e2"]
@@ -381,7 +380,6 @@ mesh = SubResource("ArrayMesh_s52xd")
 
 [node name="LightmapGI" type="LightmapGI" parent="." unique_id=1953243825]
 quality = 3
-light_data = ExtResource("2_62djl")
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -893,6 +891,11 @@ size = Vector3(0.86364746, 0.78048706, 1)
 transform = Transform3D(-9.081631e-07, 11.676583, -4.37114e-08, -7.38124e-14, -5.103997e-07, -1, -20.776346, -5.103998e-07, 1.9106857e-15, -12.098849, 6.385925, 1.4695857)
 use_collision = true
 size = Vector3(0.224823, 0.78048706, 2.10437)
+
+[node name="CSGBox3D89" type="CSGBox3D" parent="Objects/Level" unique_id=1187762388]
+transform = Transform3D(-9.0816303e-07, 11.676583, -4.37114e-08, 6.8045588, -3.1508569e-07, -0.94484603, -19.630447, -6.4941264e-07, -0.3275147, -12.098849, 6.11384, 6.7038293)
+use_collision = true
+size = Vector3(0.3047943, 0.78048706, 2.10437)
 
 [node name="CSGBox3D27" type="CSGBox3D" parent="Objects/Level" unique_id=1941945725]
 transform = Transform3D(-9.081631e-07, 11.676583, -4.37114e-08, -7.38124e-14, -5.103997e-07, -1, -20.776346, -5.103998e-07, 1.9106857e-15, -12.098849, 7.8707333, -7.5777273)
@@ -2045,7 +2048,8 @@ font_size = 64
 
 [node name="Crouch3" type="Label3D" parent="Texts" unique_id=1981221016]
 transform = Transform3D(0.9999999, 0, 1.03316026e-07, 0, 1, 0, -1.03316026e-07, 0, 0.9999999, -20.47666, 2.2811322, 0.7550068)
-text = "There is nothing here. Go away!"
+text = "There is nothing here. Go away!
+Press Q to noclip"
 font_size = 64
 
 [node name="Crouch2" type="Label3D" parent="Texts" unique_id=1464636407]

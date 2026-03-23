@@ -1,3 +1,4 @@
+ColorRect
 RichTextLabel
 PanelContainer
 Label
@@ -12,4 +13,3 @@ CenterContainer
 Node
 TextureRect
 MarginContainer
-ColorRect
