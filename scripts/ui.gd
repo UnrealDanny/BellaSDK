@@ -9,8 +9,10 @@ extends CanvasLayer
 @onready var noclip_message_container: PanelContainer = $MarginContainer3/NoclipMessageContainer
 @onready var noclip_label_message: Label = $MarginContainer3/NoclipMessageContainer/NoclipLabelMessage
 @onready var noclip_button: Button = $DebugPanel/VBoxContainer/NoclipButton
+@onready var metrics_button: Button = $DebugPanel/VBoxContainer/MetricsButton
 
 @onready var debug_panel: Panel = $DebugPanel
+@onready var metrics_panel: PanelContainer = $MetricsPanel
 
 @onready var fullbright_button: Button = $DebugPanel/VBoxContainer/FullbrightButton
 @onready var wireframe_button: Button = $DebugPanel/VBoxContainer/WireframeButton
@@ -25,7 +27,8 @@ var ui_lerp_speed: float = 15.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-
+	metrics_button.pressed.connect(_on_metrics_button_pressed)
+	
 	# Connect signals
 	Events.noclip_toggled.connect(_on_noclip_toggled)
 	Events.noclip_speed_changed.connect(_on_noclip_speed_changed)
@@ -161,3 +164,7 @@ func _on_wireframe_button_pressed() -> void:
 		wireframe_button.text = "Wireframe OFF"
 		
 	Events.wireframe_toggled.emit(is_wireframe)
+
+func _on_metrics_button_pressed() -> void:
+	if metrics_panel:
+		metrics_panel.toggle_window()

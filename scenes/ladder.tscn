@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://wmyjhovjnea4"]
 
-[ext_resource type="Script" uid="uid://144opwatfkav" path="res://scripts/ladder_ai.gd" id="1_y6w7a"]
+[ext_resource type="Script" uid="uid://144opwatfkav" path="res://scripts/ladder.gd" id="1_y6w7a"]
 [ext_resource type="Material" uid="uid://coniyskrwahs4" path="res://assets/textures/dev_material_area.tres" id="2_dhcj5"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wwku2"]

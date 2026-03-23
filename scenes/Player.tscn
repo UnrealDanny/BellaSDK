@@ -311,4 +311,4 @@ transparent = false
 double_sided = false
 texture = ExtResource("7_cw2d6")
 
-[node name="UI" parent="." unique_id=1944889716 instance=ExtResource("2_k2mo6")]
+[node name="UI" parent="." unique_id=1944889716 groups=["player"] instance=ExtResource("2_k2mo6")]

@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://d11qvtoiajmle" path="res://assets/images/UI/UI_Circle_Zoom_Inner.png" id="4_wm3ai"]
 [ext_resource type="Shader" uid="uid://b7hv0lpr3sylm" path="res://assets/shaders/ui_vignette.gdshader" id="5_8dubc"]
 [ext_resource type="Shader" uid="uid://bly82k8d04nmt" path="res://assets/shaders/ui_zoom_fisheye_blur.gdshader" id="6_p7vwb"]
+[ext_resource type="Script" uid="uid://yhhwmqo4b0yi" path="res://scripts/DevMetrics.gd" id="7_p7vwb"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_p7vwb"]
 shader = ExtResource("5_8dubc")
@@ -145,6 +146,26 @@ layout_mode = 2
 size_flags_vertical = 3
 text = "Noclip Off"
 alignment = 0
+
+[node name="MetricsButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=2062671107]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Metrics Off"
+alignment = 0
+
+[node name="MetricsPanel" type="PanelContainer" parent="." unique_id=1400618986]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -443.0
+offset_bottom = 340.0
+grow_horizontal = 0
+script = ExtResource("7_p7vwb")
+
+[node name="MetricsLabel" type="RichTextLabel" parent="MetricsPanel" unique_id=551908532]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
 
 [connection signal="pressed" from="DebugPanel/VBoxContainer/WireframeButton" to="." method="_on_wireframe_button_pressed"]
 [connection signal="pressed" from="DebugPanel/VBoxContainer/NoclipButton" to="." method="_on_noclip_button_pressed"]

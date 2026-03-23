@@ -1,5 +1,4 @@
-res://scripts/Player.gd
-res://scenes/Player.tscn
+res://scenes/testbed.tscn
 res://assets/shaders/circle_shader.tres
 res://assets/shaders/outline_shader_adaptable.gdshader
 res://assets/shaders/ui_vignette.gdshader
@@ -8,7 +7,9 @@ res://assets/shaders/UnlitOutlineMaterial.gdshader
 res://assets/shaders/holographic_scanner.gdshader
 res://assets/shaders/outline_shader.gdshader
 res://assets/shaders/SmartOutlineMaterial.gdshader
-res://scenes/testbed.tscn
+res://scenes/ui.tscn
+res://scripts/DevOSD.gd
+res://scripts/DevMetrics.gd
+res://scripts/ui.gd
+res://scenes/Player.tscn
 res://scenes/world_environment.tscn
-res://LightBakes/testbed.exr
-res://LightBakes/testbed.lmbake
