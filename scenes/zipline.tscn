@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://uwhga6c4q51o"]
+
+[ext_resource type="Script" uid="uid://qekanqevsr60" path="res://scripts/zipline.gd" id="1_nr4xa"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_1tsh7"]
+
+[sub_resource type="Curve3D" id="Curve3D_1tsh7"]
+resource_local_to_scene = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.5033784, 7.850241, -1.3896141, 0, 0, 0, 0, 0, 0, 0.24442816, -3.2556992, 0.5654783),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nr4xa"]
+top_radius = 0.1
+bottom_radius = 0.1
+height = 30.91893
+radial_segments = 16
+rings = 0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_1tsh7"]
+height = 30.91893
+radius = 0.2
+
+[node name="Zipline" type="Path3D" unique_id=1950995130]
+curve = SubResource("Curve3D_1tsh7")
+script = ExtResource("1_nr4xa")
+
+[node name="WireMesh" type="MeshInstance3D" parent="." unique_id=639202577]
+mesh = SubResource("CylinderMesh_nr4xa")
+
+[node name="InteractArea" type="StaticBody3D" parent="." unique_id=1624315724]
+collision_layer = 5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractArea" unique_id=89696706]
+shape = SubResource("CylinderShape3D_1tsh7")
+
+[node name="Interact_Component" type="Node" parent="InteractArea" unique_id=74740240]
+script = ExtResource("2_1tsh7")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[connection signal="focused" from="InteractArea/Interact_Component" to="." method="_on_interact_component_focused"]
+[connection signal="interacted" from="InteractArea/Interact_Component" to="." method="_on_interact_component_interacted"]
+[connection signal="unfocused" from="InteractArea/Interact_Component" to="." method="_on_interact_component_unfocused"]

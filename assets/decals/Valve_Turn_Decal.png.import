@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c3alx7afc0pag"
 path.s3tc="res://.godot/imported/Valve_Turn_Decal.png-4539e2ca52ea964f596a3c27a7b13454.s3tc.ctex"
+path.etc2="res://.godot/imported/Valve_Turn_Decal.png-4539e2ca52ea964f596a3c27a7b13454.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/decals/Valve_Turn_Decal.png"
-dest_files=["res://.godot/imported/Valve_Turn_Decal.png-4539e2ca52ea964f596a3c27a7b13454.s3tc.ctex"]
+dest_files=["res://.godot/imported/Valve_Turn_Decal.png-4539e2ca52ea964f596a3c27a7b13454.s3tc.ctex", "res://.godot/imported/Valve_Turn_Decal.png-4539e2ca52ea964f596a3c27a7b13454.etc2.ctex"]
 
 [params]
 

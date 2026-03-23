@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://deitmpqouyc7u"
 path.bptc="res://.godot/imported/hilly_terrain_01_puresky_2k.hdr-b4a0b6b5c560862987596af64bb05384.bptc.ctex"
+path.astc="res://.godot/imported/hilly_terrain_01_puresky_2k.hdr-b4a0b6b5c560862987596af64bb05384.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/HDR/hilly_terrain_01_puresky_2k.hdr"
-dest_files=["res://.godot/imported/hilly_terrain_01_puresky_2k.hdr-b4a0b6b5c560862987596af64bb05384.bptc.ctex"]
+dest_files=["res://.godot/imported/hilly_terrain_01_puresky_2k.hdr-b4a0b6b5c560862987596af64bb05384.bptc.ctex", "res://.godot/imported/hilly_terrain_01_puresky_2k.hdr-b4a0b6b5c560862987596af64bb05384.astc.ctex"]
 
 [params]
 

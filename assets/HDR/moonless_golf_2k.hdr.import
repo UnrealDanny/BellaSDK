@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://c6ls1bsoysuab"
 path.bptc="res://.godot/imported/moonless_golf_2k.hdr-00e8a8b381476679de53d04348591c7f.bptc.ctex"
+path.astc="res://.godot/imported/moonless_golf_2k.hdr-00e8a8b381476679de53d04348591c7f.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/HDR/moonless_golf_2k.hdr"
-dest_files=["res://.godot/imported/moonless_golf_2k.hdr-00e8a8b381476679de53d04348591c7f.bptc.ctex"]
+dest_files=["res://.godot/imported/moonless_golf_2k.hdr-00e8a8b381476679de53d04348591c7f.bptc.ctex", "res://.godot/imported/moonless_golf_2k.hdr-00e8a8b381476679de53d04348591c7f.astc.ctex"]
 
 [params]
 

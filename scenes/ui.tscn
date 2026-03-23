@@ -2,12 +2,35 @@
 
 [ext_resource type="Script" uid="uid://bu8f1lqdsjgks" path="res://scripts/ui.gd" id="1_nt7q6"]
 [ext_resource type="Shader" uid="uid://bqd5soqdscvly" path="res://assets/shaders/outline_shader_adaptable.gdshader" id="2_x4jx1"]
+[ext_resource type="Texture2D" uid="uid://bp1lwvb0tg06g" path="res://assets/images/UI/UI_Circle_Zoom.png" id="3_gdt2y"]
+[ext_resource type="Texture2D" uid="uid://d11qvtoiajmle" path="res://assets/images/UI/UI_Circle_Zoom_Inner.png" id="4_wm3ai"]
+[ext_resource type="Shader" uid="uid://b7hv0lpr3sylm" path="res://assets/shaders/ui_vignette.gdshader" id="5_8dubc"]
+[ext_resource type="Shader" uid="uid://bly82k8d04nmt" path="res://assets/shaders/ui_zoom_fisheye_blur.gdshader" id="6_p7vwb"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_p7vwb"]
+shader = ExtResource("5_8dubc")
+shader_parameter/color = Color(0, 0, 0, 1)
+shader_parameter/multiplier = 0.4
+shader_parameter/softness = 0.7
+shader_parameter/vignette_opacity = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cgfq5"]
+shader = ExtResource("6_p7vwb")
+shader_parameter/distortion_amount = 1.0
+shader_parameter/blur_amount = 2.5
+shader_parameter/effect_strength = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yev5y"]
 shader = ExtResource("2_x4jx1")
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_xlq6p"]
 load_path = "res://.godot/imported/UI_Circle.svg-cd8c28fc9c5e0f9653f2a35a84217264.ctex"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gdt2y"]
+shader = ExtResource("2_x4jx1")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8dubc"]
+shader = ExtResource("2_x4jx1")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nt7q6"]
 bg_color = Color(0.040375, 0.041947637, 0.037145004, 1)
@@ -19,51 +42,60 @@ shadow_size = 2
 [node name="UI" type="CanvasLayer" unique_id=1944889716]
 script = ExtResource("1_nt7q6")
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1663945512]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -16.0
-offset_top = -16.0
-offset_right = 48.0
-offset_bottom = 48.0
+[node name="Vignette" type="ColorRect" parent="." unique_id=123181987]
+material = SubResource("ShaderMaterial_p7vwb")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.5, 0.5)
+mouse_filter = 2
+
+[node name="BackBufferCopy" type="Node" parent="." unique_id=1360596973]
+
+[node name="FisheyeZoom" type="ColorRect" parent="." unique_id=1926985645]
+material = SubResource("ShaderMaterial_cgfq5")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MarginContainer" type="CenterContainer" parent="." unique_id=1733915005]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
 [node name="CenterDot" type="TextureRect" parent="MarginContainer" unique_id=1855431409]
 material = SubResource("ShaderMaterial_yev5y")
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 texture = SubResource("CompressedTexture2D_xlq6p")
+expand_mode = 1
+stretch_mode = 5
 
-[node name="MarginContainer2" type="MarginContainer" parent="." unique_id=1778643395]
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_constants/margin_bottom = 50
-
-[node name="PressToInteract" type="Label" parent="MarginContainer2" unique_id=271107624]
-visible = false
-top_level = true
+[node name="UICircleZoom" type="TextureRect" parent="MarginContainer" unique_id=752600801]
+material = SubResource("ShaderMaterial_gdt2y")
+custom_minimum_size = Vector2(512, 512)
 layout_mode = 2
-size_flags_vertical = 8
-theme_override_font_sizes/font_size = 35
-text = "Press [E] to Interact"
-horizontal_alignment = 1
-vertical_alignment = 1
+texture = ExtResource("3_gdt2y")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="UICircleZoomInner" type="TextureRect" parent="MarginContainer" unique_id=486480165]
+material = SubResource("ShaderMaterial_8dubc")
+custom_minimum_size = Vector2(512, 512)
+layout_mode = 2
+texture = ExtResource("4_wm3ai")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MarginContainer3" type="MarginContainer" parent="." unique_id=116442504]
 anchors_preset = 5

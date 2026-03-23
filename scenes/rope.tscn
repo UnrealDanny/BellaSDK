@@ -9,11 +9,13 @@
 resource_local_to_scene = true
 top_radius = 0.02
 bottom_radius = 0.02
+height = 5.0
 radial_segments = 8
 rings = 1
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_icxtj"]
 resource_local_to_scene = true
+height = 5.0
 radius = 0.1
 
 [node name="Rope" type="Node3D" unique_id=1704021531]
@@ -34,9 +36,11 @@ mass = 50.0
 freeze = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="RopeBody" unique_id=1793865174]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
 mesh = SubResource("CylinderMesh_wmsjs")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="RopeBody" unique_id=1345775826]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2.5, 0)
 shape = SubResource("CylinderShape3D_icxtj")
 
 [node name="Interact_Component" type="Node" parent="RopeBody" unique_id=64496704]

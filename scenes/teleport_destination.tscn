@@ -7,6 +7,8 @@ albedo_color = Color(0.5861698, 0.9925607, 0.8856659, 1)
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_iqxsw"]
 material = SubResource("StandardMaterial3D_iqxsw")
+radial_segments = 24
+rings = 0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_nswgq"]
 render_priority = 0

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbaw7tff5otyu"
 path.s3tc="res://.godot/imported/NewCUMSLogo.png-19a25dd40fffe7dc8072f2f5c00c3484.s3tc.ctex"
+path.etc2="res://.godot/imported/NewCUMSLogo.png-19a25dd40fffe7dc8072f2f5c00c3484.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/images/Concept/NewCUMSLogo.png"
-dest_files=["res://.godot/imported/NewCUMSLogo.png-19a25dd40fffe7dc8072f2f5c00c3484.s3tc.ctex"]
+dest_files=["res://.godot/imported/NewCUMSLogo.png-19a25dd40fffe7dc8072f2f5c00c3484.s3tc.ctex", "res://.godot/imported/NewCUMSLogo.png-19a25dd40fffe7dc8072f2f5c00c3484.etc2.ctex"]
 
 [params]
 

@@ -17,3 +17,9 @@ signal wireframe_toggled(is_on: bool)
 
 @warning_ignore("unused_signal")
 signal debug_menu_toggled(is_open: bool)
+
+@warning_ignore("unused_signal")
+signal player_zoomed(is_zooming: bool)
+
+@warning_ignore("unused_signal")
+signal player_crouch_changed(is_crouching: bool)

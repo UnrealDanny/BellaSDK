@@ -7,6 +7,8 @@
 radius = 1.0
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_8vwj3"]
+radial_segments = 24
+rings = 0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_kyeu7"]
 render_priority = 0

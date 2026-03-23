@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvfj0xfcc3fex"
 path.s3tc="res://.godot/imported/MadamWren.PNG-f1fdfd912122a49619105c3c24843d16.s3tc.ctex"
+path.etc2="res://.godot/imported/MadamWren.PNG-f1fdfd912122a49619105c3c24843d16.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/images/Concept/MadamWren.PNG"
-dest_files=["res://.godot/imported/MadamWren.PNG-f1fdfd912122a49619105c3c24843d16.s3tc.ctex"]
+dest_files=["res://.godot/imported/MadamWren.PNG-f1fdfd912122a49619105c3c24843d16.s3tc.ctex", "res://.godot/imported/MadamWren.PNG-f1fdfd912122a49619105c3c24843d16.etc2.ctex"]
 
 [params]
 

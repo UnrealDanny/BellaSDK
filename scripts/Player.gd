@@ -13,16 +13,9 @@ extends CharacterBody3D
 @onready var crouch_cast_check: RayCast3D = $CrouchCastCheck
 @onready var cam: Camera3D = $Head/Eyes/Camera3D
 @onready var camera_anims: AnimationPlayer = $Head/Eyes/CameraAnims
-@onready var fisheye_zoom: ColorRect = $UIElements/CanvasLayer/FisheyeZoom
-
-@onready var vignette: ColorRect = $UIElements/CanvasLayer/Vignette
-@onready var ui: CanvasLayer = $UI
-@onready var ui_circle_zoom: TextureRect = $UIElements/CanvasLayer/MarginContainer/UICircleZoom
-@onready var ui_circle_zoom_inner: TextureRect = $UIElements/CanvasLayer/MarginContainer/UICircleZoomInner
 
 @onready var flash_light_node: Node3D = $Head/Eyes/Camera3D/FlashLightNode
 @onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
-
 
 # SPEED VARS
 
@@ -80,7 +73,6 @@ var flashlight_rotation_smoothness := 10.0
 var flashlight_position_smoothness := 10.0
 @export var sway_amount : float = 5.0
 @export var smooth_speed : float = 10.0
-var mouse_delta := Vector2.ZERO
 var default_flashlight_pos := Vector3.ZERO
 var sway_target := Vector2.ZERO
 
@@ -96,7 +88,6 @@ var fov_change_speed 	:= 12.0
 var target_fov = base_fov
 
 # UI VARS
-var target_alpha: float = 0.0
 
 # INTERACT VARS
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
@@ -117,23 +108,15 @@ var LADDER_SPEED: float = 5.0
 var current_rope: RigidBody3D = null
 var rope_offset: float = 0.0
 const ROPE_CLIMB_SPEED: float = 1.0
-const ROPE_CLAMP: float = 4.5
-var ROPE_SWING_FORCE: float = 5.0
 var rope_local_grab_dir: Vector3 = Vector3.ZERO
 
 # SWIM VARS
 var swim_up_speed 		:= 5
-var wish_dir := Vector3.ZERO
-var cam_aligned_wish_dir := Vector3.ZERO
-var was_in_water: bool = false
 var base_light_energy: float = 1.0
 var base_spot_range: float = 10.0
 var is_swimming: bool = false
-@export var float_offset: float = 1.5 # The height from your feet to your neck. Increase to float higher!
-@export var water_drag: float = 0.05 # How "thick" the water feels (slows down movement)
-@export var buoyancy_force: float = 15.0 #
-var current_water_height: float = 0.0
 var head_in_water := false
+
 
 # UPDRAFT VARS
 var in_updraft: bool = false
@@ -145,10 +128,24 @@ var noclip_speed_multiplier := 4.0
 var is_menu_open: bool = false
 
 # OTHER VARS
-var vignette_target_alpha: float = 0.0
+#var vignette_target_alpha: float = 0.0
 var zoom_tween: Tween
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
+
+# ZIPLINE VARS
+var zipline_grab_timer: float = 0.0
+var is_auto_sliding: bool = false
+var on_zipline: bool = false
+var zipline_start: Vector3
+var zipline_end: Vector3
+var zipline_dir: Vector3
+var zipline_length: float
+var zipline_progress: float = 0.0
+var is_zipline_sliding: bool = false
+
+var ZIPLINE_SLIDE_SPEED: float = 18.0
+var ZIPLINE_HANG_OFFSET: float = 1.9 # Distance from the wire to the player's origin
 
 # --------------------------------------
 # MAIN SCRIPT
@@ -160,15 +157,6 @@ func _ready() -> void:
 	Events.noclip_ui_button_pressed.connect(toggle_noclip)
 	
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-		
-	ui_circle_zoom.pivot_offset = ui_circle_zoom.size / 2
-	ui_circle_zoom.scale = Vector2.ZERO
-	ui_circle_zoom.modulate.a = 0.0
-	ui_circle_zoom.hide()
-	ui_circle_zoom_inner.pivot_offset = ui_circle_zoom_inner.size / 2
-	ui_circle_zoom_inner.scale = Vector2.ZERO
-	ui_circle_zoom_inner.modulate.a = 0.0
-	ui_circle_zoom_inner.hide()
 	
 	default_flashlight_pos = flash_light_node.position
 	flashlight.visible = false
@@ -193,8 +181,8 @@ func _input(event: InputEvent) -> void:
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 		sway_target += event.relative
 
-	if event is InputEventMouseMotion:
-		mouse_delta = event.relative
+	#if event is InputEventMouseMotion:
+		#mouse_delta = event.relative
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
 # --------------------------------------
@@ -268,8 +256,7 @@ func _physics_process(delta: float) -> void:
 	var is_truly_grounded = _frames_since_grounded < 3
 	
 	#water vars
-	wish_dir = self.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)
-	cam_aligned_wish_dir = cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)
+	#global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)
 
 	is_swimming = _handle_water_physics(delta)
 	
@@ -285,50 +272,6 @@ func _physics_process(delta: float) -> void:
 	
 	if Input.is_action_pressed("zoom"):
 		input_dir = Vector2.ZERO
-		
-	## NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
-	#
-	#if Input.is_action_just_pressed("noclip"):
-		#toggle_noclip()
-#
-	## 2. Apply Flying Physics
-	#if flying:
-		#var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-		#current_speed = sprinting_speed * noclip_speed_multiplier
-		#
-		#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
-				#
-		#if fly_dir:
-			#velocity = fly_dir * current_speed
-		#else:
-			#velocity = Vector3.ZERO
-			#
-	#if Input.is_action_just_pressed("noclip"):
-		#walking = false
-		#sprinting = false
-		#crouching = false
-		#
-		#flying = !flying
-		#noclip_speed_multiplier = 4.0
-		#Events.noclip_toggled.emit(flying)
-#
-		#
-	#if flying:
-		#var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-		#current_speed = sprinting_speed * noclip_speed_multiplier
-		#
-		#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
-		#
-		#standing_collision_shape.disabled = true
-		#crouching_collision_shape.disabled = true
-				#
-		#if fly_dir:
-			#velocity = fly_dir * current_speed
-		#else:
-			#velocity = Vector3.ZERO
-			#direction = Vector3.ZERO
-		#
-	##/ NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
 	
 	# NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP  /  NOCLIP
 	
@@ -362,28 +305,38 @@ func _physics_process(delta: float) -> void:
 	
 	# CROUCHING
 	if Input.is_action_pressed("crouch") and is_truly_grounded and !is_swimming:
+		# Check if we are just STARTING to crouch this frame
+		if not crouching: 
+			Events.player_crouch_changed.emit(true)
+			print("Player: I am now crouching!")
+		
+		crouching = true # Set the variable AFTER the check
 		current_speed = lerp(current_speed, crouching_speed, delta * lerp_speed)
 		head.position.y = lerp(head.position.y, crouching_depth, delta * lerp_speed)
-		
+
 		standing_collision_shape.disabled = true
 		crouching_collision_shape.disabled = false
-		
 		walking = false
 		sprinting = false
-		crouching = true
 		flying = false
 		
-	# CROUCH CAST CHECK
+	# --- STANDING UP ---
 	elif !crouch_cast_check.is_colliding() and !flying:
+		# Check if we were previously crouching
+		if crouching: 
+			Events.player_crouch_changed.emit(false)
+			print("Player: I am now standing!")
+
+		crouching = false # Set the variable AFTER the check
 		standing_collision_shape.disabled = false
 		crouching_collision_shape.disabled = true
-		
 		head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
-		crouching = false
 	# -----------------------------------
 	# SPRINT
 	# -----------------------------------
-	if Input.is_action_pressed("sprint") and standing_collision_shape.disabled == false and input_dir != Vector2.ZERO: 
+	var is_moving = input_dir.length() > 0.1
+	
+	if Input.is_action_pressed("sprint") and standing_collision_shape.disabled == false and is_moving: 
 		if is_on_floor() and !is_swimming:
 			sprint_active = true
 	else:
@@ -402,7 +355,7 @@ func _physics_process(delta: float) -> void:
 		crouching = false
 		flying = false
 		
-	elif input_dir != Vector2.ZERO and crouching_collision_shape.disabled == true and !flying:
+	elif is_moving and crouching_collision_shape.disabled == true and !flying:
 		# walking mechanic
 		current_speed = lerp(current_speed, walking_speed, delta * lerp_speed)
 		target_fov = base_fov
@@ -457,8 +410,8 @@ func _physics_process(delta: float) -> void:
 		eyes.position.x = lerp(eyes.position.x, head_bobbing_vector.x * head_bobbing_current_intensity, delta * lerp_speed)
 		
 	# Add the gravity.
-	if not is_on_floor() and !flying:
-		velocity += get_gravity() * delta
+	#if not is_on_floor() and !flying:
+		#velocity += get_gravity() * delta
 
 	# Handle jump.
 	if Input.is_action_just_pressed("jump") and is_on_floor():
@@ -511,40 +464,7 @@ func _physics_process(delta: float) -> void:
 	if target_anim != "":
 		if camera_anims.current_animation != target_anim:
 			camera_anims.play(target_anim, 2)
-		
-	#if not is_on_floor() and is_swimming:
-		#if input_dir.length() > 0.1:
-			#target_anim = "swimming"
-		#elif Input.is_action_pressed("jump") or Input.is_action_pressed("sprint") and !head_in_water:
-			#target_anim = "swimming_up"
-			#
-	#elif is_on_floor() and is_swimming:
-		#if Input.is_action_pressed("forward") or Input.is_action_pressed("backward"):
-			#target_anim = "walking_underwater"
-		#else:
-			#target_anim = "RESET" 
-#
-	## 2. Execute the animation change smoothly
-	#if target_anim != "":
-		#if camera_anims.current_animation != target_anim:
-			#camera_anims.play(target_anim, 0.3)
-		#else:
-			## Play the swimming or landing anim with a quick 0.2s blend for smoothness
-			#camera_anims.play(target_anim, 0.2)
-			#
-	##var target_z_tilt = 0.0
-	#
-	#if is_swimming:
-		#if input_dir.x > 0.1: # Moving Right
-			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3)
-			#target_anim = "walking_underwater_sideways_right"
-		#elif input_dir.x < -0.1: # Moving Left
-			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3)
-			#target_anim = "walking_underwater_sideways_left"
-		#else:
-			#eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 0), delta * lerp_speed / 3)
-		
-			
+
 	if is_on_floor():
 		direction = lerp(direction, (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * lerp_speed)
 	else:
@@ -628,31 +548,93 @@ func _physics_process(delta: float) -> void:
 			if camera_anims.assigned_animation != "RESET":
 				camera_anims.play("RESET", blend_time)
 				camera_anims.speed_scale = 1.0 # Fix the speed so it doesn't try to play RESET backward!
-		#if Input.is_action_pressed("forward"):
-			## Only trigger play() if we aren't already playing it forward
-			#if camera_anims.current_animation != "MonkeMoves" or camera_anims.speed_scale < 0:
-				#camera_anims.speed_scale = 1.0
-				#camera_anims.play("MonkeMoves", blend_time)
-				#
-		#elif Input.is_action_pressed("backward"):
-			## Only trigger if we aren't already playing it backward
-			#if camera_anims.current_animation != "MonkeMoves" or camera_anims.speed_scale > 0:
-				## Set speed to negative to play backward, but STILL use the smooth blend time
-				#camera_anims.speed_scale = -1.0
-				#camera_anims.play("MonkeMoves", blend_time)
-				#
-		#else:
-			## We are idle! Do NOT use stop(). Smoothly lerp back to the default pose.
-			#if camera_anims.current_animation != "RESET":
-				#camera_anims.speed_scale = 1.0
-				#camera_anims.play("RESET", blend_time)
 
 		# 5. Dismount by dropping (Crouch or Jump)
 		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
 			on_monkey_bars = false
 			# Gravity will naturally take over on the very next frame
-		
 
+# --------------------------
+# ZIPLINE LOGIC 
+# -------------------------
+	elif on_zipline:
+		sprinting = false
+		crouching = false
+		walking = false
+
+		# 1. Base directions
+		var slide_direction = 1.0 if zipline_dir.y < 0 else -1.0
+		var downhill_vector = zipline_dir * slide_direction
+
+		var look_forward = -cam.global_transform.basis.z
+		if not is_zipline_sliding:
+			look_forward.y = 0
+		look_forward = look_forward.normalized()
+
+		# --- THE NEW MODE SWITCHER ---
+		# If we are holding on manually, check if the player wants to let go and slide!
+		if not is_auto_sliding and is_zipline_sliding:
+			var looking_downhill = look_forward.dot(downhill_vector) > 0
+			
+			# ONLY trigger auto-slide if looking downhill AND pressing forward
+			if Input.is_action_just_pressed("forward") and looking_downhill:
+				is_auto_sliding = true
+		# -----------------------------
+
+		# 2. Apply Movement
+		if is_auto_sliding:
+			# UNSTOPPABLE GRAVITY SLIDE (Hands-free)
+			zipline_progress += slide_direction * (ZIPLINE_SLIDE_SPEED / zipline_length) * delta
+			
+			if camera_anims.assigned_animation != "RESET":
+				camera_anims.play("RESET", 0.3)
+				camera_anims.speed_scale = 1.0
+				
+		else:
+			# MANUAL CLIMBING (Going Uphill, Uphill-Backwards, or Flat wire)
+			var move_input = -input_dir.y # +1 for W, -1 for S
+
+			if move_input == 0:
+				# Freeze in place when letting go of keys!
+				if camera_anims.assigned_animation != "RESET":
+					camera_anims.play("RESET", 0.3)
+					camera_anims.speed_scale = 1.0
+			else:
+				var requested_dir = look_forward * move_input
+				var move_amount = requested_dir.dot(zipline_dir)
+
+				# Determine if our manual input is pushing us downhill
+				var moving_downhill = false
+				if is_zipline_sliding:
+					if (slide_direction > 0 and move_amount > 0) or (slide_direction < 0 and move_amount < 0):
+						moving_downhill = true
+				
+				# Uphill is a slow struggle. Downhill manual backing-up is regular climbing speed.
+				current_speed = MONKEY_BAR_SPEED
+				if is_zipline_sliding and not moving_downhill:
+					current_speed *= 0.5 
+					
+				zipline_progress += move_amount * (current_speed / zipline_length) * delta
+
+				# Play climbing animations
+				if camera_anims.assigned_animation != "MonkeMoves":
+					camera_anims.play("MonkeMoves", 0.3)
+				camera_anims.speed_scale = sign(move_input)
+
+		# 3. Apply exact position
+		zipline_progress = clamp(zipline_progress, 0.0, 1.0)
+		var target_pos = zipline_start.lerp(zipline_end, zipline_progress)
+		target_pos.y -= ZIPLINE_HANG_OFFSET
+		global_position = target_pos
+		velocity = Vector3.ZERO
+
+		# 4. Dismount checks
+		if zipline_progress >= 1.0 or zipline_progress <= 0.0:
+			_on_zipline_released()
+		elif Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
+			_on_zipline_released()
+			
+			
 	# ROPE LOGIC
 	if current_rope != null:
 		sprinting = false
@@ -701,7 +683,7 @@ func _physics_process(delta: float) -> void:
 		# We use lerp so you don't instantly snap to top speed; you accelerate into the wind!
 		velocity.y = lerp(velocity.y, current_updraft_strength, delta * 4.0)
 		
-	elif not is_on_floor():
+	elif not is_on_floor() and not is_swimming and not flying and not on_ladder and not on_monkey_bars and current_rope == null:
 		# If not in the wind and not on the ground, fall normally
 		velocity.y -= gravity * delta
 		
@@ -725,12 +707,12 @@ func _physics_process(delta: float) -> void:
 	# -------------------------------------- #
 	# CROUCH VIGNETTE  						 #
 	# -------------------------------------- #
-	var target_vignette_opacity = 10.0 if crouching else 0.0
-	var current_opacity = vignette.material.get_shader_parameter("vignette_opacity")
-	if current_opacity == null:
-		current_opacity = 0.0
-	var new_opacity = lerp(current_opacity, target_vignette_opacity, delta * lerp_speed)
-	vignette.material.set_shader_parameter("vignette_opacity", new_opacity)
+	#var target_vignette_opacity = 10.0 if crouching else 0.0
+	#var current_opacity = vignette.material.get_shader_parameter("vignette_opacity")
+	#if current_opacity == null:
+		#current_opacity = 0.0
+	#var new_opacity = lerp(current_opacity, target_vignette_opacity, delta * lerp_speed)
+	#vignette.material.set_shader_parameter("vignette_opacity", new_opacity)
 		
 		
 
@@ -806,107 +788,54 @@ func _process(delta: float) -> void:
 
 	cam.fov = lerp(cam.fov, target_fov, delta * 8.0)
 		
+	#if Input.is_action_just_pressed("zoom"):
+		#if zoom_tween and zoom_tween.is_valid():
+			#zoom_tween.kill()
+			#
+		#ui.hide()
+		#ui_circle_zoom.show()
+		#ui_circle_zoom_inner.show()
+		#
+		## Create the tween exactly once when the button is first pressed
+		#zoom_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		#zoom_tween.tween_property(ui_circle_zoom, "scale", Vector2(1.0, 1.0), 0.5)
+		#zoom_tween.tween_property(ui_circle_zoom, "modulate:a", 1.0, 0.3)
+		#zoom_tween.tween_property(ui_circle_zoom, "rotation", deg_to_rad(15), 1)
+		#
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "scale", Vector2(1.0, 1.0), 0.5)
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "modulate:a", 0.1, 0.3)
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "rotation", deg_to_rad(-45), 1)
+		#
+		#zoom_tween.tween_property(fisheye_zoom.material, "shader_parameter/effect_strength", 0.4, 0.2)
+		#
+	#elif Input.is_action_just_released("zoom"):
+		#if zoom_tween and zoom_tween.is_valid():
+			#zoom_tween.kill()
+				#
+		## Create a new tween exactly once when the button is let go
+		#zoom_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		#zoom_tween.tween_property(ui_circle_zoom, "scale", Vector2(0.0, 0.0), 0.5)
+		#zoom_tween.tween_property(ui_circle_zoom, "modulate:a", 0.0, 0.3)
+		#zoom_tween.tween_property(ui_circle_zoom, "rotation", deg_to_rad(0), 0.25)
+		#
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "scale", Vector2(0.0, 0.0), 0.5)
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "modulate:a", 0.0, 0.3)
+		#zoom_tween.tween_property(ui_circle_zoom_inner, "rotation", deg_to_rad(0), 0.25)
+		#
+		#zoom_tween.tween_property(fisheye_zoom.material, "shader_parameter/effect_strength", 0.0, 0.2)
+		#
+		#ui.show()
+	
+	# ZOOM MECHANIC
 	if Input.is_action_just_pressed("zoom"):
-		if zoom_tween and zoom_tween.is_valid():
-			zoom_tween.kill()
-			
-		ui.hide()
-		ui_circle_zoom.show()
-		ui_circle_zoom_inner.show()
-		
-		# Create the tween exactly once when the button is first pressed
-		zoom_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		zoom_tween.tween_property(ui_circle_zoom, "scale", Vector2(1.0, 1.0), 0.5)
-		zoom_tween.tween_property(ui_circle_zoom, "modulate:a", 1.0, 0.3)
-		zoom_tween.tween_property(ui_circle_zoom, "rotation", deg_to_rad(15), 1)
-		
-		zoom_tween.tween_property(ui_circle_zoom_inner, "scale", Vector2(1.0, 1.0), 0.5)
-		zoom_tween.tween_property(ui_circle_zoom_inner, "modulate:a", 0.1, 0.3)
-		zoom_tween.tween_property(ui_circle_zoom_inner, "rotation", deg_to_rad(-45), 1)
-		
-		zoom_tween.tween_property(fisheye_zoom.material, "shader_parameter/effect_strength", 0.4, 0.2)
-		
+		Events.player_zoomed.emit(true)
 	elif Input.is_action_just_released("zoom"):
-		if zoom_tween and zoom_tween.is_valid():
-			zoom_tween.kill()
-				
-		# Create a new tween exactly once when the button is let go
-		zoom_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		zoom_tween.tween_property(ui_circle_zoom, "scale", Vector2(0.0, 0.0), 0.5)
-		zoom_tween.tween_property(ui_circle_zoom, "modulate:a", 0.0, 0.3)
-		zoom_tween.tween_property(ui_circle_zoom, "rotation", deg_to_rad(0), 0.25)
+		Events.player_zoomed.emit(false)
 		
-		zoom_tween.tween_property(ui_circle_zoom_inner, "scale", Vector2(0.0, 0.0), 0.5)
-		zoom_tween.tween_property(ui_circle_zoom_inner, "modulate:a", 0.0, 0.3)
-		zoom_tween.tween_property(ui_circle_zoom_inner, "rotation", deg_to_rad(0), 0.25)
-		
-		zoom_tween.tween_property(fisheye_zoom.material, "shader_parameter/effect_strength", 0.0, 0.2)
-		
-		ui.show()
-		
-#FLASHLIGHT SCRIPT
-#func update_flashlight(delta: float) -> void:
-	#flash_light_node.global_position = flash_light_node.global_position.lerp(
-		#cam.global_position,
-		#delta * flashlight_position_smoothness
-	#)
-#
-	#flash_light_node.global_transform.basis = flash_light_node.global_transform.basis.slerp(
-		#cam.global_transform.basis.orthonormalized(),
-		#delta * flashlight_rotation_smoothness
-	#)
-		#
-	#var target_pos = cam.global_position
-		#
-	#var current_f = 0.0
-	#var current_a = 0.0
-	#
-	#if is_on_floor():
-		#var is_actually_moving = velocity.length() > 0.1
-		#
-		#if is_actually_moving:
-			#if sprinting:
-				#current_f = bob_freq * 2.5
-				#current_a = bob_amp * 0.2
-			#elif crouching:
-				#current_f = bob_freq * 3.0
-				#current_a = bob_amp * 0.15
-			#elif walking:
-				#current_f = bob_freq
-				#current_a = bob_amp * 0.20
-		#else: 
-			#if crouching:
-				#current_f = bob_freq * 0.3 # Even slower breathing when crouched
-				#current_a = bob_amp * 0.1  # Smaller movements
-			#else:
-				#current_f = bob_freq * 0.5
-				#current_a = bob_amp * 0.21
-#
-### Only run the math if there is a frequency/amplitude set		
-	#if current_f > 0:
-	## If moving, bob based on speed. If idle, bob at a constant slow rate.
-		#var speed_factor = velocity.length()
-		#if speed_factor < 0.1:
-			## Constant rate for idle (the 2.0 here controls idle "breath" speed)
-			#bob_time += delta * 2.0 * current_f
-		#else:
-			#bob_time += delta * speed_factor * current_f
-		#target_pos += cam.global_transform.basis.x * cos(bob_time * 0.5) * current_a
-		#target_pos += cam.global_transform.basis.y * sin(bob_time) * current_a
-	#else:
-	## This only happens if you are in the air and current_f remains 0.0
-		#bob_time = 0
-		#
-#
-	#flashlight.global_position = flashlight.global_position.lerp(
-		#target_pos, 
-		#delta * flashlight_position_smoothness
-	#)
-#
-	#flashlight.global_transform.basis = flashlight.global_transform.basis.slerp(
-		#cam.global_transform.basis, 
-		#delta * flashlight_rotation_smoothness
-	#)
+	if Input.is_action_pressed("zoom"):
+		target_fov = zoom_fov
+		mouse_sensitivity = mouse_sensitivity_zoom
+	# ... (Keep your FOV and mouse sensitivity logic in the player!)
 	
 func update_flashlight(delta: float) -> void:
 	# 1. Start from your custom offset, NOT Vector3.ZERO!
@@ -1022,8 +951,6 @@ func exit_monkey_bars() -> void:
 # --------------------------------------
 # ROPES
 # --------------------------------------
-var rope_horizontal_offset: Vector3 = Vector3.ZERO
-
 func _on_rope_grabbed(rope_body: RigidBody3D) -> void:
 	current_rope = rope_body
 	velocity = Vector3.ZERO
@@ -1254,6 +1181,85 @@ func toggle_noclip() -> void:
 	# Tell the UI to update its button text and messages
 	Events.noclip_toggled.emit(flying)
 
+## -----------------------------
+## ZIPLINE LOGIC
+## -----------------------------
+#func _on_zipline_grabbed(start_pos: Vector3, end_pos: Vector3) -> void:
+	#zipline_start = start_pos
+	#zipline_end = end_pos
+	#velocity = Vector3.ZERO
+	#on_zipline = true
+#
+	#zipline_dir = (zipline_end - zipline_start).normalized()
+	#zipline_length = zipline_start.distance_to(zipline_end)
+#
+	## 1. Project player's current position onto the line to find exact grab point
+	#var to_player = global_position - zipline_start
+	#var projection = to_player.dot(zipline_dir)
+#
+	## Clamp between 0.05 and 0.95. This gives you a 5% safety buffer at the top 
+	## and bottom so you have time to hold 'W' before sliding off!
+	#zipline_progress = clamp(projection / zipline_length, 0.05, 0.95)
+#
+	## 2. Is it steep?
+	#is_zipline_sliding = abs(zipline_dir.y) > 0.15
+	
+## -----------------------------
+## ZIPLINE LOGIC
+## -----------------------------
+#func _on_zipline_grabbed(start_pos: Vector3, end_pos: Vector3) -> void:
+	#zipline_start = start_pos
+	#zipline_end = end_pos
+	#velocity = Vector3.ZERO
+	#on_zipline = true
+#
+	## NEW: 0.3 seconds of anti-gravity safety when you grab!
+	#zipline_grab_timer = 0.3 
+#
+	#zipline_dir = (zipline_end - zipline_start).normalized()
+	#zipline_length = zipline_start.distance_to(zipline_end)
+#
+	#var grab_point = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
+	#var grab_distance = zipline_start.distance_to(grab_point)
+#
+	#zipline_progress = clamp(grab_distance / zipline_length, 0.0, 1.0)
+	#is_zipline_sliding = abs(zipline_dir.y) > 0.15
+#
+#func _on_zipline_released() -> void:
+	#on_zipline = false
+	#velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
+	
+# -----------------------------
+# ZIPLINE LOGIC
+# -----------------------------
+func _on_zipline_grabbed(start_pos: Vector3, end_pos: Vector3) -> void:
+	zipline_start = start_pos
+	zipline_end = end_pos
+	velocity = Vector3.ZERO
+	on_zipline = true
+
+	zipline_dir = (zipline_end - zipline_start).normalized()
+	zipline_length = zipline_start.distance_to(zipline_end)
+
+	var grab_point = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
+	var grab_distance = zipline_start.distance_to(grab_point)
+
+	zipline_progress = grab_distance / zipline_length
+	zipline_progress = clamp(zipline_progress, 0.05, 0.95)
+
+	is_zipline_sliding = abs(zipline_dir.y) > 0.15
+
+	# THE NEW MODE CHECK: Are we grabbing the top half or the bottom half?
+	if is_zipline_sliding:
+		var mid_point_y = (zipline_start.y + zipline_end.y) / 2.0
+		# If you grab above the middle, it's a one-way trip!
+		is_auto_sliding = global_position.y > mid_point_y
+	else:
+		is_auto_sliding = false
+
+func _on_zipline_released() -> void:
+	on_zipline = false
+	velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:
 	is_menu_open = is_open

@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://sskc5sd5gdk2"
 path.s3tc="res://.godot/imported/standard_8_darkBlue_512.png-cfff2ee63515afd13ca239a3cae96888.s3tc.ctex"
+path.etc2="res://.godot/imported/standard_8_darkBlue_512.png-cfff2ee63515afd13ca239a3cae96888.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/images/dev_textures/standard_8_darkBlue_512.png"
-dest_files=["res://.godot/imported/standard_8_darkBlue_512.png-cfff2ee63515afd13ca239a3cae96888.s3tc.ctex"]
+dest_files=["res://.godot/imported/standard_8_darkBlue_512.png-cfff2ee63515afd13ca239a3cae96888.s3tc.ctex", "res://.godot/imported/standard_8_darkBlue_512.png-cfff2ee63515afd13ca239a3cae96888.etc2.ctex"]
 
 [params]
 

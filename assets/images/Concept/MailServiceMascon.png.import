@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://buhmm067krmpn"
 path.s3tc="res://.godot/imported/MailServiceMascon.png-a8126a6f8a972a80bbf74eb5c0060f4b.s3tc.ctex"
+path.etc2="res://.godot/imported/MailServiceMascon.png-a8126a6f8a972a80bbf74eb5c0060f4b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/images/Concept/MailServiceMascon.png"
-dest_files=["res://.godot/imported/MailServiceMascon.png-a8126a6f8a972a80bbf74eb5c0060f4b.s3tc.ctex"]
+dest_files=["res://.godot/imported/MailServiceMascon.png-a8126a6f8a972a80bbf74eb5c0060f4b.s3tc.ctex", "res://.godot/imported/MailServiceMascon.png-a8126a6f8a972a80bbf74eb5c0060f4b.etc2.ctex"]
 
 [params]
 

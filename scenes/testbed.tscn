@@ -23,8 +23,10 @@
 [ext_resource type="PackedScene" uid="uid://wmyjhovjnea4" path="res://scenes/ladder.tscn" id="19_s52xd"]
 [ext_resource type="PackedScene" uid="uid://2db87kewe2f2" path="res://scenes/Player.tscn" id="20_v6x3g"]
 [ext_resource type="PackedScene" uid="uid://ca0wevg1lb4rx" path="res://utils/WaterMaker3D/WaterMaker3D.tscn" id="21_2dnug"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="21_62djl"]
 [ext_resource type="PackedScene" uid="uid://ccmuvcp1vvusq" path="res://scenes/pickable_box.tscn" id="24_k74e2"]
 [ext_resource type="PackedScene" uid="uid://ep02e3j752sd" path="res://scenes/ventilator.tscn" id="24_ue7dh"]
+[ext_resource type="PackedScene" uid="uid://uwhga6c4q51o" path="res://scenes/zipline.tscn" id="24_xj7km"]
 [ext_resource type="PackedScene" uid="uid://dg62o2u1p8i7i" path="res://scenes/updraft_volume.tscn" id="25_jgmty"]
 [ext_resource type="PackedScene" uid="uid://q22xc6i00ls" path="res://scenes/dev_cylinder.tscn" id="25_m0e1v"]
 [ext_resource type="PackedScene" uid="uid://b0n5hga5atr" path="res://scenes/monke_bar.tscn" id="26_sx10w"]
@@ -65,6 +67,14 @@ func hide_prompt():
 
 [sub_resource type="BoxMesh" id="BoxMesh_qfnet"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_x3nsp"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0.92941177, 1, 0.9647059, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.010000000475
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w7kh3"]
 albedo_color = Color(0, 0, 0, 1)
 
@@ -78,6 +88,86 @@ viewport_path = NodePath("Objects/Mirror/SubViewport")
 resource_local_to_scene = true
 albedo_texture = SubResource("ViewportTexture_jhx03")
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_vvpuy"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_62djl"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ovkd5"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_cmtte"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1kj1a"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f1d65"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s52xd"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_v6x3g"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_2dnug"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_82t7b"]
+render_priority = 0
+shader = ExtResource("21_62djl")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_xo05s"]
 data = PackedVector3Array(-0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5)
 
@@ -90,22 +180,22 @@ albedo_texture = ExtResource("18_f1d65")
 [sub_resource type="BoxShape3D" id="BoxShape3D_m0e1v"]
 size = Vector3(1, 17.309326, 1.8153076)
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_jgmty"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_vvpuy"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xj7km"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_2r5js"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_jgmty")
+noise = SubResource("FastNoiseLite_vvpuy")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_62djl"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_x3nsp"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_jgmty")
+noise = SubResource("FastNoiseLite_vvpuy")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vvpuy"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ovkd5"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -113,12 +203,20 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_xj7km")
+normal_texture = SubResource("NoiseTexture2D_2r5js")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_62djl")
+refraction_texture = SubResource("NoiseTexture2D_x3nsp")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
+
+[sub_resource type="Curve3D" id="Curve3D_cmtte"]
+resource_local_to_scene = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
 
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
@@ -185,17 +283,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.940326, 26.999271, -3.728
 outline_material = ExtResource("10_xj7km")
 rope_length = 17.4
 
-[node name="PickableBox" parent="InteractiveObjects" unique_id=181097973 instance=ExtResource("24_k74e2")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.0937757, 0.5914049, 18.031967)
-
 [node name="PickableBox4" parent="InteractiveObjects" unique_id=853151823 instance=ExtResource("24_k74e2")]
 transform = Transform3D(0.9638215, 0, 0.26654872, 0, 1, 0, -0.26654872, 0, 0.9638215, 3.010001, 0.5914052, 5.09166)
 
 [node name="PickableBox3" parent="InteractiveObjects" unique_id=553508920 instance=ExtResource("24_k74e2")]
 transform = Transform3D(-0.4208141, 0, 0.90714693, 0, 1, 0, -0.90714693, 0, -0.4208141, -6.388999, 1.5914047, 17.817892)
+outline_material = SubResource("ShaderMaterial_x3nsp")
 
-[node name="PickableBox2" parent="InteractiveObjects" unique_id=290428867 instance=ExtResource("24_k74e2")]
-transform = Transform3D(0.96570414, 0, -0.25964502, 0, 1, 0, 0.25964502, 0, 0.96570414, -5.8178215, 0.5914049, 18.031967)
+[node name="PickableBox5" parent="InteractiveObjects" unique_id=181097973 instance=ExtResource("24_k74e2")]
+transform = Transform3D(-0.5502622, 0, -0.83499193, 0, 1, 0, 0.83499193, 0, -0.5502622, -7.238656, 0.57086396, 17.938625)
+outline_material = SubResource("ShaderMaterial_x3nsp")
+
+[node name="PickableBox6" parent="InteractiveObjects" unique_id=1035327411 instance=ExtResource("24_k74e2")]
+transform = Transform3D(-0.9675947, 0, 0.2525085, 0, 1, 0, -0.2525085, 0, -0.9675947, -5.9271073, 0.57086396, 18.376507)
+outline_material = SubResource("ShaderMaterial_x3nsp")
 
 [node name="Objects" type="Node3D" parent="." unique_id=469775133]
 
@@ -423,6 +524,21 @@ size = Vector3(0.48007202, 5.468689, 1)
 transform = Transform3D(1, 0, 0, 3.1238575e-18, 1, -6.714629e-13, 0, 1.865231e-21, 1, 0.10014367, 1.8091601, -0.23277283)
 operation = 2
 size = Vector3(0.07443237, 0.9532471, 1.3010254)
+
+[node name="CSGBox3D84" type="CSGBox3D" parent="Objects" unique_id=1754484064]
+transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 32.573296, 11.069575, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 2.719574, 1)
+
+[node name="CSGBox3D86" type="CSGBox3D" parent="Objects" unique_id=958226975]
+transform = Transform3D(-29.305096, 3.2048583, -1.0894842e-08, -2.2417423e-06, -1.7070238e-07, -0.9999999, -42.08767, -2.231501, 6.084959e-08, 19.208868, 15.752743, -34.790226)
+use_collision = true
+size = Vector3(0.123703, 1.8290253, 1)
+
+[node name="CSGBox3D85" type="CSGBox3D" parent="Objects" unique_id=235257141]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 36.997826, 5.0549874, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 3.095909, 1.8569336)
 
 [node name="CSGBox3D83" type="CSGBox3D" parent="Objects" unique_id=1564697487]
 transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 4.3139772, 20.281301, -58.84502)
@@ -843,33 +959,43 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 32.9
 [node name="Button" parent="Objects/Buttons" unique_id=1567218577 node_paths=PackedStringArray("targets") instance=ExtResource("16_cmtte")]
 transform = Transform3D(5.9604645e-08, 0.99999994, -4.3711385e-08, 0, -4.371139e-08, -1, -0.99999994, 5.9604645e-08, -2.6645353e-15, 25.978458, 1.9460464, -4.5066395)
 targets = [NodePath("../../../InteractiveObjects/Door_Interact"), NodePath("../../../InteractiveObjects/Door_Interact2")]
+outline_material = SubResource("ShaderMaterial_vvpuy")
 
 [node name="Button2" parent="Objects/Buttons" unique_id=1280908531 instance=ExtResource("16_cmtte")]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -10.710449, 1.5531785, 15.8636055)
+outline_material = SubResource("ShaderMaterial_62djl")
 
 [node name="Button3" parent="Objects/Buttons" unique_id=687643197 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.64848, 1.9246039, 5.056862)
+outline_material = SubResource("ShaderMaterial_ovkd5")
 
 [node name="Button8" parent="Objects/Buttons" unique_id=1077937345 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.168526, 1.7875028, 5.056862)
+outline_material = SubResource("ShaderMaterial_cmtte")
 
 [node name="Button9" parent="Objects/Buttons" unique_id=605297199 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.713463, 1.3263373, 5.056862)
+outline_material = SubResource("ShaderMaterial_1kj1a")
 
 [node name="Button10" parent="Objects/Buttons" unique_id=137574107 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.145813, 1.3263373, 5.056862)
+outline_material = SubResource("ShaderMaterial_f1d65")
 
 [node name="Button4" parent="Objects/Buttons" unique_id=1336180372 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.159374, 1.4854943, 5.056862)
+outline_material = SubResource("ShaderMaterial_s52xd")
 
 [node name="Button5" parent="Objects/Buttons" unique_id=915283986 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 32.551758, 0.9751388, 5.056862)
+outline_material = SubResource("ShaderMaterial_v6x3g")
 
 [node name="Button6" parent="Objects/Buttons" unique_id=2084451947 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.184086, 2.297388, 5.056862)
+outline_material = SubResource("ShaderMaterial_2dnug")
 
 [node name="Button7" parent="Objects/Buttons" unique_id=534077001 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.67585, 2.7592359, 5.056862)
+outline_material = SubResource("ShaderMaterial_82t7b")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Objects" unique_id=1632541026]
 
@@ -1278,15 +1404,38 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.6718683, 11.039263, -63.830
 speed = 20.0
 
 [node name="UpdraftVolume" parent="Texts" unique_id=794249437 instance=ExtResource("25_jgmty")]
-transform = Transform3D(3.6219175, 0, 0, 0, 6.586401, 0, 0, 0, 4.0668445, 1.7757654, 18.42724, -64.04922)
+transform = Transform3D(5, 0, 0, 0, 5, 0, 0, 0, 5, 1.7757654, 17.163687, -64.04922)
+
+[node name="Label3D18" type="Label3D" parent="Texts" unique_id=766085338]
+transform = Transform3D(0.59285694, -3.853454e-08, -0.8053079, -0.27340975, 0.94060254, -0.2012806, 0.7574747, 0.3395096, 0.55764276, 24.61836, 17.422626, -35.792427)
+text = "WEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!"
+
+[node name="Label3D19" type="Label3D" parent="Texts" unique_id=589037708]
+transform = Transform3D(-0.8660253, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660253, 13.478777, 22.00693, -48.32387)
+text = "I'm Tarzan!"
+
+[node name="Label3D21" type="Label3D" parent="Texts" unique_id=1780340648]
+transform = Transform3D(0.9696207, 0, -0.2446135, 0, 1, 0, 0.2446135, 0, 0.9696207, 0.19362307, 13.272036, -60.181744)
+billboard = 1
+text = "Haro, every-nyan. You now a bird."
+
+[node name="Label3D20" type="Label3D" parent="Texts" unique_id=1892160949]
+transform = Transform3D(-0.57741606, 0, 0.8164501, 0, 1, 0, -0.8164501, 0, -0.57741606, 18.065504, 17.218273, -33.99815)
+text = "A midway stop. 
+Imagine that I have collectibles here. 
+Prenty of cookies. "
+
+[node name="Label3D22" type="Label3D" parent="Texts" unique_id=1229815531]
+transform = Transform3D(0.57741594, 0, -0.8164502, 0, 1, 0, 0.8164502, 0, 0.57741594, 20.442848, 17.218273, -35.816143)
+text = "You can climb up and slide down."
 
 [node name="WaterMaker3D" parent="." unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_vvpuy")
+material = SubResource("StandardMaterial3D_ovkd5")
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.274952, 11.569575, -63.96827)
+transform = Transform3D(-0.8660254, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660254, 11.603844, 20.814358, -52.527027)
 
 [node name="dev_cylinder" parent="." unique_id=823712635 instance=ExtResource("25_m0e1v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.713886, 1.1143469, -7.285309)
@@ -1295,7 +1444,7 @@ speed = 2.0
 line_count = 3.0
 
 [node name="dev_cylinder2" parent="." unique_id=1267002505 instance=ExtResource("25_m0e1v")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.509312, 8.791264, -5.0617256)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.509312, 8.791264, -4.9240975)
 label_text = "Finish"
 line_color = Color(0.7845677, 0, 0, 1)
 speed = -2.0
@@ -1309,3 +1458,8 @@ transform = Transform3D(2, 0, 0, 0, -8.742278e-08, 2, 0, -2, -8.742278e-08, 19.1
 base_color = Color(0.15686275, 0.16470589, 0.80784315, 0.62352943)
 speed = -2.0
 line_count = 1.0
+
+[node name="Zipline" parent="." unique_id=112234981 instance=ExtResource("24_xj7km")]
+transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
+curve = SubResource("Curve3D_cmtte")
+outline_material = ExtResource("10_xj7km")

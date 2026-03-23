@@ -3,17 +3,7 @@
 [ext_resource type="Script" uid="uid://ca4mn3j02b5bi" path="res://scripts/Player.gd" id="1_34orh"]
 [ext_resource type="PackedScene" uid="uid://cv4syvckbtm2f" path="res://scenes/ui.tscn" id="2_k2mo6"]
 [ext_resource type="Texture2D" uid="uid://dnv1e6gebl5gj" path="res://assets/images/UI/flashlight_pattern.png" id="3_di6f5"]
-[ext_resource type="Shader" uid="uid://b7hv0lpr3sylm" path="res://assets/shaders/ui_vignette.gdshader" id="4_mdl7e"]
-[ext_resource type="Shader" uid="uid://bqd5soqdscvly" path="res://assets/shaders/outline_shader_adaptable.gdshader" id="5_70d11"]
-[ext_resource type="Texture2D" uid="uid://bp1lwvb0tg06g" path="res://assets/images/UI/UI_Circle_Zoom.png" id="5_qu4a1"]
 [ext_resource type="Texture2D" uid="uid://c7cbvlpeqy6d5" path="res://assets/images/Concept/BellaInGameReflection.png" id="7_cw2d6"]
-[ext_resource type="Texture2D" uid="uid://d11qvtoiajmle" path="res://assets/images/UI/UI_Circle_Zoom_Inner.png" id="7_khinc"]
-[ext_resource type="Shader" uid="uid://bly82k8d04nmt" path="res://assets/shaders/zoom_fisheye_blur.gdshader" id="8_bruh7"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_62jtm"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_34orh"]
-height = 1.2
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_cw2d6"]
 radius = 0.1
@@ -255,41 +245,13 @@ _data = {
 &"swimming_up": SubResource("Animation_d3wef")
 }
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_qu4a1"]
-shader = ExtResource("4_mdl7e")
-shader_parameter/color = Color(0, 0, 0, 1)
-shader_parameter/multiplier = 0.2
-shader_parameter/softness = 3.0
-shader_parameter/vignette_opacity = 16.99
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_62jtm"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_6eyey"]
-shader = ExtResource("8_bruh7")
-shader_parameter/distortion_amount = 1.0
-shader_parameter/blur_amount = 2.5
-shader_parameter/effect_strength = 0.0
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_cw2d6"]
-shader = ExtResource("5_70d11")
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_khinc"]
-shader = ExtResource("5_70d11")
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_34orh"]
+height = 1.2
 
 [node name="Player" type="CharacterBody3D" unique_id=1502339238 groups=["player"]]
 script = ExtResource("1_34orh")
-
-[node name="StandingCollisionShape" type="CollisionShape3D" parent="." unique_id=74353325]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_62jtm")
-
-[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="." unique_id=434486244]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
-shape = SubResource("CapsuleShape3D_34orh")
-disabled = true
-
-[node name="CrouchCastCheck" type="RayCast3D" parent="." unique_id=1427954589]
-target_position = Vector3(0, 2, 0)
-
-[node name="UI" parent="." unique_id=1944889716 instance=ExtResource("2_k2mo6")]
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
@@ -322,62 +284,17 @@ spot_angle = 25.0
 [node name="CameraAnims" type="AnimationPlayer" parent="Head/Eyes" unique_id=1765016502]
 libraries/ = SubResource("AnimationLibrary_xfc2n")
 
-[node name="UIElements" type="Node3D" parent="." unique_id=592766277]
+[node name="StandingCollisionShape" type="CollisionShape3D" parent="." unique_id=74353325]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_62jtm")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="UIElements" unique_id=1498841969]
+[node name="CrouchingCollisionShape" type="CollisionShape3D" parent="." unique_id=434486244]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("CapsuleShape3D_34orh")
+disabled = true
 
-[node name="Vignette" type="ColorRect" parent="UIElements/CanvasLayer" unique_id=1749906457]
-material = SubResource("ShaderMaterial_qu4a1")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 4.0
-offset_right = 3.0
-offset_bottom = 4.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="FisheyeZoom" type="ColorRect" parent="UIElements/CanvasLayer" unique_id=1156518001]
-material = SubResource("ShaderMaterial_6eyey")
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="UIElements/CanvasLayer" unique_id=1611785376]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -20.0
-offset_top = -20.0
-offset_right = 20.0
-offset_bottom = 20.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="UICircleZoom" type="TextureRect" parent="UIElements/CanvasLayer/MarginContainer" unique_id=1051996532]
-material = SubResource("ShaderMaterial_cw2d6")
-layout_mode = 2
-texture = ExtResource("5_qu4a1")
-
-[node name="UICircleZoomInner" type="TextureRect" parent="UIElements/CanvasLayer/MarginContainer" unique_id=1829834582]
-material = SubResource("ShaderMaterial_khinc")
-layout_mode = 2
-texture = ExtResource("7_khinc")
-
-[node name="Sprite3D" type="Sprite3D" parent="." unique_id=1428497960]
-transform = Transform3D(-0.1, 0, 1.1175871e-08, 0, 0.099999994, 0, -1.1175871e-08, 0, -0.1, 0, 1.0166427, -0.17768371)
-transparent = false
-double_sided = false
-texture = ExtResource("7_cw2d6")
+[node name="CrouchCastCheck" type="RayCast3D" parent="." unique_id=1427954589]
+target_position = Vector3(0, 2, 0)
 
 [node name="StairsAheadCast" type="RayCast3D" parent="." unique_id=1957762492]
 unique_name_in_owner = true
@@ -387,3 +304,11 @@ target_position = Vector3(0, -0.55, 0)
 [node name="StairsBelowCast" type="RayCast3D" parent="." unique_id=2103663500]
 unique_name_in_owner = true
 target_position = Vector3(0, -0.75, 0)
+
+[node name="Sprite3D" type="Sprite3D" parent="." unique_id=1428497960]
+transform = Transform3D(-0.1, 0, 1.1175871e-08, 0, 0.099999994, 0, -1.1175871e-08, 0, -0.1, 0, 1.0166427, -0.17768371)
+transparent = false
+double_sided = false
+texture = ExtResource("7_cw2d6")
+
+[node name="UI" parent="." unique_id=1944889716 instance=ExtResource("2_k2mo6")]

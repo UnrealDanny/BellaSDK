@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b4mtef0obdnql"
 path.bptc="res://.godot/imported/qwantani_moonrise_puresky_2k.hdr-896b96090707bb07db871b5accf2fe2b.bptc.ctex"
+path.astc="res://.godot/imported/qwantani_moonrise_puresky_2k.hdr-896b96090707bb07db871b5accf2fe2b.astc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/HDR/qwantani_moonrise_puresky_2k.hdr"
-dest_files=["res://.godot/imported/qwantani_moonrise_puresky_2k.hdr-896b96090707bb07db871b5accf2fe2b.bptc.ctex"]
+dest_files=["res://.godot/imported/qwantani_moonrise_puresky_2k.hdr-896b96090707bb07db871b5accf2fe2b.bptc.ctex", "res://.godot/imported/qwantani_moonrise_puresky_2k.hdr-896b96090707bb07db871b5accf2fe2b.astc.ctex"]
 
 [params]
 
