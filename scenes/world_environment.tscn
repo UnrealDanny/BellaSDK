@@ -12,6 +12,7 @@ sky_material = SubResource("PanoramaSkyMaterial_dq0xd")
 [sub_resource type="Environment" id="Environment_qdl06"]
 background_mode = 2
 sky = SubResource("Sky_ki1nh")
+ambient_light_source = 2
 tonemap_mode = 2
 ssao_enabled = true
 sdfgi_enabled = true
@@ -24,4 +25,5 @@ script = ExtResource("2_dq0xd")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1129353869]
 transform = Transform3D(0.54006404, -0.43164128, 0.7225072, -1.7763568e-15, 0.85846794, 0.51286715, -0.84162384, -0.27698112, 0.46362764, 0, 2.7607658, 0)
 light_energy = 0.5
+light_bake_mode = 1
 shadow_enabled = true

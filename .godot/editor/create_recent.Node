@@ -1,3 +1,7 @@
+Node3D
+CSGBox3D
+CSGCombiner3D
+LightmapGI
 CenterContainer
 Node
 TextureRect
@@ -9,7 +13,3 @@ Label3D
 StaticBody3D
 Area3D
 CollisionShape3D
-Interact_Component
-MeshInstance3D
-Marker3D
-Button
