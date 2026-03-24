@@ -20,7 +20,6 @@ extends CharacterBody3D
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
 @onready var hold_position: Marker3D = $Head/Eyes/Camera3D/HoldPosition
 
-
 @export var walking_speed 	:= 5.0
 @export var sprinting_speed := 6.5
 @export var crouching_speed := 3.0
@@ -177,6 +176,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			noclip_speed_multiplier = min(100, noclip_speed_multiplier * 1.1)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			noclip_speed_multiplier = max(0.1, noclip_speed_multiplier * 0.9)
+			
+	# --- COMBAT INPUTS ---
+	if event.is_action_pressed("shoot"): 
+		# Check if we have a weapon equipped in our hands
+		var holder = %WeaponHolder
+		if holder.get_child_count() > 0:
+			var current_weapon = holder.get_child(0)
+			
+			# If the weapon has a shoot function, call it and pass the camera!
+			if current_weapon.has_method("shoot"):
+				current_weapon.shoot(cam) # Pass your Camera3D reference here
 	
 func _input(event: InputEvent) -> void:
 	# MOUSE LOOKING LOGIC
@@ -185,7 +195,6 @@ func _input(event: InputEvent) -> void:
 		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
 		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 		sway_target += event.relative
-
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
 # --------------------------------------
@@ -313,8 +322,6 @@ func _physics_process(delta: float) -> void:
 		
 	_slide_camera_smooth_back_to_origin(delta)
 	
-	# NOTE: Move cam.fov = lerp(...) into your _process() function!
-
 func _process(delta: float) -> void:
 	# 1. FLASHLIGHT ANIMATION
 	update_flashlight(delta)

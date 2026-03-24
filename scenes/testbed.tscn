@@ -30,6 +30,7 @@
 [ext_resource type="PackedScene" uid="uid://q22xc6i00ls" path="res://scenes/dev_cylinder.tscn" id="25_m0e1v"]
 [ext_resource type="PackedScene" uid="uid://b0n5hga5atr" path="res://scenes/monke_bar.tscn" id="26_sx10w"]
 [ext_resource type="PackedScene" uid="uid://2yaelfmj6lmg" path="res://scenes/dev_arrow.tscn" id="27_uvnoq"]
+[ext_resource type="PackedScene" uid="uid://boprvnvbmjjtd" path="res://assets/weapons/Shotgun/shotgun.tscn" id="31_62djl"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_62djl"]
 _surfaces = [{
@@ -2243,8 +2244,15 @@ Prenty of cookies. "
 transform = Transform3D(0.57741594, 0, -0.8164502, 0, 1, 0, 0.8164502, 0, 0.57741594, 20.442848, 17.218273, -35.816143)
 text = "You can climb up and slide down."
 
+[node name="Label3D23" type="Label3D" parent="Texts" unique_id=2135326594]
+transform = Transform3D(-0.98561215, 0, 0.16902277, 0, 1, 0, -0.16902277, 0, -0.98561215, 32.29548, 12.9478445, -8.473917)
+billboard = 1
+text = "A shotgun?! 
+Yes. It. Is
+"
+
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(-0.8660254, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660254, 11.603844, 20.814358, -52.527027)
+transform = Transform3D(-0.8660254, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660254, 32.231632, 11.569578, -8.757931)
 
 [node name="Paintings" type="Node3D" parent="." unique_id=767419484]
 
@@ -2393,3 +2401,6 @@ outline_material = SubResource("ShaderMaterial_2dnug")
 [node name="Button7" parent="Buttons" unique_id=534077001 instance=ExtResource("16_cmtte")]
 transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.67585, 2.7592359, 5.056862)
 outline_material = SubResource("ShaderMaterial_82t7b")
+
+[node name="Shotgun" parent="." unique_id=1655053297 instance=ExtResource("31_62djl")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.48462, 12.733248, -6.0830956)

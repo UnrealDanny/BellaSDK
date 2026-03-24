@@ -1,50 +1,30 @@
 [gd_scene format=3 uid="uid://boprvnvbmjjtd"]
 
-[ext_resource type="PackedScene" uid="uid://bplnx6fna4tkj" path="res://assets/weapons/Shotgun/Shotgun_3.fbx" id="1_v4e2y"]
+[ext_resource type="Script" uid="uid://cey8d0lhc3mvg" path="res://scripts/weapons/shotgun.gd" id="1_v4e2y"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_dbdpq"]
+[ext_resource type="ArrayMesh" uid="uid://brpg8f31cfkp6" path="res://assets/weapons/Shotgun/source/E_2707_MT/E_2707_MT_mk3.obj" id="3_fwmej"]
 
-[sub_resource type="Animation" id="Animation_v4e2y"]
-length = 0.001
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Shotgun_3:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 0,
-"values": [Vector3(0, 0, 0)]
-}
+[sub_resource type="BoxShape3D" id="BoxShape3D_fwmej"]
+size = Vector3(1.4325562, 0.3, 0.3)
 
-[sub_resource type="Animation" id="Animation_dbdpq"]
-resource_name = "shoot"
-length = 0.5
-step = 0.01
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath("Shotgun_3:position")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.1, 0.5),
-"transitions": PackedFloat32Array(1, 1, 1),
-"update": 0,
-"values": [Vector3(0, 0, 0), Vector3(-0.5, 0, 0), Vector3(0, 0, 0)]
-}
+[node name="Shotgun" type="Node3D" unique_id=1655053297]
+script = ExtResource("1_v4e2y")
 
-[sub_resource type="AnimationLibrary" id="AnimationLibrary_fwmej"]
-_data = {
-&"RESET": SubResource("Animation_v4e2y"),
-&"shoot": SubResource("Animation_dbdpq")
-}
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=578621451]
+collision_layer = 5
 
-[node name="Shotgun" unique_id=1242757144 instance=ExtResource("1_v4e2y")]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1664091231]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.4260091e-09, 0, -0.03262329)
+shape = SubResource("BoxShape3D_fwmej")
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="." index="1" unique_id=528207393]
-libraries/ = SubResource("AnimationLibrary_fwmej")
+[node name="Interact_Component" type="Node" parent="StaticBody3D" unique_id=972931835]
+script = ExtResource("2_dbdpq")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
 
-[node name="RayCast3D" type="RayCast3D" parent="." index="2" unique_id=1749682458]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 4.3, 0.22, 0)
-target_position = Vector3(0, 0, -1)
+[node name="ShotgunAsset" type="MeshInstance3D" parent="." unique_id=619754230]
+transform = Transform3D(-4.371139e-08, -0.86602545, -0.49999997, 0, 0.49999997, -0.86602545, 1, -3.7855173e-08, -2.1855692e-08, 0, 0, 0)
+mesh = ExtResource("3_fwmej")
+
+[node name="MuzzlePoint" type="Marker3D" parent="." unique_id=586578177]
+
+[connection signal="interacted" from="StaticBody3D/Interact_Component" to="." method="_on_interact_component_interacted"]

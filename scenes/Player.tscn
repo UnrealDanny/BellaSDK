@@ -281,6 +281,10 @@ shadow_enabled = true
 spot_range = 15.0
 spot_angle = 25.0
 
+[node name="WeaponHolder" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=22330715]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, -0.3, -0.5)
+
 [node name="CameraAnims" type="AnimationPlayer" parent="Head/Eyes" unique_id=1765016502]
 libraries/ = SubResource("AnimationLibrary_xfc2n")
 

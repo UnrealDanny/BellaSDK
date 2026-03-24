@@ -47,24 +47,34 @@ func _process(_delta: float) -> void:
 	elif player.is_on_floor(): state = "WALKING" if is_pressing_keys else "IDLE"
 	else: state = "AIRBORNE"
 
+	# --- MEMORY & STORAGE CHECKS ---
+	var ram_usage = OS.get_static_memory_usage()
+	# Note: Godot doesn't have a direct "Hard Drive" usage function for the whole PC, 
+	# but we can check the size of your User Data folder where saves/configs live.
+	var disk_usage = OS.get_user_data_dir() 
+	var static_mem = OS.get_static_memory_usage()
+	# VRAM is the memory on your Graphics Card
+	var vram_usage = Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED)
+
 	# --- NEW BOOLEAN CHECKS ---
-	# Change these variable names if they differ in your player.gd!
 	var flashlight_str = "ON" if player.flashlight.visible else "OFF"
-	#var interact_str = "YES" if player.is_interacting else "NO"
+	var weapon_str = "NONE"
+	if player.get_node("%WeaponHolder").get_child_count() > 0:
+		weapon_str = player.get_node("%WeaponHolder").get_child(0).name
 
 	var text = ""
 	text += "--- ENGINE ---\n"
-	# We wrap the FPS number in BBCode color tags!
 	text += "[color=%s]FPS: %d[/color]\n" % [fps_color, fps]
-	text += "Memory: %s\n" % String.humanize_size(OS.get_static_memory_usage())
+	text += "RAM: %s\n" % String.humanize_size(static_mem)
+	text += "VRAM: %s\n" % String.humanize_size(vram_usage)
+
 	text += "\n--- PLAYER STATE ---\n"
 	text += "STATE: %s\n" % state
+	text += "WEAPON: %s\n" % weapon_str
 	text += "SPEED: %.2f m/s\n" % speed
-	text += "VELOCITY: (%.1f, %.1f, %.1f)\n" % [vel.x, vel.y, vel.z]
 	text += "POS: %s\n" % var_to_str(player.global_position).replace("Vector3", "")
 	text += "GROUNDED: %s\n" % ("YES" if player.is_on_floor() else "NO")
 	text += "FLASHLIGHT: %s\n" % flashlight_str
-	#text += "INTERACTING: %s\n" % interact_str
 
 	metrics_label.text = text
 	

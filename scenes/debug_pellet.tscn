@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://i7kpqfixgaqa"]
+
+[ext_resource type="Script" uid="uid://birkul3vfrxxb" path="res://scripts/weapons/debug_pellet.gd" id="1_qd61h"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_m1j6w"]
+shading_mode = 0
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_iiceb"]
+material = SubResource("StandardMaterial3D_m1j6w")
+radius = 0.05
+height = 0.1
+
+[node name="DebugPellet" type="Node3D" unique_id=1325443882]
+script = ExtResource("1_qd61h")
+
+[node name="DebugPellet" type="MeshInstance3D" parent="." unique_id=923027221]
+mesh = SubResource("SphereMesh_iiceb")
