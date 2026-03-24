@@ -81,9 +81,9 @@ func shoot(player_camera: Camera3D) -> void:
 
 		if result:
 			var collider = result.collider
-			# Deal damage
 			if collider.has_method("take_damage"):
-				collider.take_damage(damage_per_pellet)
+		# We pass the damage AND the direction the pellet was flying!
+				collider.take_damage(damage_per_pellet, pellet_dir)
 				
 			var dot = DEBUG_PELLET.instantiate()
 			get_tree().current_scene.add_child(dot)

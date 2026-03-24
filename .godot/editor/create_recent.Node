@@ -1,7 +1,9 @@
+CSGBox3D
+RigidBody3D
 MeshInstance3D
+CollisionShape3D
 StaticBody3D
 Area3D
-CollisionShape3D
 Interact_Component
 Marker3D
 Node3D
@@ -11,4 +13,3 @@ PanelContainer
 Label
 Panel
 Button
-CSGCombiner3D

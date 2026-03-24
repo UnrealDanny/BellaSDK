@@ -1,4 +1,3 @@
-res://scenes/ui.tscn
 res://assets/shaders/circle_shader.tres
 res://assets/shaders/outline_shader_adaptable.gdshader
 res://assets/shaders/ui_vignette.gdshader
@@ -7,11 +6,9 @@ res://assets/shaders/UnlitOutlineMaterial.gdshader
 res://assets/shaders/holographic_scanner.gdshader
 res://assets/shaders/outline_shader.gdshader
 res://assets/shaders/SmartOutlineMaterial.gdshader
-res://scenes/Player.tscn
+res://scenes/enemy_TEST.tscn
+res://scenes/testbed.tscn
+res://scripts/enemy_TEST.gd
 res://assets/weapons/Shotgun/shotgun.tscn
 res://scripts/Player.gd
 res://scripts/weapons/shotgun.gd
-res://scenes/debug_pellet.tscn
-res://scripts/weapons/debug_pellet.gd
-res://scenes/testbed.tscn
-res://scripts/DevMetrics.gd

@@ -133,11 +133,6 @@ var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 var noclip_speed_multiplier := 4.0
 var is_menu_open: bool = false
 
-# OTHER VARS
-var input_dir: Vector2 = Vector2.ZERO
-var _frames_since_grounded: int = 0
-var is_using_zoom: bool = false
-
 # ZIPLINE VARS
 var zipline_grab_timer: float = 0.0
 var is_auto_sliding: bool = false
@@ -151,6 +146,16 @@ var is_zipline_sliding: bool = false
 
 var ZIPLINE_SLIDE_SPEED: float = 18.0
 var ZIPLINE_HANG_OFFSET: float = 1.9 # Distance from the wire to the player's origin
+
+# SHOOT VARS
+var damage = 100
+
+# OTHER VARS
+var input_dir: Vector2 = Vector2.ZERO
+var _frames_since_grounded: int = 0
+var is_using_zoom: bool = false
+
+
 
 
 # --------------------------------------
@@ -320,7 +325,7 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()         
 		_snap_down_to_stairs_check()
 		
-	_slide_camera_smooth_back_to_origin(delta)
+	_slide_camera_smooth_back_to_origin(delta)		
 	
 func _process(delta: float) -> void:
 	# 1. FLASHLIGHT ANIMATION

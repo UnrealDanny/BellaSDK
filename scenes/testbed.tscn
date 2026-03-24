@@ -31,6 +31,7 @@
 [ext_resource type="PackedScene" uid="uid://b0n5hga5atr" path="res://scenes/monke_bar.tscn" id="26_sx10w"]
 [ext_resource type="PackedScene" uid="uid://2yaelfmj6lmg" path="res://scenes/dev_arrow.tscn" id="27_uvnoq"]
 [ext_resource type="PackedScene" uid="uid://boprvnvbmjjtd" path="res://assets/weapons/Shotgun/shotgun.tscn" id="31_62djl"]
+[ext_resource type="PackedScene" uid="uid://bairuv4i4gc64" path="res://scenes/enemy_TEST.tscn" id="32_vvpuy"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_62djl"]
 _surfaces = [{
@@ -193,22 +194,22 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.010000000475
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_62djl"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_vvpuy"]
 resource_local_to_scene = true
-
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_vvpuy"]
-resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_62djl")
-seamless = true
-as_normal_map = true
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_2r5js"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_62djl")
+noise = SubResource("FastNoiseLite_vvpuy")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x3nsp"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_x3nsp"]
+resource_local_to_scene = true
+noise = SubResource("FastNoiseLite_vvpuy")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ovkd5"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -216,14 +217,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_vvpuy")
+normal_texture = SubResource("NoiseTexture2D_2r5js")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_2r5js")
+refraction_texture = SubResource("NoiseTexture2D_x3nsp")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_ovkd5"]
+[sub_resource type="Curve3D" id="Curve3D_cmtte"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -380,6 +381,7 @@ mesh = SubResource("ArrayMesh_f1d65")
 mesh = SubResource("ArrayMesh_s52xd")
 
 [node name="LightmapGI" type="LightmapGI" parent="." unique_id=1953243825]
+visible = false
 quality = 3
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
@@ -451,7 +453,7 @@ outline_material = SubResource("ShaderMaterial_x3nsp")
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_x3nsp")
+material = SubResource("StandardMaterial3D_ovkd5")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(2, 0, 0, 0, -8.742278e-08, 2, 0, -2, -8.742278e-08, 19.171274, 1.0914047, -10.287005)
@@ -461,7 +463,7 @@ line_count = 1.0
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_ovkd5")
+curve = SubResource("Curve3D_cmtte")
 outline_material = SubResource("ShaderMaterial_arwuo")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
@@ -733,9 +735,9 @@ operation = 2
 size = Vector3(0.07443237, 0.9532471, 1.3010254)
 
 [node name="CSGBox3D84" type="CSGBox3D" parent="Objects/Level" unique_id=1754484064]
-transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 32.573296, 11.069575, -16.633495)
+transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 30.429853, 11.069575, -16.633495)
 use_collision = true
-size = Vector3(0.48007202, 2.719574, 1)
+size = Vector3(0.48007202, 3.8173065, 1)
 
 [node name="CSGBox3D86" type="CSGBox3D" parent="Objects/Level" unique_id=958226975]
 transform = Transform3D(-29.305096, 3.2048583, -1.0894842e-08, -2.2417423e-06, -1.7070238e-07, -0.9999999, -42.08767, -2.231501, 6.084959e-08, 19.208868, 15.752743, -34.790226)
@@ -746,6 +748,66 @@ size = Vector3(0.123703, 1.8290253, 1)
 transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 36.997826, 5.0549874, -16.633495)
 use_collision = true
 size = Vector3(0.48007202, 3.095909, 1.8569336)
+
+[node name="CSGBox3D90" type="CSGBox3D" parent="Objects/Level" unique_id=998810099]
+transform = Transform3D(-1.7787797e-06, -2.3766963, -0.79348063, 1.3643139e-06, -3.098714, 0.60859525, -51.28509, 4.267151e-14, 4.3711385e-08, 41.66194, 14.925352, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 3.095909, 1.8569336)
+
+[node name="CSGBox3D91" type="CSGBox3D" parent="Objects/Level" unique_id=2080201965]
+transform = Transform3D(-2.2417425e-06, 0, 0.99999976, 0, 3.9052162, 0, -51.28509, 0, -4.3711378e-08, 45.3314, 26.400011, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 2.0127983, 1.8569336)
+
+[node name="CSGBox3D95" type="CSGBox3D" parent="Objects/Level" unique_id=1720187340]
+transform = Transform3D(-2.2417425e-06, 0, 0.99999976, 0, 3.9052162, 0, -51.28509, 0, -4.3711378e-08, 23.828241, 16.781006, -15.057835)
+use_collision = true
+size = Vector3(0.41862488, 2.4985867, 1.8569336)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Objects/Level/CSGBox3D95" unique_id=276558897]
+transform = Transform3D(1, 0, 1.6653345e-16, 0, 1, 0, 0, 0, 1, -0.15875225, -0.0068187714, 0.29696655)
+operation = 2
+size = Vector3(0.01159668, 1.866333, 2.588745)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Objects/Level/CSGBox3D95" unique_id=562271241]
+transform = Transform3D(1, 0, 1.6653345e-16, 0, 1, 0, 0, 0, 1, -0.12539627, -0.0068187714, 0.29696655)
+operation = 2
+size = Vector3(0.01159668, 1.866333, 2.588745)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="Objects/Level/CSGBox3D95" unique_id=126693441]
+transform = Transform3D(1, 0, 1.6653345e-16, 0, 1, 0, 0, 0, 1, -0.09310818, -0.0068187714, 0.29696655)
+operation = 2
+size = Vector3(0.01159668, 1.866333, 2.588745)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="Objects/Level/CSGBox3D95" unique_id=337906681]
+transform = Transform3D(1, 0, 1.6653345e-16, 0, 1, 0, 0, 0, 1, -0.057519212, -0.0068187714, 0.29696655)
+operation = 2
+size = Vector3(0.01159668, 1.866333, 2.588745)
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="Objects/Level/CSGBox3D95" unique_id=1437204544]
+transform = Transform3D(1, 0, 1.6653345e-16, 0, 1, 0, 0, 0, 1, -0.02357316, -0.0068187714, 0.29696655)
+operation = 2
+size = Vector3(0.01159668, 1.866333, 2.588745)
+
+[node name="CSGBox3D96" type="CSGBox3D" parent="Objects/Level" unique_id=184692988]
+transform = Transform3D(-51.28509, 0, -8.7422755e-08, 0, 3.9052162, 0, 4.483485e-06, 0, -0.99999976, 33.86748, 20.086946, -4.2325563)
+use_collision = true
+size = Vector3(0.41862488, 4.191676, 1.8569336)
+
+[node name="CSGBox3D92" type="CSGBox3D" parent="Objects/Level" unique_id=1809533523]
+transform = Transform3D(2.801909e-13, -3.9052162, -4.3711378e-08, -2.2417428e-06, -1.7070242e-07, 0.99999976, -51.28509, 0, -4.371138e-08, 41.23823, 29.397924, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 2.0127983, 1.8569336)
+
+[node name="CSGBox3D93" type="CSGBox3D" parent="Objects/Level" unique_id=1864175984]
+transform = Transform3D(2.801909e-13, -3.9052162, -4.3711378e-08, -2.2417428e-06, -1.7070242e-07, 0.99999976, -51.28509, 0, -4.371138e-08, 31.727795, 29.397924, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 2.0127983, 1.8569336)
+
+[node name="CSGBox3D94" type="CSGBox3D" parent="Objects/Level" unique_id=961600242]
+transform = Transform3D(1.5851517e-06, -2.7614045, -0.70710665, -1.5851513e-06, -2.761405, 0.70710653, -51.28509, -8.269617e-22, -4.371138e-08, 26.906914, 26.86381, -16.633495)
+use_collision = true
+size = Vector3(0.48007202, 2.0127983, 1.8569336)
 
 [node name="CSGBox3D83" type="CSGBox3D" parent="Objects/Level" unique_id=1564697487]
 transform = Transform3D(9.798972e-14, 3.9052165, -4.371137e-08, -2.2417425e-06, -1.707024e-07, -0.9999999, -51.28509, 4.267151e-14, 4.3711385e-08, 4.3139772, 20.281301, -58.84502)
@@ -2403,4 +2465,16 @@ transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1,
 outline_material = SubResource("ShaderMaterial_82t7b")
 
 [node name="Shotgun" parent="." unique_id=1655053297 instance=ExtResource("31_62djl")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.48462, 12.733248, -6.0830956)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.48462, 12.733248, -6.697594)
+
+[node name="enemy_TEST" parent="." unique_id=767490549 instance=ExtResource("32_vvpuy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.419655, 12.569578, -7.2493076)
+
+[node name="enemy_TEST2" parent="." unique_id=1726372232 instance=ExtResource("32_vvpuy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.419655, 12.569578, -9.109871)
+
+[node name="enemy_TEST3" parent="." unique_id=1948689447 instance=ExtResource("32_vvpuy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.419655, 12.569578, -10.989408)
+
+[node name="enemy_TEST4" parent="." unique_id=851056729 instance=ExtResource("32_vvpuy")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.419655, 12.569578, -12.928735)
