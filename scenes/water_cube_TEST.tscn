@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://x7w22l0oyjnc"]
+
+[ext_resource type="Script" uid="uid://u5oyd6s21lar" path="res://scripts/water_cube_TEST.gd" id="1_rn7uq"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a3iwn"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_rn7uq"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_a3iwn"]
+noise = SubResource("FastNoiseLite_rn7uq")
+seamless = true
+as_normal_map = true
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_08yu4"]
+transparency = 1
+cull_mode = 2
+depth_draw_mode = 1
+albedo_color = Color(0.30980393, 0.6509804, 0.8666667, 0.50980395)
+roughness = 0.0
+normal_enabled = true
+normal_texture = SubResource("NoiseTexture2D_a3iwn")
+
+[sub_resource type="BoxMesh" id="BoxMesh_rn7uq"]
+material = SubResource("StandardMaterial3D_08yu4")
+
+[node name="WaterCube" type="StaticBody3D" unique_id=2129527494]
+collision_layer = 5
+script = ExtResource("1_rn7uq")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=125920092]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_a3iwn")
+
+[node name="WaterWrapper" type="Node3D" parent="." unique_id=201422419]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WaterWrapper" unique_id=1445326216]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_rn7uq")

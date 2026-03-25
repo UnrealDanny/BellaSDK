@@ -47,11 +47,6 @@ func _process(_delta: float) -> void:
 	elif player.is_on_floor(): state = "WALKING" if is_pressing_keys else "IDLE"
 	else: state = "AIRBORNE"
 
-	# --- MEMORY & STORAGE CHECKS ---
-	var ram_usage = OS.get_static_memory_usage()
-	# Note: Godot doesn't have a direct "Hard Drive" usage function for the whole PC, 
-	# but we can check the size of your User Data folder where saves/configs live.
-	var disk_usage = OS.get_user_data_dir() 
 	var static_mem = OS.get_static_memory_usage()
 	# VRAM is the memory on your Graphics Card
 	var vram_usage = Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED)
