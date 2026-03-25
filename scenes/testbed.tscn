@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://cbaw7tff5otyu" path="res://assets/images/Concept/NewCUMSLogo.png" id="15_ovkd5"]
 [ext_resource type="PackedScene" uid="uid://2mam2k0fdeew" path="res://scenes/button.tscn" id="16_cmtte"]
 [ext_resource type="Texture2D" uid="uid://dutrfuowe3e1q" path="res://assets/images/Concept/Key_art.PNG" id="16_k74e2"]
+[ext_resource type="PackedScene" uid="uid://ijiwot5majtv" path="res://scenes/gate.tscn" id="17_1kj1a"]
 [ext_resource type="Texture2D" uid="uid://buul5ojyk5ysy" path="res://assets/images/dev_textures/standard_0_black_512.png" id="18_f1d65"]
 [ext_resource type="Texture2D" uid="uid://c3alx7afc0pag" path="res://assets/decals/Valve_Turn_Decal.png" id="18_k74e2"]
 [ext_resource type="PackedScene" uid="uid://wmyjhovjnea4" path="res://scenes/ladder.tscn" id="19_s52xd"]
@@ -35,6 +36,7 @@
 [ext_resource type="PackedScene" uid="uid://x7w22l0oyjnc" path="res://scenes/water_cube_TEST.tscn" id="33_2r5js"]
 [ext_resource type="PackedScene" uid="uid://b0h28ew50m1nm" path="res://scenes/draw_bridge_system.tscn" id="34_x3nsp"]
 [ext_resource type="PackedScene" uid="uid://dwusg7ievwjmh" path="res://scenes/breakable_rope.tscn" id="35_ovkd5"]
+[ext_resource type="PackedScene" uid="uid://dudx3baxpmytw" path="res://scenes/valve.tscn" id="36_cmtte"]
 
 [sub_resource type="ArrayMesh" id="ArrayMesh_62djl"]
 _surfaces = [{
@@ -197,22 +199,22 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.010000000475
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_ovkd5"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1kj1a"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_cmtte"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_f1d65"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_ovkd5")
+noise = SubResource("FastNoiseLite_1kj1a")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_1kj1a"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s52xd"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_ovkd5")
+noise = SubResource("FastNoiseLite_1kj1a")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f1d65"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6x3g"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -220,14 +222,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_cmtte")
+normal_texture = SubResource("NoiseTexture2D_f1d65")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_1kj1a")
+refraction_texture = SubResource("NoiseTexture2D_s52xd")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_s52xd"]
+[sub_resource type="Curve3D" id="Curve3D_2dnug"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -345,14 +347,14 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.5
 
-[sub_resource type="Curve3D" id="Curve3D_ovkd5"]
+[sub_resource type="Curve3D" id="Curve3D_82t7b"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 13.678219, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_cmtte"]
+[sub_resource type="Curve3D" id="Curve3D_o7her"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 13.678219, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -470,7 +472,7 @@ outline_material = SubResource("ShaderMaterial_x3nsp")
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_f1d65")
+material = SubResource("StandardMaterial3D_v6x3g")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(2, 0, 0, 0, -8.742278e-08, 2, 0, -2, -8.742278e-08, 19.171274, 1.0914047, -10.287005)
@@ -480,7 +482,7 @@ line_count = 1.0
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_s52xd")
+curve = SubResource("Curve3D_2dnug")
 outline_material = SubResource("ShaderMaterial_arwuo")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
@@ -772,9 +774,45 @@ use_collision = true
 size = Vector3(0.123703, 1.8290253, 1)
 
 [node name="CSGBox3D85" type="CSGBox3D" parent="Objects/Level" unique_id=235257141]
-transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 36.997826, 5.0549874, -16.633495)
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 36.997826, 5.0549874, -19.824924)
 use_collision = true
-size = Vector3(0.48007202, 3.095909, 1.8569336)
+size = Vector3(0.3556137, 3.095909, 1.8569336)
+
+[node name="CSGBox3D100" type="CSGBox3D" parent="Objects/Level" unique_id=1330752330]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 36.997826, 5.0549874, -4.0563984)
+use_collision = true
+size = Vector3(0.062084198, 3.095909, 1.8569336)
+
+[node name="CSGBox3D101" type="CSGBox3D" parent="Objects/Level" unique_id=783959440]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 42.646194, -1.0342969, -7.7678785)
+use_collision = true
+size = Vector3(0.20682335, 0.32029343, 9.822632)
+
+[node name="CSGBox3D102" type="CSGBox3D" parent="Objects/Level" unique_id=612145001]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 41.542343, 4.5740805, -7.7678785)
+use_collision = true
+size = Vector3(0.20682335, 0.32029343, 7.614929)
+
+[node name="CSGBox3D103" type="CSGBox3D" parent="Objects/Level" unique_id=2086933746]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 42.646194, 1.6854315, -12.635794)
+use_collision = true
+size = Vector3(0.016985893, 1.7996731, 9.822632)
+
+[node name="CSGBox3D104" type="CSGBox3D" parent="Objects/Level" unique_id=1950036340]
+transform = Transform3D(-2.2417425e-06, -3.4140484e-07, -0.9999999, -4.065758e-20, -3.9052165, 8.7422755e-08, -51.28509, 4.267151e-14, 4.3711385e-08, 42.646194, 1.6854315, -2.9160433)
+use_collision = true
+size = Vector3(0.016985893, 1.7996731, 9.822632)
+
+[node name="CSGBox3D105" type="CSGBox3D" parent="Objects/Level" unique_id=1021150870]
+transform = Transform3D(-51.28509, 5.759479e-14, 8.742277e-08, -5.658612e-20, -3.9052165, 8.742275e-08, 4.483485e-06, 3.414048e-07, 0.9999999, 47.136395, 1.0162576, -6.619378)
+use_collision = true
+size = Vector3(0.018746853, 1.4569654, 13.076355)
+
+[node name="CSGBox3D106" type="CSGBox3D" parent="Objects/Level" unique_id=1433102519]
+transform = Transform3D(-51.28509, 5.759479e-14, 8.742277e-08, -5.658612e-20, -3.9052165, 8.742275e-08, 4.483485e-06, 3.414048e-07, 0.9999999, 47.136395, 3.1480448, -7.646718)
+operation = 2
+use_collision = true
+size = Vector3(0.018746853, 0.36520147, 6.7581406)
 
 [node name="CSGBox3D90" type="CSGBox3D" parent="Objects/Level" unique_id=998810099]
 transform = Transform3D(-1.7787797e-06, -2.3766963, -0.79348063, 1.3643139e-06, -3.098714, 0.60859525, -51.28509, 4.267151e-14, 4.3711385e-08, 41.66194, 14.925352, -24.612555)
@@ -1045,6 +1083,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.238, -0.5, 2.01)
 material_override = SubResource("StandardMaterial3D_62djl")
 use_collision = true
 size = Vector3(62.785225, 1, 68.68591)
+
+[node name="Gate" parent="Objects/Level" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
+open_offset = Vector3(0, 0, 4)
 
 [node name="Stairs" type="CSGCombiner3D" parent="Objects" unique_id=721298292]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 12.5, -0.4272058, -5.483359)
@@ -2352,6 +2394,23 @@ text = "A shotgun?!
 Yes. It. Is
 "
 
+[node name="Label3D25" type="Label3D" parent="Texts" unique_id=1934436565]
+transform = Transform3D(-4.3711385e-08, 0, -0.99999994, 0, 1, 0, 0.99999994, 0, -4.3711385e-08, 36.168186, 1.8234899, -8.11839)
+text = "The kind of valve I always wanted in HL2. The company is 
+LITERALLY called Valve but the 
+valves in HL2 are shit. I DON'T KNOW WHAT KIND OF AXIS I 
+NEED!!!"
+
+[node name="Label3D26" type="Label3D" parent="Texts" unique_id=914855613]
+transform = Transform3D(-4.3711385e-08, 0, -0.99999994, 0, 1, 0, 0.99999994, 0, -4.3711385e-08, 44.559418, 1.8234899, -7.726539)
+text = "I'm thinking of adding an upgrade system for my Bella. 
+One of them will be here. Maybe.
+What kind of upgrades? 
+Health, John Wick reloading animations, Doom Guy punches. 
+Your ideas are welcomed. 
+You'd be able to refuse all those upgrades if you want. 
+More optional exploration is needed anyway."
+
 [node name="Label3D24" type="Label3D" parent="Texts" unique_id=1762905192]
 transform = Transform3D(-0.98561215, 0, 0.16902277, 0, 1, 0, -0.16902277, 0, -0.98561215, 36.8085, 13.097683, -25.412037)
 billboard = 1
@@ -2363,7 +2422,8 @@ NEAT!"
 font_size = 50
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(-0.8660254, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660254, 32.231632, 11.569578, -8.757931)
+transform = Transform3D(1.0331603e-07, 0, -1, 0, 1, 0, 1, 0, 1.0331603e-07, 34.818005, -9.417534e-06, -11.836215)
+visible = false
 
 [node name="Paintings" type="Node3D" parent="." unique_id=767419484]
 
@@ -2462,7 +2522,7 @@ transform = Transform3D(17.32996, 0, 0, 0, 2.7884247, 0, 0, 0, 1.0000005, 0, 0, 
 mesh = SubResource("QuadMesh_w7kh3")
 
 [node name="Sprite3D8" type="Sprite3D" parent="Paintings" unique_id=1547521021]
-transform = Transform3D(-0.1, 0, -8.742278e-09, 0, 0.1, 0, 8.742278e-09, 0, -0.1, 33.578423, 2.5473135, -5.025107)
+transform = Transform3D(1.3113417e-08, 0, -0.1, 0, 0.1, 0, 0.1, 0, 1.3113417e-08, 36.02235, 2.6784093, -11.937256)
 texture = ExtResource("18_k74e2")
 
 [node name="Label3D" type="Label3D" parent="Paintings/Sprite3D8" unique_id=2000101014]
@@ -2549,8 +2609,16 @@ height = 25.0
 
 [node name="UniversalCable3D" parent="." unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_ovkd5")
+curve = SubResource("Curve3D_82t7b")
 
 [node name="UniversalCable3D2" parent="." unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_cmtte")
+curve = SubResource("Curve3D_o7her")
+
+[node name="Valve" parent="." unique_id=607184189 node_paths=PackedStringArray("targets", "valve_mesh") instance=ExtResource("36_cmtte")]
+transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, 36.022713, 1.4478667, -11.823307)
+targets = [NodePath("../Objects/Level/Gate")]
+valve_mesh = NodePath(".")
+turn_duration = 2.0
+lock_when_finished = true
+visual_rotations = 3.0

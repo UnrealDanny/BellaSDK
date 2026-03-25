@@ -1,14 +1,14 @@
+Interact_Component
 CollisionShape3D
-MeshInstance3D
+Area3D
 StaticBody3D
+MeshInstance3D
 UniversalCable3D
 Node
 Path3D
 CSGCylinder3D
-Area3D
 HingeJoint3D
 RigidBody3D
 Node3D
 CSGBox3D
-Interact_Component
 Marker3D
