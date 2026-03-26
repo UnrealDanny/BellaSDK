@@ -477,20 +477,39 @@ func update_flashlight(delta: float) -> void:
 # --------------------------------------
 # INTERACT
 # --------------------------------------
+#func get_interactable_component_at_shapecast() -> Interact_Component:
+	#for i in interact_shapecast.get_collision_count():
+		#var collider = interact_shapecast.get_collider(i)
+		#
+		## Skip the player if the cast accidentally hits our own hitbox
+		#if collider == self:
+			#continue
+			#
+		#var comp = collider.get_node_or_null("Interact_Component")
+		#if comp is Interact_Component:
+			#return comp
+			#
+	#return null
 func get_interactable_component_at_shapecast() -> Interact_Component:
 	for i in interact_shapecast.get_collision_count():
 		var collider = interact_shapecast.get_collider(i)
+		
+		# 1. SAFETY CHECK: Ensure the collider actually exists and hasn't just been deleted
+		if not is_instance_valid(collider):
+			continue
 		
 		# Skip the player if the cast accidentally hits our own hitbox
 		if collider == self:
 			continue
 			
-		var comp = collider.get_node_or_null("Interact_Component")
-		if comp is Interact_Component:
-			return comp
+		# 2. TYPE CHECK: Ensure it's a standard Node before asking for children
+		if collider is Node:
+			var comp = collider.get_node_or_null("Interact_Component")
+			if comp is Interact_Component:
+				return comp
 			
 	return null
-
+	
 # --------------------------------------
 # LADDERS
 # --------------------------------------

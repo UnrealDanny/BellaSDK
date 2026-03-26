@@ -13,6 +13,7 @@ var last_shot_time: float = -1000.0
 
 # Preload the dot so it's ready in memory the moment we shoot
 const DEBUG_PELLET = preload("res://scenes/debug_pellet.tscn")
+const DUST_PUFF = preload("res://scenes/effects/dust_puff.tscn")
 
 var is_equipped: bool = false
 

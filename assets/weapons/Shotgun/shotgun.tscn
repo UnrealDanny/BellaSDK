@@ -23,6 +23,7 @@ metadata/_custom_type_script = "uid://cqawbvidns1th"
 
 [node name="ShotgunAsset" type="MeshInstance3D" parent="." unique_id=619754230]
 transform = Transform3D(-4.371139e-08, -0.86602545, -0.49999997, 0, 0.49999997, -0.86602545, 1, -3.7855173e-08, -2.1855692e-08, 0, 0, 0)
+visibility_range_end = 30.0
 mesh = ExtResource("3_fwmej")
 
 [node name="MuzzlePoint" type="Marker3D" parent="." unique_id=586578177]

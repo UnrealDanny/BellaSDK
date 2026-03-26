@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_bxo18"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
-size = Vector3(0.5, 0.2, 0.5)
+size = Vector3(0.6, 0.2, 0.6)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_87b3n"]
 albedo_color = Color(1, 0, 0, 1)
@@ -42,10 +42,10 @@ shader_parameter/max_intensity = 0.5
 
 [node name="Valve" type="StaticBody3D" unique_id=86858914]
 script = ExtResource("1_epeg1")
-spin_axis = null
+is_back_and_forth = false
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1748411192]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.10580444, 0.030303955)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0)
 shape = SubResource("BoxShape3D_epeg1")
 
 [node name="Wheel" type="MeshInstance3D" parent="." unique_id=111399811]

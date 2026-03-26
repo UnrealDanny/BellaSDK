@@ -9,10 +9,12 @@
 albedo_texture = ExtResource("1_m6kx3")
 uv1_triplanar = true
 
-[sub_resource type="BoxMesh" id="BoxMesh_g53br"]
+[sub_resource type="BoxMesh" id="BoxMesh_eu038"]
 material = SubResource("StandardMaterial3D_2ivcy")
+size = Vector3(2, 0.2, 5)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_qfpdl"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_2ivcy"]
+size = Vector3(2, 0.2, 5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_m6kx3"]
 
@@ -20,6 +22,8 @@ material = SubResource("StandardMaterial3D_2ivcy")
 script = ExtResource("1_eu038")
 
 [node name="HingeAnchor" type="StaticBody3D" parent="." unique_id=2075055581]
+collision_layer = 0
+collision_mask = 0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="HingeAnchor" unique_id=1885093950]
 shape = SubResource("BoxShape3D_eu038")
@@ -29,15 +33,18 @@ mass = 50.0
 freeze = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="TheBridge" unique_id=2035920862]
-mesh = SubResource("BoxMesh_g53br")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5)
+mesh = SubResource("BoxMesh_eu038")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="TheBridge" unique_id=1630024389]
-shape = SubResource("BoxShape3D_qfpdl")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2.5)
+shape = SubResource("BoxShape3D_2ivcy")
 
 [node name="HingeJoint3D" type="HingeJoint3D" parent="." unique_id=1318681736]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
 node_a = NodePath("../HingeAnchor")
 node_b = NodePath("../TheBridge")
+angular_limit/enable = true
 
 [node name="GroundLockTrigger" type="Area3D" parent="." unique_id=124435516]
 

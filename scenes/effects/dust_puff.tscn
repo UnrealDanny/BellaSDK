@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://d2msewxyv8kst"]
+
+[ext_resource type="Script" uid="uid://7hgne4k1hyxn" path="res://scripts/weapons/dust_puff.gd" id="1_0josw"]
+
+[sub_resource type="Gradient" id="Gradient_d34ih"]
+colors = PackedColorArray(0.52, 0.52, 0.52, 1, 0.52, 0.52, 0.52, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_krcva"]
+gradient = SubResource("Gradient_d34ih")
+
+[sub_resource type="Curve" id="Curve_7vjcu"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_n3ftd"]
+curve = SubResource("Curve_7vjcu")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_m0ind"]
+direction = Vector3(0, 0, 1)
+initial_velocity_min = 3.0
+initial_velocity_max = 3.0
+gravity = Vector3(0, -1, 0)
+scale_min = 0.5
+scale_curve = SubResource("CurveTexture_n3ftd")
+color_ramp = SubResource("GradientTexture1D_krcva")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ylkku"]
+transparency = 1
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_dp0sv"]
+material = SubResource("StandardMaterial3D_ylkku")
+
+[node name="DustPuff" type="GPUParticles3D" unique_id=1031407953]
+emitting = false
+lifetime = 0.5
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("ParticleProcessMaterial_m0ind")
+draw_pass_1 = SubResource("QuadMesh_dp0sv")
+script = ExtResource("1_0josw")
