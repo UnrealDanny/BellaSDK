@@ -42,7 +42,7 @@ func _ready() -> void:
 	_update_visuals()
 
 func _update_visuals() -> void:
-	var mesh = get_node_or_null("MeshInstance3D") 
+	var mesh = get_node_or_null("Hologram") 
 	
 	if not mesh:
 		return

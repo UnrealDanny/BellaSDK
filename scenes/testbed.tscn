@@ -16,8 +16,10 @@
 [ext_resource type="Texture2D" uid="uid://c7px1c0lmj08a" path="res://assets/images/Concept/HL2_key_art.png" id="15_cmbf5"]
 [ext_resource type="Texture2D" uid="uid://cbaw7tff5otyu" path="res://assets/images/Concept/NewCUMSLogo.png" id="15_ovkd5"]
 [ext_resource type="PackedScene" uid="uid://2mam2k0fdeew" path="res://scenes/button.tscn" id="16_cmtte"]
+[ext_resource type="PackedScene" uid="uid://cvwg0fpx8l1nb" path="res://scenes/checkpoint.tscn" id="16_f1d65"]
 [ext_resource type="Texture2D" uid="uid://dutrfuowe3e1q" path="res://assets/images/Concept/Key_art.PNG" id="16_k74e2"]
 [ext_resource type="PackedScene" uid="uid://ijiwot5majtv" path="res://scenes/gate.tscn" id="17_1kj1a"]
+[ext_resource type="PackedScene" uid="uid://c1tyucb7msue1" path="res://scenes/killfield.tscn" id="17_s52xd"]
 [ext_resource type="Texture2D" uid="uid://buul5ojyk5ysy" path="res://assets/images/dev_textures/standard_0_black_512.png" id="18_f1d65"]
 [ext_resource type="Texture2D" uid="uid://c3alx7afc0pag" path="res://assets/decals/Valve_Turn_Decal.png" id="18_k74e2"]
 [ext_resource type="PackedScene" uid="uid://wmyjhovjnea4" path="res://scenes/ladder.tscn" id="19_s52xd"]
@@ -199,22 +201,22 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.010000000475
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_1kj1a"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_s52xd"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_f1d65"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_v6x3g"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_1kj1a")
+noise = SubResource("FastNoiseLite_s52xd")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_s52xd"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_2dnug"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_1kj1a")
+noise = SubResource("FastNoiseLite_s52xd")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_v6x3g"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_82t7b"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -222,14 +224,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_f1d65")
+normal_texture = SubResource("NoiseTexture2D_v6x3g")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_s52xd")
+refraction_texture = SubResource("NoiseTexture2D_2dnug")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_2dnug"]
+[sub_resource type="Curve3D" id="Curve3D_o7her"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -347,14 +349,14 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.5
 
-[sub_resource type="Curve3D" id="Curve3D_82t7b"]
+[sub_resource type="Curve3D" id="Curve3D_gp0ty"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 13.678219, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_o7her"]
+[sub_resource type="Curve3D" id="Curve3D_o4kb0"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 13.678219, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -418,12 +420,13 @@ shape = SubResource("BoxShape3D_qfnet")
 mesh = SubResource("BoxMesh_qfnet")
 
 [node name="Label3D" type="Label3D" parent="InteractiveObjects/StaticBody3D" unique_id=1464146966]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0676928, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2547104, 0)
 billboard = 1
 text = "You can... or can you?
 (I don't remember what I wanted to do with this box)
 Can you move? Interact? Punch? 
-Anyway, just leave it be."
+Anyway, just leave it be.
+It's a bad box. We don't like him."
 
 [node name="ObjectInteract" parent="InteractiveObjects" unique_id=492986719 instance=ExtResource("3_cmbf5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8890557, 1.079334, 2.8127737)
@@ -472,17 +475,22 @@ outline_material = SubResource("ShaderMaterial_x3nsp")
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_v6x3g")
+material = SubResource("StandardMaterial3D_82t7b")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
-transform = Transform3D(2, 0, 0, 0, -8.742278e-08, 2, 0, -2, -8.742278e-08, 19.171274, 1.0914047, -10.287005)
+transform = Transform3D(-2, 1.7484555e-07, 7.642742e-15, 0, -8.742278e-08, 2, 1.7484555e-07, 2, 8.742278e-08, 30.55747, 1.0914047, 9.622128)
 base_color = Color(0.15686275, 0.16470589, 0.80784315, 0.62352943)
 speed = -2.0
 line_count = 1.0
 
+[node name="Label3D" type="Label3D" parent="InteractiveObjects/DevArrow" unique_id=67634551]
+billboard = 1
+text = "Just a simple dev arrow that points nowhere. 
+DO NOT GO THERE!"
+
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_2dnug")
+curve = SubResource("Curve3D_o7her")
 outline_material = SubResource("ShaderMaterial_arwuo")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
@@ -505,18 +513,21 @@ shape = SubResource("BoxShape3D_cmtte")
 [node name="dev_cylinder" parent="InteractiveObjects" unique_id=823712635 instance=ExtResource("25_m0e1v")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -18.713886, 1.1143469, -7.285309)
 label_text = "Start"
-speed = 2.0
+line_color = Color(0.95000005, 1, 0, 1)
+base_color = Color(0.7937857, 0.6450572, 0.24471739, 0.101960786)
 line_count = 3.0
+line_thickness = 0.453
 
 [node name="dev_cylinder2" parent="InteractiveObjects" unique_id=1267002505 instance=ExtResource("25_m0e1v")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17.509312, 8.791264, -4.9240975)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -15.869061, 8.420747, -7.5573573)
 label_text = "Finish"
 line_color = Color(0.7845677, 0, 0, 1)
+base_color = Color(0.7921569, 0.6431373, 0.24313726, 0.101960786)
 speed = -2.0
 line_count = 5.0
 
-[node name="dev_cylinder3" parent="InteractiveObjects" unique_id=273335996 instance=ExtResource("25_m0e1v")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20.975079, 0.14140491, -8.221913)
+[node name="Killfield" parent="InteractiveObjects" unique_id=2040269414 instance=ExtResource("17_s52xd")]
+transform = Transform3D(999.948, -0.0057186102, 8.462326, 5.6950054, 0.9999799, 2.810836, -8.478235, -0.0027625253, 999.9604, -54.831898, -50.675823, 7.9583044)
 
 [node name="Objects" type="Node3D" parent="." unique_id=469775133]
 
@@ -712,6 +723,41 @@ size = Vector3(0.36779785, 1.6879883, 7.3692627)
 transform = Transform3D(10.166564, 0.2858751, -3.199822e-09, 0, -1.7070244e-07, -0.99999994, -0.746229, 3.8947396, -4.3594117e-08, 24.447819, 2.8606133, 24.710028)
 use_collision = true
 size = Vector3(0.4975586, 4.4779053, 7.3692627)
+
+[node name="CSGBox3D107" type="CSGBox3D" parent="Objects/Level" unique_id=796579481]
+transform = Transform3D(-0.74622935, 3.8947392, -4.3594113e-08, 0, -1.7070242e-07, -0.9999998, -10.166563, -0.28587526, 3.1998237e-09, 24.447819, 2.8606133, 39.454704)
+use_collision = true
+size = Vector3(0.4975586, 4.4779053, 7.3692627)
+
+[node name="CSGBox3D108" type="CSGBox3D" parent="Objects/Level" unique_id=987936706]
+transform = Transform3D(1.8422958, 3.840912, -4.2991623e-08, -4.9085695e-15, -1.707024e-07, -0.9999998, -10.026056, 0.7057706, -7.899744e-09, 12.616495, 2.8606133, 40.012905)
+use_collision = true
+size = Vector3(0.4975586, 2.2571716, 7.3692627)
+
+[node name="CSGBox3D112" type="CSGBox3D" parent="Objects/Level" unique_id=983696376]
+transform = Transform3D(10.192702, -0.060181737, 6.7361494e-10, -4.9085695e-15, -1.707024e-07, -0.9999998, 0.15709436, 3.904753, -4.37062e-08, 12.621985, 0.044650197, 34.671585)
+use_collision = true
+size = Vector3(0.4975586, 2.439621, 1.7373352)
+
+[node name="CSGBox3D113" type="CSGBox3D" parent="Objects/Level" unique_id=999562855]
+transform = Transform3D(10.192702, -0.060181737, 6.7361494e-10, -4.9085695e-15, -1.707024e-07, -0.9999998, 0.15709436, 3.904753, -4.37062e-08, 4.4168825, 3.8017614, 34.667854)
+use_collision = true
+size = Vector3(0.45007324, 2.439621, 4.0712967)
+
+[node name="CSGBox3D111" type="CSGBox3D" parent="Objects/Level" unique_id=2093348262]
+transform = Transform3D(-0.4112339, 3.9020376, -4.3675808e-08, -4.9085695e-15, -1.707024e-07, -0.9999998, -10.185614, -0.15754086, 1.7633672e-09, -16.692896, 2.8606136, 38.755924)
+use_collision = true
+size = Vector3(0.7537842, 5.5097275, 7.3692627)
+
+[node name="CSGBox3D109" type="CSGBox3D" parent="Objects/Level" unique_id=2078756851]
+transform = Transform3D(-5.211725, 3.3128977, 0.13768652, -0.7244847, 0.46052742, -0.99047565, -8.730917, -2.015774, 2.256271e-08, 3.9429374, 2.0889504, 41.0472)
+use_collision = true
+size = Vector3(0.4975586, 3.283371, 5.811096)
+
+[node name="CSGBox3D110" type="CSGBox3D" parent="Objects/Level" unique_id=1983791785]
+transform = Transform3D(0.38794044, 2.4788656, -0.77177364, -1.9147854, -2.944619, -0.6294192, -10.004947, 0.6596704, 0.09053527, -5.002973, 2.8488464, 40.121677)
+use_collision = true
+size = Vector3(0.642334, 3.8936386, 5.811096)
 
 [node name="CSGBox3D37" type="CSGBox3D" parent="Objects/Level" unique_id=641484570]
 transform = Transform3D(51.285095, 0, 0, 0, -1.7070244e-07, -0.99999994, 0, 3.9052167, -4.371139e-08, -22.102856, -15.979387, -23.775528)
@@ -1010,6 +1056,31 @@ transform = Transform3D(3.9697073e-14, -1.0207993e-06, -0.9999999, 9.0816303e-07
 use_collision = true
 size = Vector3(1.9755859, 0.80773926, 1)
 
+[node name="CSGBox3D114" type="CSGBox3D" parent="Objects/Level" unique_id=292301358]
+transform = Transform3D(3.9697073e-14, -1.0207993e-06, -0.9999999, 9.0816303e-07, -11.676583, 8.742278e-08, -20.776344, -5.103997e-07, 1.9106855e-15, -4.7040367, 12.441423, 6.49306)
+use_collision = true
+size = Vector3(0.9569702, 0.80773926, 1)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="Objects/Level/CSGBox3D114" unique_id=1986525804]
+transform = Transform3D(1.0000001, 6.217249e-14, -4.830735e-22, -6.536993e-13, 1.0000113, -7.5495166e-14, 3.3881318e-21, -3.4106051e-12, 1, -0.035247773, 0.2652899, -0.0049390793)
+operation = 2
+size = Vector3(0.68743896, 0.07574463, 1.4891357)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="Objects/Level/CSGBox3D114" unique_id=497062077]
+transform = Transform3D(1.0000001, 6.3948846e-14, -4.830735e-22, -6.6080474e-13, 1.0000114, -7.6383344e-14, 3.3881318e-21, -3.4106051e-12, 1, -0.035247773, 0.094006896, -0.0049386024)
+operation = 2
+size = Vector3(0.68743896, 0.07574463, 1.4891357)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="Objects/Level/CSGBox3D114" unique_id=745240814]
+transform = Transform3D(1.0000001, 6.57252e-14, -4.830735e-22, -6.6791017e-13, 1.0000116, -7.727152e-14, 3.3881318e-21, -3.4106051e-12, 1, -0.035247773, -0.07727611, -0.0049386024)
+operation = 2
+size = Vector3(0.68743896, 0.07574463, 1.4891357)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="Objects/Level/CSGBox3D114" unique_id=385437765]
+transform = Transform3D(1.0000001, 6.750156e-14, -4.896909e-22, -6.750156e-13, 1.0000118, -7.81597e-14, 3.3881318e-21, -3.4106051e-12, 1, -0.035247773, -0.24855912, -0.0049381256)
+operation = 2
+size = Vector3(0.68743896, 0.07574463, 1.4891357)
+
 [node name="CSGBox3D21" type="CSGBox3D" parent="Objects/Level" unique_id=930774212]
 transform = Transform3D(3.9697073e-14, -1.0207993e-06, -0.9999999, 9.0816303e-07, -11.676583, 8.742278e-08, -20.776344, -5.103997e-07, 1.9106855e-15, -9.788509, 1.0160218, -6.4725)
 use_collision = true
@@ -1041,8 +1112,9 @@ use_collision = true
 size = Vector3(0.86364746, 0.78048706, 1)
 
 [node name="CSGBox3D11" type="CSGBox3D" parent="Objects/Level" unique_id=1758538071]
-transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -27.790962, 6.0030594, 22.638367)
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -27.790962, 6.0030594, 23.718777)
 use_collision = true
+size = Vector3(1.1040039, 1, 1)
 
 [node name="CSGBox3D12" type="CSGBox3D" parent="Objects/Level" unique_id=30554749]
 transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -33.575478, 19.665848, 22.638367)
@@ -1079,10 +1151,10 @@ use_collision = true
 size = Vector3(0.7796936, 0.23001099, 0.24633789)
 
 [node name="CSGBox3D88" type="CSGBox3D" parent="Objects/Level" unique_id=1617433572]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.238, -0.5, 2.01)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.238, -0.5, 3.835592)
 material_override = SubResource("StandardMaterial3D_62djl")
 use_collision = true
-size = Vector3(62.785225, 1, 68.68591)
+size = Vector3(62.785225, 1, 72.3371)
 
 [node name="Gate" parent="Objects/Level" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
@@ -1363,8 +1435,8 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -7.0
 size = Vector3(9.185547, 6.390686, 1)
 
 [node name="CSGBox3D11" type="CSGBox3D" parent="Objects/Treehouse" unique_id=1947318322]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -6.228739, 14.891232, -3.9747176)
-size = Vector3(2.3261719, 14.707062, 1)
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -5.6765537, 14.891232, -3.9747176)
+size = Vector3(2.3261719, 14.707062, 2.10437)
 
 [node name="CSGBox3D12" type="CSGBox3D" parent="Objects/Treehouse" unique_id=75910679]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -15.834912, 14.891232, -3.9747176)
@@ -2208,8 +2280,9 @@ to turn on flashlight
 font_size = 64
 
 [node name="flashlight4" type="Label3D" parent="Texts" unique_id=147133736]
-transform = Transform3D(0.99999976, 0, 1.5893264e-08, 0, 1, 0, -1.5893264e-08, 0, 0.99999976, -12.470351, 1.1433668, 2.5809937)
-text = "Jump keep moving forward"
+transform = Transform3D(0.99999976, 0, 1.5893264e-08, 0, 1, 0, -1.5893264e-08, 0, 0.99999976, -12.470351, 1.8934057, 2.5809937)
+text = "Jump keep moving forward.
+The door will open"
 font_size = 64
 
 [node name="flashlight2" type="Label3D" parent="Texts" unique_id=1840087466]
@@ -2230,12 +2303,12 @@ text = "Simple Reflection to see ourselves in the mirror"
 font_size = 64
 
 [node name="NoclipMessage" type="Label3D" parent="Texts" unique_id=844734458]
-transform = Transform3D(-0.22006746, 0, -0.9754845, 0, 1, 0, 0.9754845, 0, -0.22006746, -17.68492, 10.487091, 9.385421)
+transform = Transform3D(-0.22006746, 0, -0.9754845, 0, 1, 0, 0.9754845, 0, -0.22006746, -12.381027, 10.487091, 9.385421)
 billboard = 1
 text = "You're now free to explore. 
 But I still recommend you to go to 
-the left first and I'll show you all 
-the movement mechanics"
+the left first so I can show you all 
+the movement mechanics."
 font_size = 64
 
 [node name="NoclipMessage2" type="Label3D" parent="Texts" unique_id=1228957047]
@@ -2257,6 +2330,18 @@ it's not frustrating when
 several objects are located 
 close to each other."
 
+[node name="Label3D34" type="Label3D" parent="Texts" unique_id=113519479]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 32.811676, 1.4410331, 35.040794)
+double_sided = false
+text = "No, you can't squeeze in here.
+"
+
+[node name="Label3D35" type="Label3D" parent="Texts" unique_id=597754096]
+transform = Transform3D(1, 0, -1.7484555e-07, 0, 1, 0, 1.7484555e-07, 0, 1, 33.37382, 1.4410331, 35.109783)
+double_sided = false
+text = "What did I tell you?! 
+Ya silly goose"
+
 [node name="Label3D2" type="Label3D" parent="Texts" unique_id=1955241809]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 26.01273, 2.6016898, -4.490615)
 text = "Simple Button Check"
@@ -2277,23 +2362,55 @@ No pain - no gain
 gives up first this time, ya silly bitch!"
 
 [node name="Label3D14" type="Label3D" parent="Texts" unique_id=1432352638]
-transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -17.39427, 1.9890077, -7.182635)
-text = "Some dev tools I always wanted. 
-I will explain to you the concept of 
-LD Atoms later."
+transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -16.396633, 2.2904575, -7.182635)
+text = "Another little LD spiral. 
+There can be spirals
+ within spirals or loops, etc."
+
+[node name="Label3D28" type="Label3D" parent="Texts" unique_id=381641253]
+transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -26.38069, 5.2438393, -7.182635)
+text = "Don't be afraid to jump down
+and check my Checkpoint System.
+hehehe"
+
+[node name="Label3D31" type="Label3D" parent="Texts" unique_id=1989400830]
+transform = Transform3D(-2.1855693e-07, 0, -1, 0, 1, 0, 1, 0, -2.1855693e-07, -22.344017, 0.3380654, -7.182635)
+text = "Still nothing."
+
+[node name="Label3D32" type="Label3D" parent="Texts" unique_id=731050787]
+transform = Transform3D(3.059797e-07, 0, 1, 0, 1, 0, -1, 0, 3.059797e-07, -19.10282, 1.780824, 32.41566)
+text = "What are you looking for? 
+Some meaning of life? 
+Movement is life/fundamental property 
+of all matter. 
+There is no end to our work.
+We will always be unsatisfied 
+with the current state of things.
+Do eudaimonia 
+but only when your parent
+ aren't around."
+
+[node name="Label3D33" type="Label3D" parent="Texts" unique_id=425752499]
+transform = Transform3D(-2.1855693e-07, 0, -1, 0, 1, 0, 1, 0, -2.1855693e-07, -3.8804333, -21.782942, -21.912325)
+text = "Alright, FINE! Here is some text
+flying in the air in the middle of nothing. 
+Are you happy now? You made me go all this way to write it 
+instead of adding cool new weapons and shit.
+SHAME ON YOU! SHAME!a"
 
 [node name="Label3D15" type="Label3D" parent="Texts" unique_id=1188867572]
-transform = Transform3D(-2.1855693e-07, 0, -1, 0, 1, 0, 1, 0, -2.1855693e-07, -17.39427, 11.812738, -4.067454)
-text = "For example this 
-placement of Start and Finish points is called 
-\"SPIRAL\": S and F are located 
-nearby but you still have to walk a mile 
-to get there."
+transform = Transform3D(-2.1855693e-07, 0, -1, 0, 1, 0, 1, 0, -2.1855693e-07, -16.748266, 11.812738, -7.116182)
+billboard = 1
+text = "Little Spiral. 
+Small distance but long travel"
 
 [node name="Label3D5" type="Label3D" parent="Texts" unique_id=805573685]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.226962, 3.4508157, -6.350483)
 billboard = 1
-text = "I like my ladders like I like my brain - smooth"
+text = "CTRL to crouch. 
+These stairs are as smooth as a smooth jazz.
+tu-tu-tu-too-too-bam-bam-PARA-PARA-PARA-PARA-BOOOM!
+SMOOTH JAZZ!!!"
 
 [node name="Label3D6" type="Label3D" parent="Texts" unique_id=1517436140]
 transform = Transform3D(-0.8660254, 0, -0.50000006, 0, 1, 0, 0.50000006, 0, -0.8660254, -15.692347, 3.0627046, -16.539497)
@@ -2335,12 +2452,31 @@ transform = Transform3D(1, 0, 0, 0, 0.99969417, -0.024728796, 0, 0.024728796, 0.
 text = "Wanna swim?"
 
 [node name="Label3D12" type="Label3D" parent="Texts" unique_id=1621291626]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -3.6817174, 3.2918906, 18.950762)
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, -5.0520873, 3.804318, 21.48072)
 text = "LD trick SPIRAL
-start and finish are located
+START and FINISH are located
  nearby but you have to 
-travel a lot in order to go 
-from point A to B."
+travel a lot in order to get 
+from point A to B.
+Without using noclip, find out how much time it takes to 
+overcome these 2cm 
+(or whatever it is in your kangaroo imperial system ya filthy animals!!!)
+ of wall.
+*
+One of the coolest LD trick I found. Hopefully you'll like it, too."
+
+[node name="Label3D27" type="Label3D" parent="Texts" unique_id=875234757]
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -8.582672, 3.804318, 29.684008)
+text = "WASD	  - move
+SPACE	  - jump
+CTRL    - crouch
+Q          - noclip
+~           - console
+E           - interact
+F           - flashlight
+Left Mouse Button - SHOOT!!! "
+font_size = 90
+horizontal_alignment = 0
 
 [node name="Label3D13" type="Label3D" parent="Texts" unique_id=1908273057]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 3.024611, 1.4537933, 1.1883035)
@@ -2375,7 +2511,8 @@ text = "I'm Tarzan!"
 [node name="Label3D21" type="Label3D" parent="Texts" unique_id=1780340648]
 transform = Transform3D(0.9696207, 0, -0.2446135, 0, 1, 0, 0.2446135, 0, 0.9696207, 0.19362307, 13.272036, -60.181744)
 billboard = 1
-text = "Haro, every-nyan. You now a bird."
+text = "Haro, every-nyan. You now a bird.
+Fine, tank u."
 
 [node name="Label3D20" type="Label3D" parent="Texts" unique_id=1892160949]
 transform = Transform3D(-0.57741606, 0, 0.8164501, 0, 1, 0, -0.8164501, 0, -0.57741606, 18.065504, 17.218273, -33.99815)
@@ -2393,6 +2530,16 @@ billboard = 1
 text = "A shotgun?! 
 Yes. It. Is
 "
+
+[node name="Label3D29" type="Label3D" parent="Texts" unique_id=2023318383]
+transform = Transform3D(-0.98561215, 0, 0.16902277, 0, 1, 0, -0.16902277, 0, -0.98561215, 34.16998, 12.9478445, -14.992445)
+billboard = 1
+text = "PUZZLE: shoot some ropes and the gate will open."
+
+[node name="Label3D30" type="Label3D" parent="Texts" unique_id=1795465652]
+transform = Transform3D(-0.98561215, 0, 0.16902277, 0, 1, 0, -0.16902277, 0, -0.98561215, 36.145195, 14.117735, -9.824662)
+billboard = 1
+text = "Evil goons"
 
 [node name="Label3D25" type="Label3D" parent="Texts" unique_id=1934436565]
 transform = Transform3D(-4.3711385e-08, 0, -0.99999994, 0, 1, 0, 0.99999994, 0, -4.3711385e-08, 36.168186, 1.8234899, -8.11839)
@@ -2421,9 +2568,13 @@ Shoot its sides and then its bottom to see what would happen.
 NEAT!"
 font_size = 50
 
+[node name="Checkpoint" parent="Texts" unique_id=1794218671 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.864826, -9.775162e-06, -1.8088872)
+trigger_size = Vector3(5, 2, 5)
+trigger_offset = Vector3(0, 1, 1.065)
+
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(1.0331603e-07, 0, -1, 0, 1, 0, 1, 0, 1.0331603e-07, 34.818005, -9.417534e-06, -11.836215)
-visible = false
+transform = Transform3D(-7.152952e-08, 0, -1, 0, 1, 0, 1, 0, -7.152952e-08, 34.986652, -9.775162e-06, -11.204421)
 
 [node name="Paintings" type="Node3D" parent="." unique_id=767419484]
 
@@ -2522,7 +2673,7 @@ transform = Transform3D(17.32996, 0, 0, 0, 2.7884247, 0, 0, 0, 1.0000005, 0, 0, 
 mesh = SubResource("QuadMesh_w7kh3")
 
 [node name="Sprite3D8" type="Sprite3D" parent="Paintings" unique_id=1547521021]
-transform = Transform3D(1.3113417e-08, 0, -0.1, 0, 0.1, 0, 0.1, 0, 1.3113417e-08, 36.02235, 2.6784093, -11.937256)
+transform = Transform3D(1.3113417e-08, 0, -0.1, 0, 0.1, 0, 0.1, 0, 1.3113417e-08, 36.02235, 2.6784093, -11.29207)
 texture = ExtResource("18_k74e2")
 
 [node name="Label3D" type="Label3D" parent="Paintings/Sprite3D8" unique_id=2000101014]
@@ -2609,16 +2760,62 @@ height = 25.0
 
 [node name="UniversalCable3D" parent="." unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_82t7b")
+curve = SubResource("Curve3D_gp0ty")
 
 [node name="UniversalCable3D2" parent="." unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_o7her")
+curve = SubResource("Curve3D_o4kb0")
 
-[node name="Valve" parent="." unique_id=607184189 node_paths=PackedStringArray("targets", "valve_mesh") instance=ExtResource("36_cmtte")]
-transform = Transform3D(1.3113416e-07, 0, -1, 0, 1, 0, 1, 0, 1.3113416e-07, 36.022713, 1.4478667, -11.823307)
+[node name="Valve" parent="." unique_id=607184189 node_paths=PackedStringArray("targets") instance=ExtResource("36_cmtte")]
+transform = Transform3D(-4.371139e-08, -1, 5.9604645e-08, 7.319568e-16, -5.9604645e-08, -1, 1, -4.371139e-08, 2.283001e-15, 35.992916, 1.4724665, -11.279185)
 targets = [NodePath("../Objects/Level/Gate")]
-valve_mesh = NodePath(".")
-turn_duration = 2.0
+turn_duration = 1.0
+turn_clockwise = false
+is_back_and_forth = false
+reverts_on_release = true
 lock_when_finished = true
 visual_rotations = 3.0
+spin_axis = Vector3(0, 1, 0)
+
+[node name="Checkpoint2" parent="." unique_id=393278115 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.005507, 3.0070364, -7.4562755)
+trigger_size = Vector3(2.635, 2, 3.885)
+
+[node name="Checkpoint" parent="." unique_id=1363167234 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.48194, 8.741266, 9.76771)
+trigger_size = Vector3(4.415, 2, 5.765)
+
+[node name="Checkpoint3" parent="." unique_id=672838953 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.27378, -9.655952e-06, 14.75957)
+trigger_size = Vector3(5.965, 4.515, 2.72)
+trigger_offset = Vector3(-1.945, 2.18, 0)
+
+[node name="Checkpoint4" parent="." unique_id=1050881134 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.91617, -9.298325e-06, 18.390789)
+trigger_size = Vector3(6.17, 2, 2)
+trigger_offset = Vector3(2.115, 1, 0)
+
+[node name="Checkpoint5" parent="." unique_id=443240868 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20.55965, 0.19381905, -24.744213)
+trigger_size = Vector3(4.9, 4, 25)
+trigger_offset = Vector3(0, 2, 0)
+
+[node name="Checkpoint6" parent="." unique_id=1182861450 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.6369042, 11.569578, -49.43525)
+trigger_size = Vector3(10, 4, 2)
+trigger_offset = Vector3(-4.115, 2, 0)
+
+[node name="Checkpoint7" parent="." unique_id=1320243993 instance=ExtResource("16_f1d65")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26.739439, 11.569578, -23.195477)
+trigger_size = Vector3(15.665, 8, 2)
+trigger_offset = Vector3(5.295, 4, 0)
+
+[node name="dev_cylinder" parent="." unique_id=919634728 instance=ExtResource("25_m0e1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.2782054, 0.049990226, 19.68423)
+label_text = "Start"
+base_color = Color(0.74509805, 0.8, 0, 0.101960786)
+
+[node name="dev_cylinder2" parent="." unique_id=1679673777 instance=ExtResource("25_m0e1v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.043087, 0.049990226, 19.155289)
+label_text = "Finish"
+base_color = Color(0.74509805, 0.8, 0, 0.101960786)

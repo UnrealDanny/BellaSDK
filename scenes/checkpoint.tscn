@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://cvwg0fpx8l1nb"]
+
+[ext_resource type="Script" uid="uid://b5uwc0fwq1dax" path="res://scripts/checkpoint.gd" id="1_vsimk"]
+[ext_resource type="ArrayMesh" uid="uid://bpuvpvb5ebdda" path="res://assets/dev_meshes/dev_cyllinder.obj" id="1_yyywg"]
+[ext_resource type="Shader" uid="uid://g5aps1jw4kxy" path="res://assets/shaders/holographic_scanner.gdshader" id="2_yqsag"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yqsag"]
+albedo_color = Color(0.66999996, 1, 0.64, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_vsimk"]
+material = SubResource("StandardMaterial3D_yqsag")
+size = Vector3(1.5, 0.1, 1.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ywqth"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vsimk"]
+transparency = 1
+albedo_color = Color(1, 1, 0.078431375, 0.19607843)
+
+[sub_resource type="BoxMesh" id="BoxMesh_yqsag"]
+material = SubResource("StandardMaterial3D_vsimk")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_c45tw"]
+render_priority = 0
+shader = ExtResource("2_yqsag")
+
+[node name="Checkpoint" type="Area3D" unique_id=1794218671]
+script = ExtResource("1_vsimk")
+
+[node name="Base" type="MeshInstance3D" parent="." unique_id=1127149194]
+mesh = SubResource("BoxMesh_vsimk")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1043040143]
+shape = SubResource("BoxShape3D_ywqth")
+
+[node name="TriggerField" type="MeshInstance3D" parent="." unique_id=1783728773]
+mesh = SubResource("BoxMesh_yqsag")
+
+[node name="HologramMesh" type="MeshInstance3D" parent="." unique_id=1510068088]
+transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, 0, 1, 0)
+material_override = SubResource("ShaderMaterial_c45tw")
+mesh = ExtResource("1_yyywg")
+
+[node name="Label3D" type="Label3D" parent="." unique_id=674038350]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+billboard = 1

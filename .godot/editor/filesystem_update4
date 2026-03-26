@@ -1,3 +1,4 @@
+res://scenes/testbed.tscn
 res://assets/shaders/circle_shader.tres
 res://assets/shaders/outline_shader_adaptable.gdshader
 res://assets/shaders/ui_vignette.gdshader
@@ -7,7 +8,15 @@ res://assets/shaders/holographic_scanner.gdshader
 res://assets/shaders/outline_shader.gdshader
 res://assets/shaders/SmartOutlineMaterial.gdshader
 res://scenes/valve.tscn
-res://scenes/testbed.tscn
 res://scripts/valve.gd
-res://scenes/gate.tscn
-res://scenes/gate.gd
+res://scripts/button.gd
+res://scripts/highlight_component.gd
+res://scenes/dev_cylinder.tscn
+res://scripts/save_system.gd
+res://scenes/checkpoint.tscn
+res://scripts/checkpoint.gd
+res://scenes/killfield.tscn
+res://scripts/killfield.gd
+res://scripts/Player.gd
+res://scenes/Player.tscn
+res://scripts/dev_cylinder.gd

@@ -21,6 +21,7 @@ config/icon="uid://cijw0jse7sfs8"
 
 Events="*uid://duejfvfifyd20"
 DebugManager="*uid://psgaa5vua8a3"
+SaveSystem="*uid://c3xdhyb03qflr"
 
 [display]
 

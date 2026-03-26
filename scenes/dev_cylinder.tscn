@@ -17,8 +17,9 @@ rings = 0
 
 [node name="dev_cylinder" type="Node3D" unique_id=823712635]
 script = ExtResource("3_p8bl0")
+speed = -1.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1416637240]
+[node name="Hologram" type="MeshInstance3D" parent="." unique_id=1416637240]
 transform = Transform3D(0.5, 0, 0, 0, 1, 0, 0, 0, 0.5, 0, 1, 0)
 material_override = SubResource("ShaderMaterial_p8bl0")
 instance_shader_parameters/base_color = Color(0, 0.2, 0.8, 0.1)
@@ -26,10 +27,10 @@ instance_shader_parameters/glow_multiplier = 2.0
 instance_shader_parameters/line_color = Color(0, 1, 0, 1)
 instance_shader_parameters/line_count = 2.0
 instance_shader_parameters/line_thickness = 0.1
-instance_shader_parameters/speed = 1.0
+instance_shader_parameters/speed = -1.0
 mesh = ExtResource("2_p8bl0")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=2145668829]
+[node name="Base" type="MeshInstance3D" parent="." unique_id=2145668829]
 mesh = SubResource("CylinderMesh_agbcc")
 
 [node name="Label3D" type="Label3D" parent="." unique_id=561421863]

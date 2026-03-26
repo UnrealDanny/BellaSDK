@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://dudx3baxpmytw"]
 
 [ext_resource type="Script" uid="uid://dmt1r3bg7rmth" path="res://scripts/valve.gd" id="1_epeg1"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="2_bxo18"]
 [ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_tqme0"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_bxo18"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
+size = Vector3(0.5, 0.2, 0.5)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_87b3n"]
 albedo_color = Color(1, 0, 0, 1)
@@ -27,36 +32,42 @@ height = 0.1
 radial_segments = 16
 rings = 0
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
-size = Vector3(1, 1, 0.2)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sid1s"]
+render_priority = 0
+shader = ExtResource("2_bxo18")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
 
-[node name="Valve" type="Node3D" unique_id=607184189]
+[node name="Valve" type="StaticBody3D" unique_id=86858914]
 script = ExtResource("1_epeg1")
+spin_axis = null
 
-[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=86858914]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=111399811]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
-mesh = SubResource("TorusMesh_87b3n")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="StaticBody3D" unique_id=1258839770]
-mesh = SubResource("BoxMesh_87b3n")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="StaticBody3D" unique_id=1315402170]
-transform = Transform3D(-4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
-mesh = SubResource("BoxMesh_87b3n")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="StaticBody3D" unique_id=619858856]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, -0.0342537)
-mesh = SubResource("CylinderMesh_tqme0")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1748411192]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.030303955)
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1748411192]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.10580444, 0.030303955)
 shape = SubResource("BoxShape3D_epeg1")
 
-[node name="Interact_Component" type="Node" parent="StaticBody3D" unique_id=1430550788]
+[node name="Wheel" type="MeshInstance3D" parent="." unique_id=111399811]
+mesh = SubResource("TorusMesh_87b3n")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Wheel" unique_id=1258839770]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("BoxMesh_87b3n")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Wheel" unique_id=1315402170]
+transform = Transform3D(-4.371139e-08, 1, 0, 4.371139e-08, 1.9106855e-15, 1, 1, 4.371139e-08, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("BoxMesh_87b3n")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Wheel" unique_id=619858856]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0342537, 1.4972769e-09)
+mesh = SubResource("CylinderMesh_tqme0")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=1430550788]
 script = ExtResource("2_tqme0")
 metadata/_custom_type_script = "uid://cqawbvidns1th"
 
-[connection signal="focused" from="StaticBody3D/Interact_Component" to="." method="_on_interact_component_focused"]
-[connection signal="unfocused" from="StaticBody3D/Interact_Component" to="." method="_on_interact_component_unfocused"]
+[node name="HighlightComponent" type="Node" parent="." unique_id=371993135]
+script = ExtResource("3_bxo18")
+outline_material = SubResource("ShaderMaterial_sid1s")
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"

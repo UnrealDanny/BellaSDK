@@ -47,6 +47,8 @@ var sprint_active 	:= false
 var flying 			:= false
 var swimming 		:= false
 
+var is_stunned := false
+
 # INPUT VARS
 
 var mouse_sensitivity := 0.5
@@ -269,6 +271,11 @@ func _slide_camera_smooth_back_to_origin(delta):
 	eyes.position.y = move_toward(eyes.position.y, 0.0, move_amount)
 
 func _physics_process(delta: float) -> void:
+	# --- NEW: THE GLUE CHECK ---
+	if is_stunned:
+		velocity = Vector3.ZERO
+		move_and_slide()
+		return # This skips the ENTIRE rest of the physics script!
 	# ---------------------------------------------------------
 	# 1. GLOBAL GATHERING (Things that apply to every state)
 	# ---------------------------------------------------------
@@ -1058,3 +1065,22 @@ func _handle_headbob(delta: float) -> void:
 
 		eyes.position.y = lerp(eyes.position.y, head_bobbing_vector.y * (head_bobbing_current_intensity/2.0), delta * lerp_speed)
 		eyes.position.x = lerp(eyes.position.x, head_bobbing_vector.x * head_bobbing_current_intensity, delta * lerp_speed)
+
+# --------------------------------------
+# TELEPORT & STUN SYSTEM
+# --------------------------------------
+func teleport_to(new_position: Vector3, stun_time: float = 0.1) -> void:
+	# 1. Instantly move the player
+	global_position = new_position
+	
+	# 2. Hard reset ALL movement math
+	velocity = Vector3.ZERO
+	last_velocity = Vector3.ZERO
+	direction = Vector3.ZERO
+	input_dir = Vector2.ZERO
+	
+	# 3. GLUE THE PLAYER
+	is_stunned = true
+	
+	# 4. Create a tiny invisible timer that un-stuns them automatically
+	get_tree().create_timer(stun_time).timeout.connect(func(): is_stunned = false)
