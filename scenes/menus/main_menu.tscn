@@ -17,17 +17,12 @@ bg_color = Color(0.08, 0.08, 0.08, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ovrgc"]
 bg_color = Color(0.25882354, 0.25882354, 0.25882354, 1)
 
-[node name="MainMenu" type="Control" unique_id=1107163054]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="MainMenu" type="CanvasLayer" unique_id=1244757478]
+process_mode = 3
+layer = 10
 script = ExtResource("1_2o76q")
 
 [node name="Background" type="Panel" parent="." unique_id=267339091]
-layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -36,7 +31,6 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_6bivr")
 
 [node name="MainButtons" type="VBoxContainer" parent="." unique_id=988684812]
-layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -81,15 +75,14 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
 text = "Exit"
 
 [node name="Name" type="Label" parent="." unique_id=1725804782]
-layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -166.75
+offset_left = -491.0
 offset_top = -226.0
-offset_right = 166.75
+offset_right = 491.0
 offset_bottom = -102.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -101,8 +94,6 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Options" type="Panel" parent="." unique_id=1979166347]
-visible = false
-layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -160,11 +151,107 @@ offset_right = 249.75
 offset_bottom = 89.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
 text = "Fullscreen"
 script = ExtResource("4_6bivr")
+
+[node name="MarginContainer" type="MarginContainer" parent="Options" unique_id=75243293]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+theme_override_constants/margin_top = 100
+
+[node name="OptionsButtons" type="VBoxContainer" parent="Options/MarginContainer" unique_id=16186041]
+layout_mode = 2
+
+[node name="Contols" type="Button" parent="Options/MarginContainer/OptionsButtons" unique_id=1783187329]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Controls"
+
+[node name="ControlsPanel" type="Panel" parent="." unique_id=653725202]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -441.0
+offset_top = -289.0
+offset_right = 441.0
+offset_bottom = 289.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BackControls" type="Button" parent="ControlsPanel" unique_id=776633126]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -64.5
+offset_top = -73.0
+offset_right = 64.5
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 64
+text = "Back"
+
+[node name="ResetButton" type="Button" parent="ControlsPanel" unique_id=1662859474]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -8.0
+offset_top = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Reset Controls"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ControlsPanel" unique_id=2013107556]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 330.0
+offset_bottom = 70.0
+theme_override_constants/separation = 10
+
+[node name="RemapButtonTemplate" type="Button" parent="ControlsPanel/VBoxContainer" unique_id=1766891879]
+visible = false
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+toggle_mode = true
+
+[node name="ConflictPanel" type="PanelContainer" parent="ControlsPanel" unique_id=1975698769]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="ConflictLabel" type="Label" parent="ControlsPanel/ConflictPanel" unique_id=710127501]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 8
 
 [connection signal="pressed" from="MainButtons/StartGame" to="." method="_on_start_game_pressed"]
 [connection signal="pressed" from="MainButtons/Options" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="MainButtons/Exit" to="." method="_on_exit_pressed"]
-[connection signal="pressed" from="Options/Back" to="." method="_on_back_options_pressed"]
+[connection signal="pressed" from="Options/Back" to="." method="_on_back_pressed"]
 [connection signal="toggled" from="Options/FullscreenControl" to="Options/FullscreenControl" method="_on_toggled"]
+[connection signal="pressed" from="Options/MarginContainer/OptionsButtons/Contols" to="." method="_on_contols_pressed"]
+[connection signal="pressed" from="ControlsPanel/BackControls" to="." method="_on_back_controls_pressed"]
+[connection signal="pressed" from="ControlsPanel/ResetButton" to="." method="_on_reset_button_pressed"]

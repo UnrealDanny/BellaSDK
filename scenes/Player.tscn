@@ -251,6 +251,7 @@ _data = {
 height = 1.2
 
 [node name="Player" type="CharacterBody3D" unique_id=1502339238 groups=["player"]]
+process_mode = 3
 script = ExtResource("1_34orh")
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]

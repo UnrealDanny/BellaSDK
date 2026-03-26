@@ -119,7 +119,7 @@ func _on_player_crouched(crouching: bool) -> void:
 # --- DEBUG & NOCLIP LOGIC ---
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("debug_menu"):
+	if event.is_action_pressed("console"):
 		var is_open = not debug_panel.visible
 		debug_panel.visible = is_open
 		get_tree().paused = is_open

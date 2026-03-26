@@ -152,6 +152,11 @@ var ZIPLINE_HANG_OFFSET: float = 1.9 # Distance from the wire to the player's or
 # SHOOT VARS
 var damage = 100
 
+# PAUSE VARS
+var is_paused : bool = false
+var menu_scene = preload("res://scenes/menus/main_menu.tscn")
+var menu_instance
+
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
@@ -164,6 +169,11 @@ var is_using_zoom: bool = false
 # MAIN SCRIPT
 # --------------------------------------
 func _ready() -> void:
+	# 1. Spawn the menu into the game, but keep it hidden
+	menu_instance = menu_scene.instantiate()
+	add_child(menu_instance)
+	menu_instance.hide()
+	
 	Events.debug_menu_toggled.connect(_on_debug_menu_toggled)
 	Events.noclip_ui_button_pressed.connect(toggle_noclip)
 	
@@ -178,6 +188,9 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	
 func _unhandled_input(event: InputEvent) -> void:
+	if is_paused: 
+		return # Block shooting and scrolling while paused
+		
 	if event is InputEventMouseButton and event.is_pressed():
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			noclip_speed_multiplier = min(100, noclip_speed_multiplier * 1.1)
@@ -196,6 +209,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				current_weapon.shoot(cam) # Pass your Camera3D reference here
 	
 func _input(event: InputEvent) -> void:
+	if is_paused: 
+		return # Block camera movement while paused
+		
 	# MOUSE LOOKING LOGIC
 	if event is InputEventMouseMotion:
 		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
@@ -335,6 +351,14 @@ func _physics_process(delta: float) -> void:
 	_slide_camera_smooth_back_to_origin(delta)		
 	
 func _process(delta: float) -> void:
+	# 1. Listen for the ESC key FIRST
+	if Input.is_action_just_pressed("ui_cancel"):
+		toggle_pause()
+		
+	# 2. IF WE ARE PAUSED, STOP RUNNING THE REST OF THIS FUNCTION!
+	if is_paused:
+		return
+		
 	# 1. FLASHLIGHT ANIMATION
 	update_flashlight(delta)
 	if Input.is_action_just_pressed("flashlight"):
@@ -1084,3 +1108,21 @@ func teleport_to(new_position: Vector3, stun_time: float = 0.1) -> void:
 	
 	# 4. Create a tiny invisible timer that un-stuns them automatically
 	get_tree().create_timer(stun_time).timeout.connect(func(): is_stunned = false)
+	
+# --------------------------------------
+# PAUSE MENU
+# --------------------------------------
+func toggle_pause():
+	is_paused = !is_paused
+	
+	# 3. Pause or unpause the engine
+	get_tree().paused = is_paused
+	
+	if is_paused:
+		menu_instance.show()
+		# Crucial for first-person: Free the mouse so you can click menu buttons
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE 
+	else:
+		menu_instance.hide()
+		# Lock the mouse back to the center of the screen for camera movement
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
