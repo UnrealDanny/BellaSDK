@@ -197,21 +197,34 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			noclip_speed_multiplier = max(0.1, noclip_speed_multiplier * 0.9)
 			
-	# --- COMBAT INPUTS ---
+	# --- COMBAT & THROW INPUTS ---
 	if event.is_action_pressed("shoot"): 
-		# Check if we have a weapon equipped in our hands
-		var holder = %WeaponHolder
-		if holder.get_child_count() > 0:
-			var current_weapon = holder.get_child(0)
+		
+		# 1. IF HOLDING A BOX: Throw it and show the weapon again!
+		if held_object:
+			var throw_force = 12.0
+			var throw_direction = -cam.global_transform.basis.z.normalized()
+			throw_direction.y += 0.2 
+			held_object.throw(throw_direction.normalized() * throw_force)
+			held_object = null
 			
-			# If the weapon has a shoot function, call it and pass the camera!
-			if current_weapon.has_method("shoot"):
-				current_weapon.shoot(cam) # Pass your Camera3D reference here
+			var weapon_holder = get_node_or_null("%WeaponHolder")
+			if weapon_holder:
+				weapon_holder.show()
+				
+		# 2. IF HANDS ARE EMPTY: Shoot the weapon!
+		else:
+			var holder = get_node_or_null("%WeaponHolder")
+			if holder and holder.get_child_count() > 0:
+				var current_weapon = holder.get_child(0)
+				if current_weapon.has_method("shoot"):
+					current_weapon.shoot(cam)
 	
 func _input(event: InputEvent) -> void:
-	if is_paused: 
-		return # Block camera movement while paused
-		
+# THE FIX: Ignore all mouse movement if any menu is open!
+	if is_menu_open or is_paused: 
+		return
+
 	# MOUSE LOOKING LOGIC
 	if event is InputEventMouseMotion:
 		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
@@ -287,11 +300,11 @@ func _slide_camera_smooth_back_to_origin(delta):
 	eyes.position.y = move_toward(eyes.position.y, 0.0, move_amount)
 
 func _physics_process(delta: float) -> void:
-	# --- NEW: THE GLUE CHECK ---
-	if is_stunned:
+# Keep the player frozen if paused or stunned
+	if is_paused or is_stunned:
 		velocity = Vector3.ZERO
 		move_and_slide()
-		return # This skips the ENTIRE rest of the physics script!
+		return
 	# ---------------------------------------------------------
 	# 1. GLOBAL GATHERING (Things that apply to every state)
 	# ---------------------------------------------------------
@@ -364,28 +377,43 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("flashlight"):
 		flashlight.visible = !flashlight.visible
 		
-	# 2. INTERACT & THROW
+# 2. INTERACT & DROP
 	current_interactable = get_interactable_component_at_shapecast()
 	if current_interactable:
 		current_interactable.hover_cursor(self)
 	
 	if Input.is_action_just_pressed("interact"):
+		
+		# IF DROPPING AN OBJECT
 		if held_object:
 			held_object.drop()
 			held_object = null
+			
+			# Bring the gun back up!
+			var weapon_holder = get_node_or_null("%WeaponHolder")
+			if weapon_holder:
+				weapon_holder.show()
+				
+		# IF PICKING UP OR PRESSING BUTTONS
 		elif current_interactable:
 			current_interactable.interact_with()
 			var parent_node = current_interactable.get_parent()
+			
 			if parent_node is PickableObject:
 				held_object = parent_node
 				held_object.pick_up(hold_position, self)
 				
-	if Input.is_action_just_pressed("shoot") and held_object:
-		var throw_force = 12.0
-		var throw_direction = -cam.global_transform.basis.z.normalized()
-		throw_direction.y += 0.2 
-		held_object.throw(throw_direction.normalized() * throw_force)
-		held_object = null
+				# Put the gun away while holding the box!
+				var weapon_holder = get_node_or_null("%WeaponHolder")
+				if weapon_holder:
+					weapon_holder.hide()
+				
+	#if Input.is_action_just_pressed("shoot") and held_object:
+		#var throw_force = 12.0
+		#var throw_direction = -cam.global_transform.basis.z.normalized()
+		#throw_direction.y += 0.2 
+		#held_object.throw(throw_direction.normalized() * throw_force)
+		#held_object = null
 
 	# 3. CAMERA ZOOM CONTROLS
 	if Input.is_action_just_pressed("zoom"):

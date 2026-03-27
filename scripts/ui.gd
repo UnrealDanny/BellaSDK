@@ -27,6 +27,9 @@ var ui_lerp_speed: float = 15.0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	get_tree().paused = false
+	debug_panel.hide()
+	
 	metrics_button.pressed.connect(_on_metrics_button_pressed)
 	
 	# Connect signals
@@ -118,7 +121,7 @@ func _on_player_crouched(crouching: bool) -> void:
 
 # --- DEBUG & NOCLIP LOGIC ---
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("console"):
 		var is_open = not debug_panel.visible
 		debug_panel.visible = is_open

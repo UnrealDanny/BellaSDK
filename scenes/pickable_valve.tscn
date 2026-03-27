@@ -1,0 +1,60 @@
+[gd_scene format=3 uid="uid://ducdt15ffnmg4"]
+
+[ext_resource type="PackedScene" uid="uid://mqae3mth7tfx" path="res://scenes/pickable_object.tscn" id="1_a558m"]
+[ext_resource type="Script" uid="uid://b5nnqdx26hrl8" path="res://scripts/pickable_valve.gd" id="2_hwiju"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="3_5yorj"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m7mha"]
+render_priority = 0
+shader = ExtResource("3_5yorj")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a558m"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_hwiju"]
+material = SubResource("StandardMaterial3D_a558m")
+inner_radius = 0.25
+outer_radius = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hwiju"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_5yorj"]
+material = SubResource("StandardMaterial3D_hwiju")
+size = Vector3(0.01, 0.5, 0.01)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_m7mha"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.1
+radial_segments = 16
+rings = 0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_5yorj"]
+size = Vector3(0.3, 0.01, 0.3)
+
+[node name="PickableValve" unique_id=594279821 instance=ExtResource("1_a558m")]
+script = ExtResource("2_hwiju")
+outline_material = SubResource("ShaderMaterial_m7mha")
+
+[node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
+mesh = SubResource("TorusMesh_hwiju")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MeshInstance3D" index="0" unique_id=1303871415]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("BoxMesh_5yorj")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="MeshInstance3D" index="1" unique_id=1917602715]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("BoxMesh_5yorj")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="MeshInstance3D" index="2" unique_id=319106772]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+mesh = SubResource("CylinderMesh_m7mha")
+
+[node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
+shape = SubResource("BoxShape3D_5yorj")

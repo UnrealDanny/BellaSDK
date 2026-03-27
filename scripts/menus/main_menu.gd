@@ -77,6 +77,7 @@ func update_button_text(button: Button, action: String) -> void:
 	button.text = action.capitalize() + ": " + key_name
 
 func _on_start_game_pressed() -> void:
+	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/testbed.tscn")
 	
 func _on_exit_pressed() -> void:
@@ -228,3 +229,8 @@ func execute_swap(new_event: InputEvent):
 	get_tree().create_timer(2.0).timeout.connect(func(): %ConflictPanel.hide())
 	
 	get_viewport().set_input_as_handled()
+
+func _on_resume_pressed() -> void:
+	# Since the player is the parent of this menu instance:
+	if get_parent().has_method("toggle_pause"):
+		get_parent().toggle_pause()

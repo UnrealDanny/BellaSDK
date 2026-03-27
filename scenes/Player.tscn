@@ -264,7 +264,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 [node name="InteractShapeCast" type="ShapeCast3D" parent="Head/Eyes/Camera3D" unique_id=1917702885]
 unique_name_in_owner = true
 shape = SubResource("SphereShape3D_cw2d6")
-target_position = Vector3(0, 0, -1.5)
+target_position = Vector3(0, 0, -2)
 max_results = 2
 collision_mask = 5
 

@@ -36,7 +36,6 @@
 [ext_resource type="PackedScene" uid="uid://2db87kewe2f2" path="res://scenes/Player.tscn" id="20_v6x3g"]
 [ext_resource type="PackedScene" uid="uid://ca0wevg1lb4rx" path="res://utils/WaterMaker3D/WaterMaker3D.tscn" id="21_2dnug"]
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="21_62djl"]
-[ext_resource type="PackedScene" uid="uid://ccmuvcp1vvusq" path="res://scenes/pickable_box.tscn" id="24_k74e2"]
 [ext_resource type="PackedScene" uid="uid://ep02e3j752sd" path="res://scenes/ventilator.tscn" id="24_ue7dh"]
 [ext_resource type="PackedScene" uid="uid://uwhga6c4q51o" path="res://scenes/zipline.tscn" id="24_xj7km"]
 [ext_resource type="PackedScene" uid="uid://dg62o2u1p8i7i" path="res://scenes/updraft_volume.tscn" id="25_jgmty"]
@@ -49,6 +48,13 @@
 [ext_resource type="PackedScene" uid="uid://b0h28ew50m1nm" path="res://scenes/draw_bridge_system.tscn" id="34_x3nsp"]
 [ext_resource type="PackedScene" uid="uid://dwusg7ievwjmh" path="res://scenes/breakable_rope.tscn" id="35_ovkd5"]
 [ext_resource type="PackedScene" uid="uid://dudx3baxpmytw" path="res://scenes/valve.tscn" id="36_cmtte"]
+[ext_resource type="Script" uid="uid://no1ictgdrgj5" path="res://scenes/pickable_box.gd" id="49_llsfp"]
+[ext_resource type="Material" uid="uid://c2niiwlud067p" path="res://assets/shaders/SmartOutlineMaterial.tres" id="50_erim8"]
+[ext_resource type="Script" uid="uid://b5nnqdx26hrl8" path="res://scripts/pickable_valve.gd" id="50_f3k8r"]
+[ext_resource type="PackedScene" uid="uid://ducdt15ffnmg4" path="res://scenes/pickable_valve.tscn" id="50_nefr7"]
+[ext_resource type="Texture2D" uid="uid://cwlrqso5rodpi" path="res://assets/images/dev_textures/standard_9_blue_512.png" id="51_anvhq"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="52_3n431"]
+[ext_resource type="PackedScene" uid="uid://bwx87famw5p7u" path="res://scenes/pickable_box.tscn" id="52_dpsb6"]
 
 [sub_resource type="GDScript" id="GDScript_4mrxx"]
 script/source = "extends StaticBody3D
@@ -78,30 +84,22 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.5
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_x3nsp"]
-render_priority = 0
-shader = ExtResource("21_62djl")
-shader_parameter/highlight_color = Color(0.92941177, 1, 0.9647059, 1)
-shader_parameter/blink_speed = 4.0
-shader_parameter/min_intensity = 0.0
-shader_parameter/max_intensity = 0.010000000475
-
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_arwuo"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_llsfp"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nefr7"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_erim8"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_arwuo")
+noise = SubResource("FastNoiseLite_llsfp")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xt2vi"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_anvhq"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_arwuo")
+noise = SubResource("FastNoiseLite_llsfp")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f3k8r"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3n431"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -109,14 +107,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_nefr7")
+normal_texture = SubResource("NoiseTexture2D_erim8")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_xt2vi")
+refraction_texture = SubResource("NoiseTexture2D_anvhq")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_dpsb6"]
+[sub_resource type="Curve3D" id="Curve3D_8wjit"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -141,14 +139,14 @@ albedo_texture = SubResource("ViewportTexture_jhx03")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cmtte"]
 
-[sub_resource type="Curve3D" id="Curve3D_nqxml"]
+[sub_resource type="Curve3D" id="Curve3D_c2wla"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.470448, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_llsfp"]
+[sub_resource type="Curve3D" id="Curve3D_isy8u"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.454609, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -164,6 +162,9 @@ uv1_triplanar = true
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_s52xd"]
 size = Vector3(4.60083, 1.9984741, 11.238403)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nefr7"]
+albedo_color = Color(0.6522701, 1, 0, 1)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7t5mc"]
 albedo_texture = ExtResource("18_f1d65")
@@ -257,10 +258,78 @@ shader_parameter/blink_speed = 4.0
 shader_parameter/min_intensity = 0.0
 shader_parameter/max_intensity = 0.5
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_efo5o"]
+albedo_texture = ExtResource("51_anvhq")
+
+[sub_resource type="BoxMesh" id="BoxMesh_jw31o"]
+material = SubResource("StandardMaterial3D_efo5o")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_i5vwy"]
+
+[sub_resource type="PackedScene" id="PackedScene_8wjit"]
+_bundled = {
+"conn_count": 2,
+"conns": PackedInt32Array(1073741829, 1073741828, 23, 22, 2, 0, 0, 1073741831, 1073741830, 25, 24, 2, 0, 0),
+"editable_instances": [],
+"id_paths": [PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()],
+"names": PackedStringArray("PickableBox", "RigidBody3D", "mass", "script", "outline_material", "MeshInstance3D", "MeshInstance3D", "mesh", "CollisionShape3D", "CollisionShape3D", "shape", "Interact_Component", "Node", "script", "metadata/_custom_type_script", "Label3D", "Label3D", "transform", "visible", "billboard", "no_depth_test", "text", "_on_interact_component_focused", "focused", "_on_interact_component_unfocused", "unfocused"),
+"node_count": 5,
+"node_ids": PackedInt32Array(181097973, 675138939, 2104161458, 596945312, 1271720927),
+"node_paths": [NodePath("."), NodePath("."), NodePath("."), NodePath("."), NodePath("."), NodePath("Interact_Component"), NodePath("."), NodePath("Interact_Component")],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 3, 2, 0, 3, 1, 4, 2, 0, 1073741824, 0, 6, 5, -1, 1, 7, 3, 0, 1073741825, 0, 9, 8, -1, 1, 10, 4, 0, 1073741826, 0, 12, 11, -1, 2, 13, 5, 14, 6, 0, 1073741827, 0, 16, 15, -1, 5, 17, 7, 18, 8, 19, 9, 20, 10, 21, 11, 0),
+"variants": [3.0, ExtResource("49_llsfp"), ExtResource("50_erim8"), SubResource("BoxMesh_jw31o"), SubResource("BoxShape3D_i5vwy"), ExtResource("52_3n431"), "uid://cqawbvidns1th", Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6669362, 0), false, 1, true, "[E]"],
+"version": 3
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5yorj"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="TorusMesh" id="TorusMesh_m7mha"]
+material = SubResource("StandardMaterial3D_5yorj")
+inner_radius = 0.25
+outer_radius = 0.3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ppa8g"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_56jl3"]
+material = SubResource("StandardMaterial3D_ppa8g")
+size = Vector3(0.01, 0.5, 0.01)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grlkf"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1f11c"]
+material = SubResource("StandardMaterial3D_grlkf")
+size = Vector3(0.01, 0.5, 0.01)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ht488"]
+top_radius = 0.05
+bottom_radius = 0.05
+height = 0.1
+radial_segments = 16
+rings = 0
+
+[sub_resource type="PackedScene" id="PackedScene_isy8u"]
+_bundled = {
+"base_scene": 0,
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"id_paths": [PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()],
+"names": PackedStringArray("PickableBox", "script", "outline_material", "MeshInstance3D", "mesh", "MeshInstance3D", "MeshInstance3D", "transform", "mesh", "MeshInstance3D2", "MeshInstance3D", "transform", "mesh", "MeshInstance3D3", "MeshInstance3D", "transform", "mesh"),
+"node_count": 5,
+"node_ids": PackedInt32Array(181097973, 675138939, 154674665, 583067888, 1122062215),
+"node_paths": [NodePath("."), NodePath("./MeshInstance3D"), NodePath("./MeshInstance3D"), NodePath("./MeshInstance3D")],
+"nodes": PackedInt32Array(-1, -1, 2147483647, 0, -1, 2, 1, 1, 2, 2, 0, 1073741824, -1, 2147483647, 262147, -1, 1, 4, 3, 0, 1073741825, 0, 6, 262149, -1, 2, 7, 4, 8, 5, 0, 1073741826, 0, 10, 524297, -1, 2, 11, 6, 12, 7, 0, 1073741827, 0, 14, 786445, -1, 2, 15, 8, 16, 9, 0),
+"variants": [SubResource("PackedScene_8wjit"), ExtResource("50_f3k8r"), null, SubResource("TorusMesh_m7mha"), Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0), SubResource("BoxMesh_56jl3"), Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0), SubResource("BoxMesh_1f11c"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0), SubResource("CylinderMesh_ht488")],
+"version": 3
+}
+
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(-7.152952e-08, 0, -1, 0, 1, 0, 1, 0, -7.152952e-08, 34.986652, 11.569578, -10.459282)
+transform = Transform3D(-1, 0, 1.1524091e-07, 0, 1, 0, -1.1524091e-07, 0, -1, -10.87117, 5.722046e-06, 24.523487)
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -347,33 +416,17 @@ open = true
 transform = Transform3D(4.1478043, 0, 0, 0, 1.9011474, 0, 0, 0, 1, -13.020535, 2.7101002, -3.3936052)
 
 [node name="FadeTrigger" parent="InteractiveObjects" unique_id=656862380 instance=ExtResource("8_ue7dh")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29.570885, 1.9999905, -26.042675)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.83236, -0.17634273, -26.042675)
 
 [node name="Rope" parent="InteractiveObjects" unique_id=1704021531 instance=ExtResource("9_jgmty")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.940326, 26.999271, -3.7289972)
 outline_material = SubResource("ShaderMaterial_2r5js")
 rope_length = 17.4
 
-[node name="PickableBox3" parent="InteractiveObjects" unique_id=553508920 instance=ExtResource("24_k74e2")]
-transform = Transform3D(-0.4208141, 0, 0.90714693, 0, 1, 0, -0.90714693, 0, -0.4208141, -6.388999, 1.5914047, 17.817892)
-outline_material = SubResource("ShaderMaterial_x3nsp")
-
-[node name="PickableBox4" parent="InteractiveObjects" unique_id=181097973 instance=ExtResource("24_k74e2")]
-transform = Transform3D(-0.7915543, 0, -0.6110988, 0, 1, 0, 0.6110988, 0, -0.7915543, 3.0336452, 0.57086396, 5.1615744)
-outline_material = SubResource("ShaderMaterial_x3nsp")
-
-[node name="PickableBox5" parent="InteractiveObjects" unique_id=246392116 instance=ExtResource("24_k74e2")]
-transform = Transform3D(-0.5502622, 0, -0.83499193, 0, 1, 0, 0.83499193, 0, -0.5502622, -7.238656, 0.57086396, 17.938625)
-outline_material = SubResource("ShaderMaterial_x3nsp")
-
-[node name="PickableBox6" parent="InteractiveObjects" unique_id=1035327411 instance=ExtResource("24_k74e2")]
-transform = Transform3D(-0.9675947, 0, 0.2525085, 0, 1, 0, -0.2525085, 0, -0.9675947, -5.9271073, 0.57086396, 18.376507)
-outline_material = SubResource("ShaderMaterial_x3nsp")
-
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_f3k8r")
+material = SubResource("StandardMaterial3D_3n431")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(-2, 1.7484555e-07, 7.642742e-15, 0, -8.742278e-08, 2, 1.7484555e-07, 2, 8.742278e-08, 30.55747, 1.0914047, 9.622128)
@@ -388,7 +441,7 @@ DO NOT GO THERE!"
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_dpsb6")
+curve = SubResource("Curve3D_8wjit")
 outline_material = SubResource("ShaderMaterial_arwuo")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
@@ -458,11 +511,11 @@ ropes = Array[NodePath]([NodePath("../UniversalCable3D")])
 
 [node name="UniversalCable3D" parent="InteractiveObjects" unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_nqxml")
+curve = SubResource("Curve3D_c2wla")
 
 [node name="UniversalCable3D2" parent="InteractiveObjects" unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_llsfp")
+curve = SubResource("Curve3D_isy8u")
 
 [node name="Gate" parent="InteractiveObjects" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
@@ -1372,6 +1425,11 @@ sides = 12
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.8694, 16.058184, -13.5982)
 height = 10.0
 sides = 12
+
+[node name="CSGBox3D131" type="CSGBox3D" parent="Objects/Level" unique_id=1493191529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.056797, 1.3756344, -11.490992)
+size = Vector3(0.07080078, 1, 1)
+material = SubResource("StandardMaterial3D_nefr7")
 
 [node name="Stairs" type="CSGCombiner3D" parent="Objects" unique_id=721298292]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 12.5, -0.4272058, -5.483359)
@@ -3426,6 +3484,32 @@ trigger_size = Vector3(5, 2, 5)
 trigger_offset = Vector3(0, 1, 1.065)
 
 [node name="Valve" parent="." unique_id=86858914 node_paths=PackedStringArray("targets") instance=ExtResource("36_cmtte")]
-transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 36.015915, 1.6227989, -11.40377)
+transform = Transform3D(0, 1.0000001, 0, -1.0000001, 0, 0, 0, 0, 1, 36.000687, 1.4253691, -11.466214)
 targets = [NodePath("../InteractiveObjects/Gate")]
-is_back_and_forth = true
+requires_installation = true
+pickable_valve_scene = SubResource("PackedScene_isy8u")
+turn_duration = 1.0
+visual_rotations = 0.5
+turn_clockwise = false
+reverts_on_release = true
+
+[node name="PickableValve" parent="." unique_id=594279821 instance=ExtResource("50_nefr7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.769108, 0.025005728, -15.042136)
+
+[node name="PickableBox" parent="." unique_id=1145886146 instance=ExtResource("52_dpsb6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.297043, 0.5000056, -16.682497)
+
+[node name="PickableBox2" parent="." unique_id=1813453121 instance=ExtResource("52_dpsb6")]
+transform = Transform3D(-0.8491192, 0, 0.5282012, 0, 1, 0, -0.5282012, 0, -0.8491192, 3.2080002, 0.5000056, 5.251644)
+
+[node name="PickableBox3" parent="." unique_id=698761820 instance=ExtResource("52_dpsb6")]
+transform = Transform3D(0.75624186, 0, 0.65429217, 0, 1, 0, -0.65429217, 0, 0.75624186, -7.298513, 0.5000057, 17.750877)
+mass = 5.0
+
+[node name="PickableBox4" parent="." unique_id=1779179888 instance=ExtResource("52_dpsb6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.8487144, 0.5000057, 17.750877)
+mass = 0.2
+
+[node name="PickableBox5" parent="." unique_id=1638239481 instance=ExtResource("52_dpsb6")]
+transform = Transform3D(-0.7880645, 0, 0.61559266, 0, 1, 0, -0.61559266, 0, -0.7880645, -6.3178525, 1.5000057, 17.750877)
+mass = 5.0

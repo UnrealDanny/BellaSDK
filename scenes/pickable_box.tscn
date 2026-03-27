@@ -1,39 +1,33 @@
-[gd_scene format=3 uid="uid://ccmuvcp1vvusq"]
+[gd_scene format=3 uid="uid://bwx87famw5p7u"]
 
-[ext_resource type="Script" uid="uid://no1ictgdrgj5" path="res://scenes/pickable_box.gd" id="1_bdkj8"]
-[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_i5vwy"]
-[ext_resource type="Material" uid="uid://c2niiwlud067p" path="res://assets/shaders/SmartOutlineMaterial.tres" id="2_efo5o"]
-[ext_resource type="Texture2D" uid="uid://cwlrqso5rodpi" path="res://assets/images/dev_textures/standard_9_blue_512.png" id="2_wxffa"]
+[ext_resource type="PackedScene" uid="uid://mqae3mth7tfx" path="res://scenes/pickable_object.tscn" id="1_cfr4d"]
+[ext_resource type="Texture2D" uid="uid://6jbvqeu8qf1j" path="res://assets/images/dev_textures/standard_5_orange_512.png" id="2_yxn7w"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="3_bdkj8"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_efo5o"]
-albedo_texture = ExtResource("2_wxffa")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj5oh"]
+albedo_texture = ExtResource("2_yxn7w")
+uv1_triplanar = true
 
-[sub_resource type="BoxMesh" id="BoxMesh_jw31o"]
-material = SubResource("StandardMaterial3D_efo5o")
+[sub_resource type="BoxMesh" id="BoxMesh_k01c1"]
+material = SubResource("StandardMaterial3D_fj5oh")
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_i5vwy"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_74l1t"]
 
-[node name="PickableBox" type="RigidBody3D" unique_id=181097973]
-mass = 3.0
-script = ExtResource("1_bdkj8")
-outline_material = ExtResource("2_efo5o")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wxffa"]
+render_priority = 0
+shader = ExtResource("3_bdkj8")
+shader_parameter/highlight_color = Color(0, 0.4509804, 1, 1)
+shader_parameter/blink_speed = 5.0000002375
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.30000001425
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=675138939]
-mesh = SubResource("BoxMesh_jw31o")
+[node name="PickableBox" unique_id=594279821 instance=ExtResource("1_cfr4d")]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2104161458]
-shape = SubResource("BoxShape3D_i5vwy")
+[node name="MeshInstance3D" parent="." index="1" unique_id=1239371319]
+mesh = SubResource("BoxMesh_k01c1")
 
-[node name="Interact_Component" type="Node" parent="." unique_id=596945312]
-script = ExtResource("1_i5vwy")
-metadata/_custom_type_script = "uid://cqawbvidns1th"
+[node name="CollisionShape3D" parent="." index="2" unique_id=1677444331]
+shape = SubResource("BoxShape3D_74l1t")
 
-[node name="Label3D" type="Label3D" parent="." unique_id=1271720927]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6669362, 0)
-visible = false
-billboard = 1
-no_depth_test = true
-text = "[E]"
-
-[connection signal="focused" from="Interact_Component" to="." method="_on_interact_component_focused"]
-[connection signal="unfocused" from="Interact_Component" to="." method="_on_interact_component_unfocused"]
+[node name="HighlightComponent" parent="." index="4" unique_id=1233358358]
+outline_material = SubResource("ShaderMaterial_wxffa")

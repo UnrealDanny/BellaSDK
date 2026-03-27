@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://mqae3mth7tfx"]
+
+[ext_resource type="Script" uid="uid://cwma4einbwr2q" path="res://scripts/pickable_object.gd" id="1_gl7hy"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_spxwp"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_tkhgv"]
+
+[node name="PickableObject" type="RigidBody3D" unique_id=594279821 node_paths=PackedStringArray("interact_comp", "mesh", "label")]
+script = ExtResource("1_gl7hy")
+interact_comp = NodePath("Interact_Component")
+mesh = NodePath("MeshInstance3D")
+label = NodePath("Label3D")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=518401438]
+script = ExtResource("2_spxwp")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="." unique_id=1233358358]
+script = ExtResource("3_tkhgv")
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1239371319]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1677444331]
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1035008069]
+billboard = 1
+no_depth_test = true
