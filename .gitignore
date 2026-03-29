@@ -12,3 +12,5 @@ export_presets.cfg
 bakes/
 
 .godot/
+
+addons/gemini_copilot/
