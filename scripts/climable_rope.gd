@@ -3,12 +3,11 @@ extends Node3D
 
 @onready var rope_body: RigidBody3D = $RopeBody
 @onready var interact_component: Interact_Component = $RopeBody/Interact_Component
+@onready var highlight_component: HighlightComponent = $RopeBody/HighlightComponent # Added reference
 @onready var rope_mesh: MeshInstance3D = $RopeBody/MeshInstance3D
 @onready var rope_col: CollisionShape3D = $RopeBody/CollisionShape3D
 @onready var anchor: StaticBody3D = $Anchor
 @onready var pivot: ConeTwistJoint3D = $Pivot
-
-@export var outline_material: ShaderMaterial
 
 var player_on_rope: bool = false
 
@@ -18,12 +17,10 @@ var player_on_rope: bool = false
 		rope_length = value
 		_update_rope_size()
 
-var looking_at: bool = false
-
 func _ready() -> void:
 	_update_rope_size()
+	
 	# We don't want interaction logic running inside the editor!
-
 	if Engine.is_editor_hint(): return 
 	
 	if interact_component == null:
@@ -31,8 +28,7 @@ func _ready() -> void:
 		return
 		
 	interact_component.interacted.connect(_on_interacted)
-	interact_component.focused.connect(_on_focus)
-	interact_component.unfocused.connect(_on_unfocus)
+	# Notice we deleted the focus/unfocus connections here! The component handles it now.
 
 func _update_rope_size() -> void:
 	if not is_inside_tree() or rope_mesh == null or rope_col == null: return
@@ -56,18 +52,14 @@ func _on_interacted() -> void:
 	if player and player.has_method("_on_rope_grabbed"):
 		player._on_rope_grabbed(rope_body)
 		player_on_rope = true
-		_on_unfocus() # Turn off the outline immediately upon grabbing!
+		
+		# Turn off the outline immediately upon grabbing!
+		if highlight_component:
+			highlight_component.suppress(true)
 
 func on_player_released() -> void:
 	player_on_rope = false
 	
-func _on_focus() -> void:
-	if player_on_rope: return  # ← don't show outline while player is on rope
-	if rope_mesh and outline_material:
-		rope_mesh.material_overlay = outline_material
-	looking_at = true
-
-func _on_unfocus() -> void:
-	if rope_mesh:
-		rope_mesh.material_overlay = null
-	looking_at = false
+	# Allow the rope to glow again if the player looks at it
+	if highlight_component:
+		highlight_component.suppress(false)

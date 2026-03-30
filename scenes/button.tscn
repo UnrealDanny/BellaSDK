@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_mi6dp"]
 [ext_resource type="Script" uid="uid://buvexotjbssoa" path="res://scripts/button.gd" id="1_rhj8v"]
-[ext_resource type="Material" path="res://assets/shaders/SmartOutlineMaterial.tres" id="2_3q610"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="3_1bdt2"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_i7y4x"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n4pas"]
 albedo_color = Color(1, 0.089999974, 0.089999974, 1)
@@ -21,11 +22,18 @@ size = Vector3(0.3, 0.2, 0.3)
 [sub_resource type="BoxShape3D" id="BoxShape3D_n4pas"]
 size = Vector3(0.5, 0.3, 0.5)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8m7bo"]
+render_priority = 0
+shader = ExtResource("3_1bdt2")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
 [node name="Button" type="StaticBody3D" unique_id=1567218577]
 transform = Transform3D(-1, 8.742278e-08, -3.821371e-15, 0, -4.371139e-08, -1, -8.742278e-08, -1, 4.371139e-08, 0, 0, 0)
 collision_layer = 5
 script = ExtResource("1_rhj8v")
-outline_material = ExtResource("2_3q610")
 
 [node name="Button" type="MeshInstance3D" parent="." unique_id=1150992551]
 transform = Transform3D(1, 0, 0, 0, 0.5, -3.5527137e-15, 0, 1.7763568e-15, 1, 0, -0.02, 0)
@@ -39,12 +47,18 @@ mesh = SubResource("BoxMesh_n4pas")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, -0.058471676)
 shape = SubResource("BoxShape3D_n4pas")
 
-[node name="Interact_Component" type="Node" parent="." unique_id=1334598762]
-script = ExtResource("1_mi6dp")
-metadata/_custom_type_script = "uid://cqawbvidns1th"
-
 [node name="LabelInteract" type="Label3D" parent="." unique_id=1169131663]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.020477e-08, -0.116728954, 0.23551145)
 billboard = 1
 text = "[E]"
 font_size = 16
+
+[node name="Interact_Component" type="Node" parent="." unique_id=1334598762]
+script = ExtResource("1_mi6dp")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="." unique_id=2008628475 node_paths=PackedStringArray("target_meshes")]
+script = ExtResource("3_i7y4x")
+outline_material = SubResource("ShaderMaterial_8m7bo")
+target_meshes = [NodePath("../Button")]
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"

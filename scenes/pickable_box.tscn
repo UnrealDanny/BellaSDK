@@ -4,6 +4,14 @@
 [ext_resource type="Texture2D" uid="uid://6jbvqeu8qf1j" path="res://assets/images/dev_textures/standard_5_orange_512.png" id="2_yxn7w"]
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="3_bdkj8"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wxffa"]
+render_priority = 0
+shader = ExtResource("3_bdkj8")
+shader_parameter/highlight_color = Color(0.2, 1, 0, 1)
+shader_parameter/blink_speed = 7.0000003325
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.030000001425
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj5oh"]
 albedo_texture = ExtResource("2_yxn7w")
 uv1_triplanar = true
@@ -13,21 +21,13 @@ material = SubResource("StandardMaterial3D_fj5oh")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_74l1t"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_wxffa"]
-render_priority = 0
-shader = ExtResource("3_bdkj8")
-shader_parameter/highlight_color = Color(0, 0.4509804, 1, 1)
-shader_parameter/blink_speed = 5.0000002375
-shader_parameter/min_intensity = 0.0
-shader_parameter/max_intensity = 0.30000001425
-
 [node name="PickableBox" unique_id=594279821 instance=ExtResource("1_cfr4d")]
 
-[node name="MeshInstance3D" parent="." index="1" unique_id=1239371319]
+[node name="HighlightComponent" parent="." index="1" unique_id=1233358358]
+outline_material = SubResource("ShaderMaterial_wxffa")
+
+[node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
 mesh = SubResource("BoxMesh_k01c1")
 
-[node name="CollisionShape3D" parent="." index="2" unique_id=1677444331]
+[node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
 shape = SubResource("BoxShape3D_74l1t")
-
-[node name="HighlightComponent" parent="." index="4" unique_id=1233358358]
-outline_material = SubResource("ShaderMaterial_wxffa")

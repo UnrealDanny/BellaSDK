@@ -48,6 +48,7 @@ var flying 			:= false
 var swimming 		:= false
 
 var is_stunned := false
+var is_vaulting := false
 
 # INPUT VARS
 
@@ -79,6 +80,9 @@ var last_velocity 		:= Vector3.ZERO
 
 const CameraTiltLeft 		:= 3.0
 const CameraTiltRight 	:= -3.0
+
+var stair_offset: float = 0.0
+var headbob_offset: Vector2 = Vector2.ZERO
 
 ## FLASHLIGHT VARS
 var flashlight_rotation_smoothness := 10.0
@@ -125,7 +129,6 @@ var base_spot_range: float = 10.0
 var is_swimming: bool = false
 var head_in_water := false
 
-
 # UPDRAFT VARS
 var in_updraft: bool = false
 var current_updraft_strength: float = 0.0
@@ -136,6 +139,7 @@ var noclip_speed_multiplier := 4.0
 var is_menu_open: bool = false
 
 # ZIPLINE VARS
+var current_zipline: Node3D
 var zipline_grab_timer: float = 0.0
 var is_auto_sliding: bool = false
 var on_zipline: bool = false
@@ -149,6 +153,9 @@ var is_zipline_sliding: bool = false
 var ZIPLINE_SLIDE_SPEED: float = 18.0
 var ZIPLINE_HANG_OFFSET: float = 1.9 # Distance from the wire to the player's origin
 
+# MONKE VARS
+var current_monkey_bar_path: Path3D = null
+
 # SHOOT VARS
 var damage = 100
 
@@ -156,6 +163,12 @@ var damage = 100
 var is_paused : bool = false
 var menu_scene = preload("res://scenes/menus/main_menu.tscn")
 var menu_instance
+
+# VAULT SCANNER VARS
+var vault_indicator: MeshInstance3D
+var can_vault_current_ledge: bool = false
+var current_ledge_point: Vector3 = Vector3.ZERO
+var current_vault_height: float = 0.0
 
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
@@ -169,6 +182,26 @@ var is_using_zoom: bool = false
 # MAIN SCRIPT
 # --------------------------------------
 func _ready() -> void:
+	
+	# --- DYNAMIC VAULT INDICATOR ---
+	vault_indicator = MeshInstance3D.new()
+	var dot_mesh = SphereMesh.new()
+	dot_mesh.radius = 0.03
+	dot_mesh.height = 0.06
+	vault_indicator.mesh = dot_mesh
+
+	var dot_mat = StandardMaterial3D.new()
+	dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dot_mat.albedo_color = Color.WHITE
+	dot_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dot_mat.albedo_color.a = 0.6 # Slightly see-through so it isn't blinding
+	dot_mat.no_depth_test = true # Draws ON TOP of the ledge so it's always visible
+
+	vault_indicator.material_override = dot_mat
+	vault_indicator.top_level = true 
+	add_child(vault_indicator)
+	vault_indicator.hide()
+	
 	# 1. Spawn the menu into the game, but keep it hidden
 	menu_instance = menu_scene.instantiate()
 	add_child(menu_instance)
@@ -244,60 +277,119 @@ func _run_body_test_motion(from : Transform3D, motion : Vector3, result = null) 
 	params.motion = motion
 	return PhysicsServer3D.body_test_motion(self.get_rid(), params, result)
 	
+#func _snap_down_to_stairs_check() -> void:
+	#var did_snap := false
+	#var floor_below : bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
+	#var was_on_floor_last_frame = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
+	#if not is_on_floor() and velocity.y <= 0 and (was_on_floor_last_frame or _snapped_to_stairs_last_frame) and floor_below:
+		#var body_test_result = PhysicsTestMotionResult3D.new()
+		#if _run_body_test_motion(self.global_transform, Vector3(0, -MAX_STEP_HEIGHT,0), body_test_result):
+			##_save_camera_pos_for_smoothing()
+			#var old_pos_y = self.global_position.y
+			#var translate_y = body_test_result.get_travel().y
+			#self.position.y += translate_y
+			#apply_floor_snap()
+			#did_snap = true
+			#
+			#_apply_camera_smoothing(self.global_position.y - old_pos_y)
+	#_snapped_to_stairs_last_frame = did_snap
+
 func _snap_down_to_stairs_check() -> void:
 	var did_snap := false
 	var floor_below : bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
 	var was_on_floor_last_frame = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
+	
 	if not is_on_floor() and velocity.y <= 0 and (was_on_floor_last_frame or _snapped_to_stairs_last_frame) and floor_below:
 		var body_test_result = PhysicsTestMotionResult3D.new()
-		if _run_body_test_motion(self.global_transform, Vector3(0, -MAX_STEP_HEIGHT,0), body_test_result):
-			#_save_camera_pos_for_smoothing()
-			var old_pos_y = self.global_position.y
-			var translate_y = body_test_result.get_travel().y
-			self.position.y += translate_y
-			apply_floor_snap()
-			did_snap = true
+		if _run_body_test_motion(self.global_transform, Vector3(0, -MAX_STEP_HEIGHT, 0), body_test_result):
+			var travel_y = body_test_result.get_travel().y
 			
-			_apply_camera_smoothing(self.global_position.y - old_pos_y)
+			# THE FIX: Ignore microscopic snaps to prevent the bouncing camera!
+			if travel_y < -0.05:
+				var old_pos_y = self.global_position.y
+				self.position.y += travel_y
+				apply_floor_snap()
+				did_snap = true
+				_apply_camera_smoothing(self.global_position.y - old_pos_y)
+				
 	_snapped_to_stairs_last_frame = did_snap
-
+	
 func _snap_up_stairs_check(delta) -> bool:
 	if not is_on_floor() and not _snapped_to_stairs_last_frame: return false
 	if self.velocity.y > 0 or (self.velocity * Vector3(1,0,1)).length() == 0: return false
+	
 	var expected_move_motion = self.velocity * Vector3(1, 0, 1) * delta
-	
 	var step_pos_with_clearance = self.global_transform
-	step_pos_with_clearance.origin += expected_move_motion + Vector3(0, MAX_STEP_HEIGHT * 2, 0)
 	
-	#var step_pos_with_clearance = self.global_transform.translated(expected_move_motion + Vector3(0, MAX_STEP_HEIGHT *2,0))
+	# 1. Test moving UP safely
+	var up_test = PhysicsTestMotionResult3D.new()
+	_run_body_test_motion(step_pos_with_clearance, Vector3(0, MAX_STEP_HEIGHT * 2, 0), up_test)
+	step_pos_with_clearance.origin += up_test.get_travel()
+	
+	# 2. Test moving FORWARD safely (This prevents wall clipping!)
+	var forward_test = PhysicsTestMotionResult3D.new()
+	_run_body_test_motion(step_pos_with_clearance, expected_move_motion, forward_test)
+	step_pos_with_clearance.origin += forward_test.get_travel()
+	
+	# 3. NOW test moving DOWN onto the step
 	var down_check_result = PhysicsTestMotionResult3D.new()
 	if (_run_body_test_motion(step_pos_with_clearance, Vector3(0, -MAX_STEP_HEIGHT * 2, 0), down_check_result) 
 	and (down_check_result.get_collider().is_class("StaticBody3D") or down_check_result.get_collider().is_class("CSGShape3D"))):
 		var step_height = ((step_pos_with_clearance.origin + down_check_result.get_travel()) - self.global_position).y
+		
 		if step_height > MAX_STEP_HEIGHT or step_height <= 0.01 or (down_check_result.get_collision_point() - self.global_position).y > MAX_STEP_HEIGHT: return false
+		
 		%StairsAheadCast.global_position = down_check_result.get_collision_point() + Vector3(0, MAX_STEP_HEIGHT, 0) + expected_move_motion.normalized() * 0.1
 		%StairsAheadCast.force_raycast_update()
+		
 		if %StairsAheadCast.is_colliding() and not is_surface_too_steep(%StairsAheadCast.get_collision_normal()):
-			#_save_camera_pos_for_smoothing()
 			var old_pos_y = self.global_position.y
 			self.global_position = step_pos_with_clearance.origin + down_check_result.get_travel()
 			apply_floor_snap()
 			_snapped_to_stairs_last_frame = true
 			_apply_camera_smoothing(self.global_position.y - old_pos_y)
 			return true
+			
 	return false
+#func _snap_up_stairs_check(delta) -> bool:
+	#if not is_on_floor() and not _snapped_to_stairs_last_frame: return false
+	#if self.velocity.y > 0 or (self.velocity * Vector3(1,0,1)).length() == 0: return false
+	#var expected_move_motion = self.velocity * Vector3(1, 0, 1) * delta
+	#
+	#var step_pos_with_clearance = self.global_transform
+	#step_pos_with_clearance.origin += expected_move_motion + Vector3(0, MAX_STEP_HEIGHT * 2, 0)
+	#
+	##var step_pos_with_clearance = self.global_transform.translated(expected_move_motion + Vector3(0, MAX_STEP_HEIGHT *2,0))
+	#var down_check_result = PhysicsTestMotionResult3D.new()
+	#if (_run_body_test_motion(step_pos_with_clearance, Vector3(0, -MAX_STEP_HEIGHT * 2, 0), down_check_result) 
+	#and (down_check_result.get_collider().is_class("StaticBody3D") or down_check_result.get_collider().is_class("CSGShape3D"))):
+		#var step_height = ((step_pos_with_clearance.origin + down_check_result.get_travel()) - self.global_position).y
+		#if step_height > MAX_STEP_HEIGHT or step_height <= 0.01 or (down_check_result.get_collision_point() - self.global_position).y > MAX_STEP_HEIGHT: return false
+		#%StairsAheadCast.global_position = down_check_result.get_collision_point() + Vector3(0, MAX_STEP_HEIGHT, 0) + expected_move_motion.normalized() * 0.1
+		#%StairsAheadCast.force_raycast_update()
+		#if %StairsAheadCast.is_colliding() and not is_surface_too_steep(%StairsAheadCast.get_collision_normal()):
+			##_save_camera_pos_for_smoothing()
+			#var old_pos_y = self.global_position.y
+			#self.global_position = step_pos_with_clearance.origin + down_check_result.get_travel()
+			#apply_floor_snap()
+			#_snapped_to_stairs_last_frame = true
+			#_apply_camera_smoothing(self.global_position.y - old_pos_y)
+			#return true
+	#return false
 
 func _apply_camera_smoothing(snap_amount: float):
-	eyes.position.y -= snap_amount
+	stair_offset -= snap_amount
+	stair_offset = clampf(stair_offset, -0.5, 0.5)
 	
-	eyes.position.y = clampf(eyes.position.y, -0.5, 0.5)
+	#eyes.position.y -= snap_amount
+	#eyes.position.y = clampf(eyes.position.y, -0.5, 0.5)
 
 func _slide_camera_smooth_back_to_origin(delta):
-	if eyes.position.y == 0.0: 
+	if stair_offset == 0.0: 
 		return
 		
 	var move_amount = max(self.velocity.length() * delta, walking_speed / 2.0 * delta)
-	eyes.position.y = move_toward(eyes.position.y, 0.0, move_amount)
+	stair_offset = move_toward(stair_offset, 0.0, move_amount)
 
 func _physics_process(delta: float) -> void:
 # Keep the player frozen if paused or stunned
@@ -323,12 +415,21 @@ func _physics_process(delta: float) -> void:
 	# Check for swimming (this handles its own states internally)
 	is_swimming = _handle_water_physics(delta)
 	if not is_swimming: swimming = false
-
+	
+	# Run the vault scanner every frame unless we are already vaulting
+	if not is_vaulting and not is_paused:
+		_scan_for_ledges()
+	elif vault_indicator:
+		vault_indicator.hide()
+		can_vault_current_ledge = false
 	# ---------------------------------------------------------
 	# 2. THE STATE MACHINE (Only ONE of these will run per frame)
 	# ---------------------------------------------------------
 	if Input.is_action_just_pressed("noclip"):
 		toggle_noclip()
+		
+	if is_vaulting:
+		return
 
 	if flying:
 		_handle_noclip_physics(delta)
@@ -552,14 +653,29 @@ func exit_ladder() -> void:
 # --------------------------------------
 var on_monkey_bars: bool = false
 var MONKEY_BAR_SPEED: float = 2.5 # Slower and heavier than the ladder
+var MONKEY_BAR_HANG_OFFSET: float = 2.1 # Distance from feet to the bars
 
-func enter_monkey_bars() -> void:
+func enter_monkey_bars(path_node: Path3D) -> void:
+	if on_monkey_bars or is_on_floor(): return
+
 	on_monkey_bars = true
-	# Optional: Snap vertical velocity to 0 the instant they grab the bars
-	velocity.y = 0.0 
+	current_monkey_bar_path = path_node # Store the specific path we touched
+	velocity = Vector3.ZERO # Kill momentum so we don't fly past the snap point
 
 func exit_monkey_bars() -> void:
+	if not on_monkey_bars: return
+
 	on_monkey_bars = false
+	current_monkey_bar_path = null
+
+	# --- THE ANIMATION CLEANUP ---
+	# Force the animation to stop and go back to a neutral state
+	if camera_anims:
+		camera_anims.play("RESET", 0.3)
+		camera_anims.speed_scale = 1.0
+
+	# Tiny downward nudge to ensure we leave the trigger area
+	velocity.y = -2.0
 	
 # --------------------------------------
 # ROPES
@@ -669,15 +785,14 @@ func _handle_water_physics(delta: float) -> bool:
 	var just_water_jumped = false
 	
 	if Input.is_action_just_pressed("jump") and !head_in_water:
-		if interact_shapecast.is_colliding():
-			var collision_normal = interact_shapecast.get_collision_normal(0)
-			if abs(collision_normal.y) < 0.7:
-				print("Vaulting off a wall/ledge!")
-				velocity.y = 12 
-				actively_swimming_vertical = true
-				just_water_jumped = true
+		if _try_vault():
+			pass # The vaulting tween takes over smoothly
 		else:
-			pass
+			# THE MISSING FALLBACK: Jump out normally if there's no ledge!
+			velocity.y = 12 
+			
+		actively_swimming_vertical = true
+		just_water_jumped = true
 
 	# 2. MANUAL DIVING / SWIMMING UP
 	elif Input.is_action_pressed("crouch"): 
@@ -771,7 +886,8 @@ func toggle_noclip() -> void:
 # -----------------------------
 # ZIPLINE LOGIC
 # -----------------------------
-func _on_zipline_grabbed(start_pos: Vector3, end_pos: Vector3) -> void:
+func _on_zipline_grabbed(zipline_node: Node, start_pos: Vector3, end_pos: Vector3) -> void:
+	current_zipline = zipline_node
 	zipline_start = start_pos
 	zipline_end = end_pos
 	velocity = Vector3.ZERO
@@ -782,23 +898,24 @@ func _on_zipline_grabbed(start_pos: Vector3, end_pos: Vector3) -> void:
 
 	var grab_point = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
 	var grab_distance = zipline_start.distance_to(grab_point)
-
 	zipline_progress = grab_distance / zipline_length
 	zipline_progress = clamp(zipline_progress, 0.05, 0.95)
 
 	is_zipline_sliding = abs(zipline_dir.y) > 0.15
 
-	# THE NEW MODE CHECK: Are we grabbing the top half or the bottom half?
 	if is_zipline_sliding:
 		var mid_point_y = (zipline_start.y + zipline_end.y) / 2.0
-		# If you grab above the middle, it's a one-way trip!
 		is_auto_sliding = global_position.y > mid_point_y
 	else:
 		is_auto_sliding = false
-
+		
 func _on_zipline_released() -> void:
 	on_zipline = false
 	velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
+	
+	if current_zipline and current_zipline.has_method("on_player_released"):
+		current_zipline.on_player_released()
+		current_zipline = null
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:
 	is_menu_open = is_open
@@ -857,20 +974,27 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	_handle_headbob(delta) # (You should make a helper for headbob too!)
 
 	# 6. JUMPING
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		if sprinting:
-			velocity.y = sprint_jump_velocity
-		elif crouching:
-			velocity.y = crouch_jump_velocity
-		else:
-			velocity.y = jump_velocity
-		camera_anims.play("jump")
-			
+	if Input.is_action_just_pressed("jump"):
+		# Check if we are facing a climbable wall FIRST
+		if _try_vault():
+			camera_anims.play("jump")
+		# If no wall, do a standard jump
+		elif is_on_floor():
+			if sprinting:
+				velocity.y = sprint_jump_velocity
+			elif crouching:
+				velocity.y = crouch_jump_velocity
+			else:
+				velocity.y = jump_velocity
+			camera_anims.play("jump")
+
 	# Handle landing anims...
-	if is_on_floor():
-		if last_velocity.y < 0.0:
-			if sprinting: camera_anims.play("jump_landing")
-			else: camera_anims.play("landing")
+	if is_on_floor() and not _snapped_to_stairs_last_frame:
+		if last_velocity.y < -2.0: 
+			if sprinting: 
+				camera_anims.play("jump_landing")
+			else: 
+				camera_anims.play("landing")
 
 	# 7. APPLY MOVEMENT TO VELOCITY
 	if is_on_floor():
@@ -914,53 +1038,55 @@ func _handle_ladder_physics(_delta: float) -> void:
 		velocity = -look_dir * 5.0 # Shove player backward
 		velocity.y = 5.0 # And slightly up
 			
-func _handle_monkey_bars_physics(_delta: float) -> void:
+func _handle_monkey_bars_physics(delta: float) -> void:
 	sprinting = false
 	crouching = false
 
-	# 2. Get camera directions
-	var look_dir = -cam.global_transform.basis.z # Forward
-	var right_dir = cam.global_transform.basis.x # Right
-	
-	# THE SECRET SAUCE: Flatten the Y axis so looking up/down doesn't move you vertically
-	look_dir.y = 0
-	right_dir.y = 0
-	
-	# Re-normalize so moving diagonally isn't faster
-	look_dir = look_dir.normalized()
-	right_dir = right_dir.normalized()
+	# 1. Horizontal Movement
+	var look_dir = -cam.global_transform.basis.z 
+	var right_dir = cam.global_transform.basis.x 
+	look_dir.y = 0; right_dir.y = 0
+	look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
 
-	# 3. Calculate horizontal movement vector
 	var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-
-	# 4. Apply speed and lock gravity
 	velocity.x = bar_vel.x * MONKEY_BAR_SPEED
 	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
-	velocity.y = 0.0 # Keeps you perfectly glued to the ceiling height
-	
-	var blend_time = 0.3
-	if Input.is_action_pressed("forward"):
-		# Only call play() if we are coming from a dead stop
-		if camera_anims.assigned_animation != "MonkeMoves":
-			camera_anims.play("MonkeMoves", blend_time)
-		camera_anims.speed_scale = 1.0
-		
-	elif Input.is_action_pressed("backward"):
-		# Only call play() if we are coming from a dead stop
-		if camera_anims.assigned_animation != "MonkeMoves":
-			camera_anims.play("MonkeMoves", blend_time)
-		camera_anims.speed_scale = -1.0
-		
-	else:
-		# We are idle. Crossfade back to the resting pose.
-		if camera_anims.assigned_animation != "RESET":
-			camera_anims.play("RESET", blend_time)
-			camera_anims.speed_scale = 1.0 # Fix the speed so it doesn't try to play RESET backward!
 
-	# 5. Dismount by dropping (Crouch or Jump)
+	# --- 2. THE PATH SNAPPER ---
+	if current_monkey_bar_path:
+		var path_curve = current_monkey_bar_path.curve
+		var local_player_pos = current_monkey_bar_path.to_local(global_position)
+		var closest_point_local = path_curve.get_closest_point(local_player_pos)
+		var closest_point_global = current_monkey_bar_path.to_global(closest_point_local)
+		
+		var target_y = closest_point_global.y - MONKEY_BAR_HANG_OFFSET
+		var distance_to_target = target_y - global_position.y
+		
+		# We increase the "Glue Range" to 4.0 meters just for the snap
+		if abs(distance_to_target) > 4.0:
+			exit_monkey_bars()
+			return
+			
+		# PULL: Snapping the player to the Y height
+		velocity.y = distance_to_target * 25.0
+	else:
+		exit_monkey_bars()
+
+	# --- 3. ANIMATIONS ---
+	if input_dir.length() > 0.1:
+		if camera_anims.current_animation != "MonkeMoves":
+			camera_anims.play("MonkeMoves", 0.3)
+		# Match animation speed to move direction (W = forward, S = backward)
+		camera_anims.speed_scale = 1.0 if input_dir.y < 0 else -1.0
+	else:
+		# If not moving, crossfade back to RESET
+		if camera_anims.current_animation == "MonkeMoves":
+			camera_anims.play("RESET", 0.3)
+			camera_anims.speed_scale = 1.0
+
+	# 4. Manual Dismount
 	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
-		on_monkey_bars = false
-		# Gravity will naturally take over on the very next frame
+		exit_monkey_bars()
 		
 func _handle_zipline_physics(delta: float) -> void:
 		#elif on_zipline:
@@ -1129,14 +1255,24 @@ func _handle_headbob(delta: float) -> void:
 		head_bobbing_current_intensity = head_bobbing_idle_intensity
 		head_bobbing_index += head_bobbing_idle_speed * delta
 		
-	# 3. THE FIX: Tell the script it is allowed to bob while hanging!
+	# 3. Calculate target bob values
+	var target_bob_y = 0.0
+	var target_bob_x = 0.0
+	
 	if is_on_floor() or current_rope != null:
 		head_bobbing_vector.y = sin(head_bobbing_index)
 		head_bobbing_vector.x = sin(head_bobbing_index/2) + 0.5
+		
+		target_bob_y = head_bobbing_vector.y * (head_bobbing_current_intensity / 2.0)
+		target_bob_x = head_bobbing_vector.x * head_bobbing_current_intensity
 
-		eyes.position.y = lerp(eyes.position.y, head_bobbing_vector.y * (head_bobbing_current_intensity/2.0), delta * lerp_speed)
-		eyes.position.x = lerp(eyes.position.x, head_bobbing_vector.x * head_bobbing_current_intensity, delta * lerp_speed)
+	# Smoothly lerp our independent headbob memory
+	headbob_offset.y = lerp(headbob_offset.y, target_bob_y, delta * lerp_speed)
+	headbob_offset.x = lerp(headbob_offset.x, target_bob_x, delta * lerp_speed)
 
+	# 4. THE FIX: Combine them peacefully!
+	eyes.position.y = headbob_offset.y + stair_offset
+	eyes.position.x = headbob_offset.x
 # --------------------------------------
 # TELEPORT & STUN SYSTEM
 # --------------------------------------
@@ -1173,3 +1309,159 @@ func toggle_pause():
 		menu_instance.hide()
 		# Lock the mouse back to the center of the screen for camera movement
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+# --------------------------------------
+# VAULTING & MANTLING
+# --------------------------------------
+func _scan_for_ledges() -> void:
+	var space_state = get_world_3d().direct_space_state
+	
+	var forward_dir = -cam.global_transform.basis.z
+	forward_dir.y = 0
+	forward_dir = forward_dir.normalized()
+	
+	# Reset state every frame
+	can_vault_current_ledge = false
+	if vault_indicator:
+		vault_indicator.hide()
+	
+	var detect_height = global_position + Vector3(0, 0.5, 0)
+	var forward_query = PhysicsRayQueryParameters3D.create(detect_height, detect_height + forward_dir * 1.2)
+	forward_query.exclude = [self.get_rid()] 
+	
+	var forward_result = space_state.intersect_ray(forward_query)
+	
+	if forward_result:
+		var wall_normal = forward_result.normal
+		if abs(wall_normal.y) > 0.2: return
+		
+		#var down_start = forward_result.position - wall_normal * 0.4 + Vector3(0, 2.0, 0)
+		var down_start = forward_result.position - wall_normal * 0.15 + Vector3(0, 2.0, 0)
+
+		# Change the clearance_start calculation:
+		var down_query = PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -2.5, 0))
+		down_query.exclude = [self.get_rid()]
+		
+		var down_result = space_state.intersect_ray(down_query)
+		
+		if down_result:
+			var ledge_point = down_result.position
+			var vault_height = ledge_point.y - global_position.y
+			
+			# 1. Is it a valid climb? (Between a stair step and 1.8m)
+			if vault_height > MAX_STEP_HEIGHT and vault_height <= 1.8:
+				
+				# --- THE NEW CLEARANCE CHECK ---
+				# Shoot a ray straight up from the landing zone to check for roofs/window frames
+				#var clearance_start = ledge_point + (forward_dir * 0.2) + Vector3(0, 0.05, 0)
+				var clearance_start = ledge_point + (forward_dir * 0.15) + Vector3(0, 0.05, 0)
+				var clearance_end = clearance_start + Vector3(0, 1.8, 0) # Your player's height
+				var clearance_query = PhysicsRayQueryParameters3D.create(clearance_start, clearance_end)
+				clearance_query.exclude = [self.get_rid()]
+				
+				# If this ray hits anything, the gap is too small. Abort!
+				if space_state.intersect_ray(clearance_query):
+					return 
+				# -------------------------------
+				
+				can_vault_current_ledge = true
+				current_ledge_point = ledge_point
+				current_vault_height = vault_height
+				
+				# 2. THE DOT LOGIC: Only show if > 1.6m
+				if vault_height > 1.6 and vault_indicator:
+					var exact_edge = forward_result.position
+					exact_edge.y = ledge_point.y
+					
+					exact_edge += wall_normal * 0.05
+					exact_edge.y += 0.03
+					
+					vault_indicator.global_position = exact_edge
+					vault_indicator.show()
+
+func _try_vault() -> bool:
+	# We no longer do math here! We just check the scanner's homework.
+	if can_vault_current_ledge:
+		var forward_dir = -cam.global_transform.basis.z
+		forward_dir.y = 0
+		forward_dir = forward_dir.normalized()
+		
+		vault_indicator.hide() # Turn off the dot immediately
+		_perform_vault(current_ledge_point, forward_dir, current_vault_height)
+		return true
+		
+	return false
+
+# (Keep your existing _perform_vault function here!)
+#func _try_vault() -> bool:
+	#var space_state = get_world_3d().direct_space_state
+	#
+	#var forward_dir = -cam.global_transform.basis.z
+	#forward_dir.y = 0
+	#forward_dir = forward_dir.normalized()
+	#
+	## 1. Cast from knee-height (0.5m) so we catch low boxes
+	#var detect_height = global_position + Vector3(0, 0.5, 0)
+	#var forward_query = PhysicsRayQueryParameters3D.create(detect_height, detect_height + forward_dir * 1.2)
+	#forward_query.exclude = [self.get_rid()] 
+	#
+	#var forward_result = space_state.intersect_ray(forward_query)
+	#
+	#if forward_result:
+		#var wall_normal = forward_result.normal
+		#if abs(wall_normal.y) > 0.2: return false
+		#
+		## 2. Shoot down from 2.0m (just above the player's 1.8m height)
+		#var down_start = forward_result.position - wall_normal * 0.4 + Vector3(0, 2.0, 0)
+		#var down_query = PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -2.5, 0))
+		#down_query.exclude = [self.get_rid()]
+		#
+		#var down_result = space_state.intersect_ray(down_query)
+		#
+		#if down_result:
+			#var ledge_point = down_result.position
+			#var vault_height = ledge_point.y - global_position.y
+			#
+			## 3. Vault if it is taller than a stair step, but <= your full height (1.8m)
+			#if vault_height > MAX_STEP_HEIGHT and vault_height <= 1.8:
+				## Pass the height into the function so it knows how slow to go!
+				#_perform_vault(ledge_point, forward_dir, vault_height)
+				#return true
+				#
+	#return false
+
+func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: float) -> void:
+	is_vaulting = true
+	velocity = Vector3.ZERO
+	
+	# 1. DYNAMIC SPEED CALCULATION
+	# A 0.6m box will take ~0.45 seconds. A full 1.8m wall will take ~1.35 seconds.
+	var vault_time = clamp(vault_height * 0.75, 0.4, 1.5)
+	
+	#var final_pos = target_point + (forward_dir * 0.4)
+	var final_pos = target_point + (forward_dir * 0.2)
+	
+	var vault_tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
+	
+	# 2. PARALLEL MODE: Run the movement and the camera tilt at the exact same time
+	vault_tween.set_parallel(true)
+	
+	# --- MOVEMENT ---
+	# Pull up to the ledge (takes 70% of the total vault time)
+	vault_tween.tween_property(self, "global_position:y", final_pos.y + 0.1, vault_time * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Pull forward onto the ledge (delayed until the pull-up is mostly done)
+	vault_tween.tween_property(self, "global_position", final_pos, vault_time * 0.3).set_trans(Tween.TRANS_LINEAR).set_delay(vault_time * 0.7)
+	
+	# --- CAMERA FEEL (THE STRAIN) ---
+	# Tilt the camera 5 degrees to simulate hauling your weight on one arm
+	var tilt_amount = deg_to_rad(5.0) # You can make this negative to tilt the other way!
+	vault_tween.tween_property(eyes, "rotation:z", tilt_amount, vault_time * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Snap the camera back to straight as you plant your feet
+	vault_tween.tween_property(eyes, "rotation:z", 0.0, vault_time * 0.5).set_delay(vault_time * 0.5)
+	
+	# 3. CHAIN MODE: Wait for all parallel animations to finish before unlocking the player
+	vault_tween.chain().tween_callback(func(): 
+		is_vaulting = false
+		eyes.rotation.z = 0.0 # Safety lock to ensure the camera is perfectly straight
+	)
+	
