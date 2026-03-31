@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://blfio0uwhdxp0"]
+
+[ext_resource type="Script" uid="uid://bti5v4tlnmavx" path="res://scripts/light_logic.gd" id="1_lyj3c"]
+[ext_resource type="Script" uid="uid://c6vsx15ci2q2y" path="res://scripts/powered_object.gd" id="1_tytbi"]
+
+[node name="LightLogic" type="Node3D" unique_id=363324990]
+script = ExtResource("1_lyj3c")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="." unique_id=598431999]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
+light_energy = 2.0
+
+[node name="PowerComponent" type="Node3D" parent="." unique_id=1073175069]
+script = ExtResource("1_tytbi")
+metadata/_custom_type_script = "uid://c6vsx15ci2q2y"

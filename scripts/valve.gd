@@ -59,7 +59,16 @@ var highlight_comp: HighlightComponent
 
 var install_cooldown: float = 0.0
 
+var has_been_installed: bool = false
+
 func _ready() -> void:
+	if requires_installation:
+		is_installed = false
+		has_been_installed = false # It has never seen a valve
+		if wheel: wheel.hide()
+	else:
+		has_been_installed = true # It spawned with a valve already in it!
+		
 	if Engine.is_editor_hint(): return
 	
 	wheel = get_node_or_null("Wheel")
@@ -90,19 +99,17 @@ func _process(delta: float) -> void:
 	if install_cooldown > 0.0:
 		install_cooldown -= delta
 
+	# 1. REMOVE THE 'return' HERE!
 	if not is_installed:
 		var player = get_tree().get_first_node_in_group("player")
-		
-		# THE FIX: Increased distance to 1.5. 0.5 was too small!
 		if player and player.held_object is PickableValve and install_cooldown <= 0.0:
 			var dist = global_position.distance_to(player.held_object.global_position)
-			if dist < 1.5: 
+			if dist < 0.3: 
 				_install_valve(player)
-		return
 
-	# ... (keep your interaction/double-tap logic here) ...
-	var is_interacting = is_focused and Input.is_action_pressed("interact")
-	var just_pressed = is_focused and Input.is_action_just_pressed("interact")
+	# 2. ADD 'and is_installed' TO THESE CHECKS!
+	var is_interacting = is_focused and Input.is_action_pressed("interact") and is_installed
+	var just_pressed = is_focused and Input.is_action_just_pressed("interact") and is_installed
 
 	if can_be_detached and just_pressed:
 		var current_time = Time.get_ticks_msec() / 1000.0
@@ -113,8 +120,6 @@ func _process(delta: float) -> void:
 		else:
 			last_interact_time = current_time
 
-	# Because 'can_be_detached' forces 'lock_when_finished' to false, 
-	# this will never block the double-tap!
 	if is_locked: return
 	
 	if highlight_comp: highlight_comp.suppress(is_interacting)
@@ -138,6 +143,7 @@ func _process(delta: float) -> void:
 		if progress >= 1.0: current_target_progress = 0.0
 		elif progress <= 0.0: current_target_progress = 1.0
 
+	# Safely rotate the wheel (even if it's invisible, the math stays accurate)
 	if wheel:
 		var dir_multiplier = -1.0 if turn_clockwise else 1.0
 		var total_angle = 360.0 * visual_rotations * dir_multiplier * progress
@@ -155,9 +161,12 @@ func _install_valve(player: Node3D) -> void:
 	player.held_object = null
 	
 	is_installed = true
+	has_been_installed = true
 	is_locked = false 
-	progress = 0.0
 	current_target_progress = 1.0
+	
+	# --- THE FIX ---
+	# Deleted 'progress = 0.0' so re-installing mid-close feels natural!
 	
 	if wheel: wheel.show()
 	
@@ -175,39 +184,34 @@ func _detach_valve() -> void:
 
 	var spawned_valve = pickable_valve_scene.instantiate()
 	
-	# --- FIX 1: THE OUTLINE ---
-	# We must set this BEFORE adding it to the tree so _ready() can see it
 	if outline_material:
 		spawned_valve.outline_material = outline_material
 
-	# --- FIX 2: THE SCALE GHOST ---
-	# 1. Add to scene ONLY ONCE
+	#get_tree().current_scene.add_child(spawned_valve)
 	get_tree().current_scene.add_child(spawned_valve)
+	spawned_valve.global_position = player.hold_position.global_position
+	#spawned_valve.global_transform = Transform3D.IDENTITY
+	#spawned_valve.scale = Vector3.ONE
 	
-	# 2. Hard-reset the entire transform to stop it from inheriting socket scale
-	spawned_valve.global_transform = Transform3D.IDENTITY
-	spawned_valve.scale = Vector3.ONE
-
-	# 3. Position it at the player's chest
-	spawned_valve.global_position = player.global_position + Vector3(0, 1.2, 0)
-
-	# 4. Hand it to the player
+	if wheel:
+		spawned_valve.global_transform = wheel.global_transform
+	else:
+		spawned_valve.global_position = global_position
+		
 	player.held_object = spawned_valve
 	spawned_valve.pick_up(player.hold_position, player)
 
-	# --- RESET SOCKET STATE ---
 	var weapon_holder = player.get_node_or_null("%WeaponHolder")
 	if weapon_holder: weapon_holder.hide()
-
+	
 	is_installed = false
 	is_locked = false
-	progress = 0.0
-	current_target_progress = 1.0
 	install_cooldown = 1.0 
 
-	for target in targets:
-		if target and target.has_method("set_progress"):
-			target.set_progress(0.0)
+	# --- THE FIX ---
+	# We DELETED the lines that reset 'progress' and the 'targets' loop!
+	# The socket will now naturally drift the progress back to 0.0 
+	# over the next few seconds using the 'reverts_on_release' math.
 
 	if wheel: wheel.hide()
 
@@ -260,26 +264,34 @@ func _draw_connection_line() -> void:
 func _update_valve_label() -> void:
 	if not label: return
 	
-	# 1. Get the current key name
-	var events = InputMap.action_get_events("interact")
-	var key_name = "???"
-	
-	if events.size() > 0:
-		var raw_text = events[0].as_text()
-		key_name = raw_text.replace(" (Physical)", "") \
-						   .replace(" - Physical", "") \
-						   .replace(" (Physics)", "") \
-						   .replace(" - Physics", "") \
-						   .replace("Left Mouse Button", "LMB") \
-						   .replace("Right Mouse Button", "RMB") \
-						   .replace("Middle Mouse Button", "MMB") \
-						   .strip_edges()
-
-	# 2. Build the string
-	var text = "Hold [%s]" % key_name
-	
-	# Add the second line only if it's actually detachable
-	if can_be_detached:
-		text += "\nDouble tap [%s] to detach" % key_name
+	# STATE 1: The valve is currently in the socket
+	if is_installed:
+		# 1. Get the current key name
+		var events = InputMap.action_get_events("interact")
+		var key_name = "???"
 		
-	label.text = text
+		if events.size() > 0:
+			var raw_text = events[0].as_text()
+			key_name = raw_text.replace(" (Physical)", "") \
+							   .replace(" - Physical", "") \
+							   .replace(" (Physics)", "") \
+							   .replace(" - Physics", "") \
+							   .replace("Left Mouse Button", "LMB") \
+							   .replace("Right Mouse Button", "RMB") \
+							   .replace("Middle Mouse Button", "MMB") \
+							   .strip_edges()
+
+		# 2. Build the string
+		var text = "Hold [%s]" % key_name
+		if can_be_detached:
+			text += "\nDouble tap [%s] to detach" % key_name
+			
+		label.text = text
+
+	# STATE 2: The valve is missing, but the player has attached it before
+	elif has_been_installed:
+		label.text = "Attach the valve"
+
+	# STATE 3: The valve is missing, and the player has never attached one
+	else:
+		label.text = "Find the valve"

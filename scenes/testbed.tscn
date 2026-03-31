@@ -37,13 +37,11 @@
 [ext_resource type="PackedScene" uid="uid://dwusg7ievwjmh" path="res://scenes/breakable_rope.tscn" id="35_ovkd5"]
 [ext_resource type="PackedScene" uid="uid://dudx3baxpmytw" path="res://scenes/valve.tscn" id="36_cmtte"]
 [ext_resource type="Script" uid="uid://c20bpd5d2f3c5" path="res://scripts/procedural_stairs_csg.gd" id="45_o4kb0"]
+[ext_resource type="PackedScene" uid="uid://d2dtso8yjpyem" path="res://scenes/ground_button.tscn" id="46_j34x5"]
 [ext_resource type="Script" uid="uid://buk422xy2d1pq" path="res://scripts/procedural_monkey_bars.gd" id="46_oipxx"]
-[ext_resource type="Script" uid="uid://no1ictgdrgj5" path="res://scenes/pickable_box.gd" id="49_llsfp"]
-[ext_resource type="Material" uid="uid://c2niiwlud067p" path="res://assets/shaders/SmartOutlineMaterial.tres" id="50_erim8"]
-[ext_resource type="Script" uid="uid://b5nnqdx26hrl8" path="res://scripts/pickable_valve.gd" id="50_f3k8r"]
+[ext_resource type="PackedScene" uid="uid://blfio0uwhdxp0" path="res://scenes/light_logic.tscn" id="47_j34x5"]
+[ext_resource type="Script" uid="uid://c6vsx15ci2q2y" path="res://scripts/powered_object.gd" id="48_0wf3h"]
 [ext_resource type="PackedScene" uid="uid://ducdt15ffnmg4" path="res://scenes/pickable_valve.tscn" id="50_nefr7"]
-[ext_resource type="Texture2D" uid="uid://cwlrqso5rodpi" path="res://assets/images/dev_textures/standard_9_blue_512.png" id="51_anvhq"]
-[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="52_3n431"]
 [ext_resource type="PackedScene" uid="uid://bwx87famw5p7u" path="res://scenes/pickable_box.tscn" id="52_dpsb6"]
 
 [sub_resource type="GDScript" id="GDScript_4mrxx"]
@@ -66,22 +64,22 @@ func hide_prompt():
 
 [sub_resource type="BoxMesh" id="BoxMesh_qfnet"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_o4kb0"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_0wf3h"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_oipxx"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_arwuo"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_o4kb0")
+noise = SubResource("FastNoiseLite_0wf3h")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_j34x5"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nefr7"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_o4kb0")
+noise = SubResource("FastNoiseLite_0wf3h")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wf3h"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xt2vi"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -89,14 +87,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_oipxx")
+normal_texture = SubResource("NoiseTexture2D_arwuo")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_j34x5")
+refraction_texture = SubResource("NoiseTexture2D_nefr7")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_arwuo"]
+[sub_resource type="Curve3D" id="Curve3D_f3k8r"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -113,14 +111,14 @@ albedo_texture = SubResource("ViewportTexture_jhx03")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cmtte"]
 
-[sub_resource type="Curve3D" id="Curve3D_nefr7"]
+[sub_resource type="Curve3D" id="Curve3D_dpsb6"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.470448, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_xt2vi"]
+[sub_resource type="Curve3D" id="Curve3D_nqxml"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.454609, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -152,92 +150,14 @@ albedo_color = Color(0, 0, 0, 1)
 [sub_resource type="QuadMesh" id="QuadMesh_w7kh3"]
 material = SubResource("StandardMaterial3D_w7kh3")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_efo5o"]
-albedo_texture = ExtResource("51_anvhq")
-
-[sub_resource type="BoxMesh" id="BoxMesh_jw31o"]
-material = SubResource("StandardMaterial3D_efo5o")
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_i5vwy"]
-
-[sub_resource type="PackedScene" id="PackedScene_8wjit"]
-_bundled = {
-"conn_count": 2,
-"conns": PackedInt32Array(1073741829, 1073741828, 23, 22, 2, 0, 0, 1073741831, 1073741830, 25, 24, 2, 0, 0),
-"editable_instances": [],
-"id_paths": [PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()],
-"names": PackedStringArray("PickableBox", "RigidBody3D", "mass", "script", "outline_material", "MeshInstance3D", "MeshInstance3D", "mesh", "CollisionShape3D", "CollisionShape3D", "shape", "Interact_Component", "Node", "script", "metadata/_custom_type_script", "Label3D", "Label3D", "transform", "visible", "billboard", "no_depth_test", "text", "_on_interact_component_focused", "focused", "_on_interact_component_unfocused", "unfocused"),
-"node_count": 5,
-"node_ids": PackedInt32Array(181097973, 675138939, 2104161458, 596945312, 1271720927),
-"node_paths": [NodePath("."), NodePath("."), NodePath("."), NodePath("."), NodePath("."), NodePath("Interact_Component"), NodePath("."), NodePath("Interact_Component")],
-"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 3, 2, 0, 3, 1, 4, 2, 0, 1073741824, 0, 6, 5, -1, 1, 7, 3, 0, 1073741825, 0, 9, 8, -1, 1, 10, 4, 0, 1073741826, 0, 12, 11, -1, 2, 13, 5, 14, 6, 0, 1073741827, 0, 16, 15, -1, 5, 17, 7, 18, 8, 19, 9, 20, 10, 21, 11, 0),
-"variants": [3.0, ExtResource("49_llsfp"), ExtResource("50_erim8"), SubResource("BoxMesh_jw31o"), SubResource("BoxShape3D_i5vwy"), ExtResource("52_3n431"), "uid://cqawbvidns1th", Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6669362, 0), false, 1, true, "[E]"],
-"version": 3
-}
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5yorj"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="TorusMesh" id="TorusMesh_m7mha"]
-material = SubResource("StandardMaterial3D_5yorj")
-inner_radius = 0.25
-outer_radius = 0.3
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ppa8g"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_56jl3"]
-material = SubResource("StandardMaterial3D_ppa8g")
-size = Vector3(0.01, 0.5, 0.01)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_grlkf"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_1f11c"]
-material = SubResource("StandardMaterial3D_grlkf")
-size = Vector3(0.01, 0.5, 0.01)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_ht488"]
-top_radius = 0.05
-bottom_radius = 0.05
-height = 0.1
-radial_segments = 16
-rings = 0
-
-[sub_resource type="PackedScene" id="PackedScene_isy8u"]
-_bundled = {
-"base_scene": 0,
-"conn_count": 0,
-"conns": PackedInt32Array(),
-"editable_instances": [],
-"id_paths": [PackedInt32Array(), PackedInt32Array(), PackedInt32Array(), PackedInt32Array()],
-"names": PackedStringArray("PickableBox", "script", "outline_material", "MeshInstance3D", "mesh", "MeshInstance3D", "MeshInstance3D", "transform", "mesh", "MeshInstance3D2", "MeshInstance3D", "transform", "mesh", "MeshInstance3D3", "MeshInstance3D", "transform", "mesh"),
-"node_count": 5,
-"node_ids": PackedInt32Array(181097973, 675138939, 154674665, 583067888, 1122062215),
-"node_paths": [NodePath("."), NodePath("./MeshInstance3D"), NodePath("./MeshInstance3D"), NodePath("./MeshInstance3D")],
-"nodes": PackedInt32Array(-1, -1, 2147483647, 0, -1, 2, 1, 1, 2, 2, 0, 1073741824, -1, 2147483647, 262147, -1, 1, 4, 3, 0, 1073741825, 0, 6, 262149, -1, 2, 7, 4, 8, 5, 0, 1073741826, 0, 10, 524297, -1, 2, 11, 6, 12, 7, 0, 1073741827, 0, 14, 786445, -1, 2, 15, 8, 16, 9, 0),
-"variants": [SubResource("PackedScene_8wjit"), ExtResource("50_f3k8r"), null, SubResource("TorusMesh_m7mha"), Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 0, 0, 0), SubResource("BoxMesh_56jl3"), Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0), SubResource("BoxMesh_1f11c"), Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0), SubResource("CylinderMesh_ht488")],
-"version": 3
-}
-
-[sub_resource type="Curve3D" id="Curve3D_oipxx"]
-_data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -9.890443, 12.012214, -9.835546, 0, 0, 0, 0, 0, 0, 2.978754, 12.438112, -8.637796, 0, 0, 0, 0, 0, 0, 10.585632, 9.146183, -4.137231, 0, 0, 0, 0, 0, 0, 14.914204, 10.946687, 1.0580714),
-"tilts": PackedFloat32Array(0, 0, 0, 0)
-}
-point_count = 4
-
-[sub_resource type="Curve3D" id="Curve3D_f3k8r"]
-_data = {
-"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.07545376, -0.20376778, -1.2699528, 0, 0, 0, 0, 0, 0, -0.1749239, 1.0637245, -8.1020355, 0, 0, 0, 0, 0, 0, -0.47234678, -0.8551178, -21.138683),
-"tilts": PackedFloat32Array(0, 0, 0)
-}
-point_count = 3
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wf3h"]
+transparency = 1
+albedo_color = Color(1, 0, 0, 0.6)
 
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(0.9999999, 0, -2.950469e-07, 0, 1, 0, 2.950469e-07, 0, 0.9999999, 9.32889, 5.2452087e-06, -0.35600138)
+transform = Transform3D(-1.6391277e-07, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -1.6391277e-07, 33.79506, 5.2452087e-06, -11.42056)
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -299,7 +219,7 @@ rope_length = 17.4
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_0wf3h")
+material = SubResource("StandardMaterial3D_xt2vi")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(-2, 1.7484555e-07, 7.642742e-15, 0, -8.742278e-08, 2, 1.7484555e-07, 2, 8.742278e-08, 30.55747, 1.0914047, 9.622128)
@@ -314,7 +234,7 @@ DO NOT GO THERE!"
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_arwuo")
+curve = SubResource("Curve3D_f3k8r")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 32.936016, 2.3380308, -0.2335968)
@@ -383,11 +303,11 @@ ropes = Array[NodePath]([NodePath("../UniversalCable3D")])
 
 [node name="UniversalCable3D" parent="InteractiveObjects" unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_nefr7")
+curve = SubResource("Curve3D_dpsb6")
 
 [node name="UniversalCable3D2" parent="InteractiveObjects" unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_xt2vi")
+curve = SubResource("Curve3D_nqxml")
 
 [node name="Gate" parent="InteractiveObjects" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
@@ -947,7 +867,7 @@ use_collision = true
 size = Vector3(0.25917816, 1.7402039, 3.9073486)
 
 [node name="CSGBox3D82" type="CSGBox3D" parent="Objects/Level" unique_id=166047672]
-transform = Transform3D(-4.1739468e-06, -3.9052165, 1.1791535e-08, 18.725235, -1.5891717e-07, -0.93096, 47.744377, -2.7907794e-07, 0.3651204, -7.4940476, 11.122881, -47.6332)
+transform = Transform3D(-4.1739468e-06, -3.9052165, 1.17915375e-08, 10.818561, -1.1205927e-07, -0.97749674, 50.131016, -3.0096822e-07, 0.21094942, -7.4940476, 11.122881, -47.6332)
 use_collision = true
 size = Vector3(0.1023674, 1.7402039, 1.9713745)
 
@@ -2037,14 +1957,11 @@ trigger_offset = Vector3(0, 1, 1.065)
 transform = Transform3D(0, 1.0000001, 0, -1.0000001, 0, 0, 0, 0, 1, 36.000687, 1.4253691, -11.466214)
 targets = [NodePath("../InteractiveObjects/Gate")]
 requires_installation = true
-pickable_valve_scene = SubResource("PackedScene_isy8u")
-turn_duration = 1.0
+pickable_valve_scene = ExtResource("50_nefr7")
+can_be_detached = true
 visual_rotations = 0.5
 turn_clockwise = false
 reverts_on_release = true
-
-[node name="PickableValve" parent="." unique_id=594279821 instance=ExtResource("50_nefr7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.769108, 0.025005728, -15.042136)
 
 [node name="PickableBox" parent="." unique_id=1145886146 instance=ExtResource("52_dpsb6")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.297043, 0.5000056, -16.682497)
@@ -2130,16 +2047,79 @@ landing_extra_length = 5.0
 top_landing_length = 3.0
 metadata/_custom_type_script = "uid://c20bpd5d2f3c5"
 
-[node name="ProceduralMonkeyBars" type="Path3D" parent="." unique_id=987166088]
-curve = SubResource("Curve3D_oipxx")
+[node name="GroundButton" parent="." unique_id=1371832190 node_paths=PackedStringArray("targets") instance=ExtResource("46_j34x5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.954255, 0.050005246, 3.264655)
+targets = [NodePath("../LightLogic")]
+
+[node name="GroundButton2" parent="." unique_id=109679381 node_paths=PackedStringArray("targets") instance=ExtResource("46_j34x5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.053773, 0.050005246, 3.264655)
+targets = [NodePath("../LightLogic"), NodePath("../Door_Interact")]
+
+[node name="LightLogic" parent="." unique_id=363324990 instance=ExtResource("47_j34x5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2896776, 3.382648, 5.516077)
+required_power = 2
+
+[node name="Door_Interact" parent="." unique_id=461060364 instance=ExtResource("6_sx10w")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.285236, 2.0000057, 5.5213857)
+
+[node name="PowerComponent" type="Node3D" parent="Door_Interact" unique_id=546701311]
+script = ExtResource("48_0wf3h")
+metadata/_custom_type_script = "uid://c6vsx15ci2q2y"
+
+[node name="MonkeyBarVolume" type="CSGBox3D" parent="." unique_id=1609404894]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1093025, 12.059666, -14.552036)
+size = Vector3(13.676514, 1, 5.659424)
+material = SubResource("StandardMaterial3D_0wf3h")
 script = ExtResource("46_oipxx")
-bar_width = 2.5
-rung_spacing = 0.5
-thickness = 0.21
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
 
-[node name="ProceduralMonkeyBars2" type="Path3D" parent="." unique_id=1720396764]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.985073, 16.26501, -26.699425)
-curve = SubResource("Curve3D_f3k8r")
+[node name="MonkeyBarVolume2" type="CSGBox3D" parent="." unique_id=1944547672]
+transform = Transform3D(0.9862884, -0.16503038, 0, 0.16503038, 0.9862884, 0, 0, 0, 1, 10.034505, 12.783792, -14.552036)
+size = Vector3(8.532776, 1, 5.659424)
+material = SubResource("StandardMaterial3D_0wf3h")
 script = ExtResource("46_oipxx")
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
+
+[node name="MonkeyBarVolume3" type="CSGBox3D" parent="." unique_id=702821911]
+transform = Transform3D(-0.018028278, 0, 0.9998374, -0.29052138, 0.9568541, -0.005238454, -0.95669854, -0.29056856, -0.017250435, 12.245687, 11.859383, -21.032911)
+size = Vector3(8.359802, 1, 5.659424)
+material = SubResource("StandardMaterial3D_0wf3h")
+script = ExtResource("46_oipxx")
+metadata/_custom_type_script = "uid://buk422xy2d1pq"
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=285641073]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1774902, 12.848338, -14.553083)
+size = Vector3(13.432129, 1, 5.307129)
+
+[node name="MonkeyBarVolume4" type="CSGBox3D" parent="." unique_id=304954735]
+transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.277451, 15.901974, -31.538315)
+size = Vector3(8.633942, 1.2135162, 5.659424)
+material = SubResource("StandardMaterial3D_0wf3h")
+script = ExtResource("46_oipxx")
+metadata/_custom_type_script = "uid://buk422xy2d1pq"
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=608263594]
+transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.2695055, 17.038422, -31.59282)
+size = Vector3(9.015381, 1, 5.307129)
+
+[node name="MonkeyBarVolume5" type="CSGBox3D" parent="." unique_id=377143011]
+transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.25847, 15.977144, -41.64592)
+size = Vector3(12.407837, 0.8311157, 5.659424)
+material = SubResource("StandardMaterial3D_0wf3h")
+script = ExtResource("46_oipxx")
+metadata/_custom_type_script = "uid://buk422xy2d1pq"
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="." unique_id=1599769291]
+transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.2617264, 16.855827, -41.749557)
+size = Vector3(12.272339, 1.0883789, 5.307129)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=1248711254]
+transform = Transform3D(0.97761095, -0.21042056, 0, 0.21042056, 0.97761095, 0, 0, 0, 1, 9.452376, 13.701333, -14.553083)
+size = Vector3(8.330688, 1, 5.307129)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=1230709450]
+transform = Transform3D(0.05446225, 0, 0.99851584, -0.24686883, 0.9689552, 0.013465017, -0.96751726, -0.24723577, 0.052771486, 12.254514, 13.1335535, -21.16327)
+size = Vector3(8.329346, 1, 5.307129)
+
+[node name="PickableValve" parent="." unique_id=594279821 instance=ExtResource("50_nefr7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.71226, 0.025005728, -13.08078)

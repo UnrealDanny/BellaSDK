@@ -22,6 +22,7 @@ material = SubResource("StandardMaterial3D_fj5oh")
 [sub_resource type="BoxShape3D" id="BoxShape3D_74l1t"]
 
 [node name="PickableBox" unique_id=594279821 instance=ExtResource("1_cfr4d")]
+collision_layer = 4
 
 [node name="HighlightComponent" parent="." index="1" unique_id=1233358358]
 outline_material = SubResource("ShaderMaterial_wxffa")

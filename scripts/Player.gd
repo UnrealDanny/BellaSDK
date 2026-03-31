@@ -652,30 +652,92 @@ func exit_ladder() -> void:
 # MONKE BARS
 # --------------------------------------
 var on_monkey_bars: bool = false
-var MONKEY_BAR_SPEED: float = 2.5 # Slower and heavier than the ladder
-var MONKEY_BAR_HANG_OFFSET: float = 2.1 # Distance from feet to the bars
+var MONKEY_BAR_SPEED: float = 2.5 
+var MONKEY_BAR_HANG_OFFSET: float = 2.1 
+var current_monkey_bar_volume: CSGBox3D = null # <--- CHANGED THIS
 
-func enter_monkey_bars(path_node: Path3D) -> void:
-	if on_monkey_bars or is_on_floor(): return
+func enter_monkey_bars(volume_node: CSGBox3D) -> void:
+	if on_monkey_bars and current_monkey_bar_volume == volume_node: 
+		return
+	
+	if not on_monkey_bars and is_on_floor() and velocity.y <= 0: 
+		return 
 
+	# Remember if we were already swinging before we switch the active box
+	var was_already_on_bars = on_monkey_bars 
+	
 	on_monkey_bars = true
-	current_monkey_bar_path = path_node # Store the specific path we touched
-	velocity = Vector3.ZERO # Kill momentum so we don't fly past the snap point
+	current_monkey_bar_volume = volume_node
+	
+	# THE FIX: Only kill vertical momentum if we are grabbing out of thin air.
+	# If we are just handing off between boxes, do not interrupt the flow!
+	if not was_already_on_bars:
+		velocity.y = 0
 
-func exit_monkey_bars() -> void:
+# THE FIX: Add a default parameter so manual jumping still works without a node
+func exit_monkey_bars(volume_node: CSGBox3D = null) -> void:
 	if not on_monkey_bars: return
-
+	
+	# --- THE HAND-OFF CHECK ---
+	# If a box is telling us to let go, but we are currently holding a DIFFERENT box, ignore it!
+	if volume_node != null and volume_node != current_monkey_bar_volume:
+		return
+	
 	on_monkey_bars = false
-	current_monkey_bar_path = null
-
-	# --- THE ANIMATION CLEANUP ---
-	# Force the animation to stop and go back to a neutral state
+	current_monkey_bar_volume = null
+	
 	if camera_anims:
 		camera_anims.play("RESET", 0.3)
 		camera_anims.speed_scale = 1.0
-
-	# Tiny downward nudge to ensure we leave the trigger area
+	
 	velocity.y = -2.0
+
+func _handle_monkey_bars_physics(_delta: float) -> void:
+	sprinting = false
+	crouching = false
+
+	var look_dir = -cam.global_transform.basis.z 
+	var right_dir = cam.global_transform.basis.x 
+	look_dir.y = 0; right_dir.y = 0
+	look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
+
+	var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
+	velocity.x = bar_vel.x * MONKEY_BAR_SPEED
+	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
+
+# --- THE PLANE SNAPPER (SMOOTH GLIDE) ---
+	if current_monkey_bar_volume and is_instance_valid(current_monkey_bar_volume):
+		var local_pos = current_monkey_bar_volume.to_local(global_position)
+		local_pos.y = current_monkey_bar_volume.size.y / 2.0
+		var global_top = current_monkey_bar_volume.to_global(local_pos)
+		
+		var target_y = global_top.y - MONKEY_BAR_HANG_OFFSET
+		var distance_to_target = target_y - global_position.y
+		
+		if abs(distance_to_target) > 4.0:
+			exit_monkey_bars()
+			return
+			
+		# THE FIX: The Shock Absorber!
+		# Multiply by 12 for a strong pull, but CLAMP the max speed to 6.0 m/s.
+		# This creates a perfectly smooth "hoist" when you grab, and absorbs bumps between boxes.
+		var pull_speed = distance_to_target * 12.0
+		velocity.y = clampf(pull_speed, -6.0, 6.0)
+	else:
+		exit_monkey_bars()
+
+	# --- ANIMATIONS ---
+	if input_dir.length() > 0.1:
+		if camera_anims.current_animation != "MonkeMoves":
+			camera_anims.play("MonkeMoves", 0.3)
+		camera_anims.speed_scale = 1.0 if input_dir.y < 0 else -1.0
+	else:
+		if camera_anims.current_animation == "MonkeMoves":
+			camera_anims.play("RESET", 0.3)
+			camera_anims.speed_scale = 1.0
+
+	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
+		exit_monkey_bars()
 	
 # --------------------------------------
 # ROPES
@@ -1038,39 +1100,39 @@ func _handle_ladder_physics(_delta: float) -> void:
 		velocity = -look_dir * 5.0 # Shove player backward
 		velocity.y = 5.0 # And slightly up
 			
-func _handle_monkey_bars_physics(delta: float) -> void:
-	sprinting = false
-	crouching = false
-
-	# 1. Horizontal Movement
-	var look_dir = -cam.global_transform.basis.z 
-	var right_dir = cam.global_transform.basis.x 
-	look_dir.y = 0; right_dir.y = 0
-	look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
-
-	var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-	velocity.x = bar_vel.x * MONKEY_BAR_SPEED
-	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
-
-	# --- 2. THE PATH SNAPPER ---
-	if current_monkey_bar_path:
-		var path_curve = current_monkey_bar_path.curve
-		var local_player_pos = current_monkey_bar_path.to_local(global_position)
-		var closest_point_local = path_curve.get_closest_point(local_player_pos)
-		var closest_point_global = current_monkey_bar_path.to_global(closest_point_local)
-		
-		var target_y = closest_point_global.y - MONKEY_BAR_HANG_OFFSET
-		var distance_to_target = target_y - global_position.y
-		
-		# We increase the "Glue Range" to 4.0 meters just for the snap
-		if abs(distance_to_target) > 4.0:
-			exit_monkey_bars()
-			return
-			
-		# PULL: Snapping the player to the Y height
-		velocity.y = distance_to_target * 25.0
-	else:
-		exit_monkey_bars()
+#func _handle_monkey_bars_physics(_delta: float) -> void:
+	#sprinting = false
+	#crouching = false
+#
+	## 1. Horizontal Movement
+	#var look_dir = -cam.global_transform.basis.z 
+	#var right_dir = cam.global_transform.basis.x 
+	#look_dir.y = 0; right_dir.y = 0
+	#look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
+#
+	#var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
+	#velocity.x = bar_vel.x * MONKEY_BAR_SPEED
+	#velocity.z = bar_vel.z * MONKEY_BAR_SPEED
+#
+	## --- 2. THE PATH SNAPPER ---
+	#if current_monkey_bar_path:
+		#var path_curve = current_monkey_bar_path.curve
+		#var local_player_pos = current_monkey_bar_path.to_local(global_position)
+		#var closest_point_local = path_curve.get_closest_point(local_player_pos)
+		#var closest_point_global = current_monkey_bar_path.to_global(closest_point_local)
+		#
+		#var target_y = closest_point_global.y - MONKEY_BAR_HANG_OFFSET
+		#var distance_to_target = target_y - global_position.y
+		#
+		## We increase the "Glue Range" to 4.0 meters just for the snap
+		#if abs(distance_to_target) > 4.0:
+			#exit_monkey_bars()
+			#return
+			#
+		## PULL: Snapping the player to the Y height
+		#velocity.y = distance_to_target * 25.0
+	#else:
+		#exit_monkey_bars()
 
 	# --- 3. ANIMATIONS ---
 	if input_dir.length() > 0.1:

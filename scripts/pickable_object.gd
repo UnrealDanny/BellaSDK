@@ -39,21 +39,60 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 	
 func drop() -> void:
 	is_held = false
-	hold_target = null
+	freeze = false 
 	gravity_scale = 1.0 
-	
 	if mesh: mesh.transparency = 0.0
+
 	if holder:
-		remove_collision_exception_with(holder)
-		holder = null
+		# 1. Inherit the player's velocity so we don't instantly run it over!
+		if "velocity" in holder:
+			linear_velocity = holder.velocity
+			
+		# 2. Shoot it slightly forward and up out of the camera
+		var push_dir = -holder.cam.global_transform.basis.z.normalized()
+		push_dir.y += 0.5 # Add a slight upward arc
+		apply_central_impulse(push_dir * 3.0)
+
+		# 3. Delay the collision restoration so it fully clears the player's body
+		var previous_holder = holder
+		get_tree().create_timer(0.2).timeout.connect(func():
+			if is_instance_valid(self) and is_instance_valid(previous_holder):
+				remove_collision_exception_with(previous_holder)
+		)
+
+	holder = null
+	
+	if interact_comp:
+		interact_comp.is_currently_focused = false
 
 func _physics_process(delta: float) -> void:
 	if is_held and hold_target:
+		# --- 1. LINEAR MOVEMENT (Position) ---
 		var target_pos = hold_target.global_position
 		var current_pos = global_position
 		var distance_vector = target_pos - current_pos
 		linear_velocity = distance_vector * 20.0
-		angular_velocity = angular_velocity.lerp(Vector3.ZERO, 15.0 * delta)
+		
+		# --- 2. ANGULAR MOVEMENT (Rotation) ---
+		var target_quat = hold_target.global_basis.get_rotation_quaternion()
+		var current_quat = global_basis.get_rotation_quaternion()
+		
+		# Calculate the rotational difference between where it is and where it should be
+		var diff_quat = target_quat * current_quat.inverse()
+		
+		# Extract the mathematical axis and angle of that difference
+		var axis = Vector3(diff_quat.x, diff_quat.y, diff_quat.z)
+		var angle = 2.0 * acos(clamp(diff_quat.w, -1.0, 1.0))
+		
+		# Ensure the object takes the shortest path to rotate (don't spin the long way around)
+		if angle > PI:
+			angle -= TAU
+			
+		# If it's not perfectly aligned, apply angular velocity to twist it into place!
+		if axis.length_squared() > 0.0001:
+			angular_velocity = axis.normalized() * (angle * 20.0)
+		else:
+			angular_velocity = Vector3.ZERO
 
 func _on_interact_component_focused() -> void:
 	if mesh and outline_material:
