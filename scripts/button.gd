@@ -28,7 +28,7 @@ func _on_unfocus() -> void:
 	# Un-highlighting is now handled automatically by HighlightComponent
 	label_interact.hide()
 		
-func _on_interact() -> void:
+func _on_interact(_player: CharacterBody3D) -> void:
 	if not button or not can_press:
 		return
 		
@@ -74,15 +74,15 @@ func _draw_connection_line() -> void:
 		debug_line = MeshInstance3D.new()
 		add_child(debug_line)
 		
-		var immediate_mesh = ImmediateMesh.new()
+		var immediate_mesh := ImmediateMesh.new()
 		debug_line.mesh = immediate_mesh
 		
-		var mat = StandardMaterial3D.new()
+		var mat := StandardMaterial3D.new()
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		mat.albedo_color = Color.RED
 		debug_line.material_override = mat
 
-	var mesh = debug_line.mesh as ImmediateMesh
+	var mesh := debug_line.mesh as ImmediateMesh
 	mesh.clear_surfaces()
 	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
 	

@@ -57,13 +57,13 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	# 0.8 is usually the 'sweet spot' for a heavy vignette. 
 	# 10.0 might be making the whole screen black or breaking the math!
-	var target_vignette_opacity = 0.8 if is_player_crouching else 0.0
+	var target_vignette_opacity := 0.8 if is_player_crouching else 0.0
 
-	var current_opacity = vignette.material.get_shader_parameter("vignette_opacity")
+	var current_opacity := vignette.material.get_shader_parameter("vignette_opacity") as float
 	if current_opacity == null:
 		current_opacity = 0.0
 		
-	var new_opacity = lerp(current_opacity, target_vignette_opacity, delta * ui_lerp_speed)
+	var new_opacity: float = lerp(current_opacity, target_vignette_opacity, delta * ui_lerp_speed)
 	vignette.material.set_shader_parameter("vignette_opacity", new_opacity)
 
 
@@ -109,7 +109,7 @@ func _on_player_zoomed(is_zooming: bool) -> void:
 
 		zoom_tween.tween_property(fisheye_zoom, "material:shader_parameter/effect_strength", 0.0, 0.2)
 		
-		zoom_tween.finished.connect(func(): 
+		zoom_tween.finished.connect(func() -> void: 
 			ui_circle_zoom.hide()
 			ui_circle_zoom_inner.hide()
 		)
@@ -123,7 +123,7 @@ func _on_player_crouched(crouching: bool) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("console"):
-		var is_open = not debug_panel.visible
+		var is_open := not debug_panel.visible
 		debug_panel.visible = is_open
 		get_tree().paused = is_open
 

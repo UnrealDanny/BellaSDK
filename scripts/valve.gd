@@ -79,7 +79,7 @@ func _ready() -> void:
 		
 	highlight_comp = get_node_or_null("HighlightComponent")
 	
-	var interact_comp = get_node_or_null("Interact_Component") 
+	var interact_comp := get_node_or_null("Interact_Component") 
 	if interact_comp:
 		if not interact_comp.focused.is_connected(_on_interact_component_focused):
 			interact_comp.focused.connect(_on_interact_component_focused)
@@ -101,18 +101,18 @@ func _process(delta: float) -> void:
 
 	# 1. REMOVE THE 'return' HERE!
 	if not is_installed:
-		var player = get_tree().get_first_node_in_group("player")
+		var player := get_tree().get_first_node_in_group("player")
 		if player and player.held_object is PickableValve and install_cooldown <= 0.0:
-			var dist = global_position.distance_to(player.held_object.global_position)
+			var dist := global_position.distance_to(player.held_object.global_position)
 			if dist < 0.3: 
 				_install_valve(player)
 
 	# 2. ADD 'and is_installed' TO THESE CHECKS!
-	var is_interacting = is_focused and Input.is_action_pressed("interact") and is_installed
-	var just_pressed = is_focused and Input.is_action_just_pressed("interact") and is_installed
+	var is_interacting := is_focused and Input.is_action_pressed("interact") and is_installed
+	var just_pressed := is_focused and Input.is_action_just_pressed("interact") and is_installed
 
 	if can_be_detached and just_pressed:
-		var current_time = Time.get_ticks_msec() / 1000.0
+		var current_time := Time.get_ticks_msec() / 1000.0
 		if current_time - last_interact_time <= DOUBLE_TAP_DELAY:
 			_detach_valve()
 			last_interact_time = 0.0 
@@ -136,7 +136,7 @@ func _process(delta: float) -> void:
 			progress = 1.0 
 	else:
 		if reverts_on_release:
-			var revert_target = 0.0 if current_target_progress == 1.0 else 1.0
+			var revert_target := 0.0 if current_target_progress == 1.0 else 1.0
 			progress = move_toward(progress, revert_target, delta / turn_duration)
 			
 	if is_back_and_forth and not is_interacting:
@@ -145,8 +145,8 @@ func _process(delta: float) -> void:
 
 	# Safely rotate the wheel (even if it's invisible, the math stays accurate)
 	if wheel:
-		var dir_multiplier = -1.0 if turn_clockwise else 1.0
-		var total_angle = 360.0 * visual_rotations * dir_multiplier * progress
+		var dir_multiplier := -1.0 if turn_clockwise else 1.0
+		var total_angle := 360.0 * visual_rotations * dir_multiplier * progress
 		wheel.rotation_degrees = initial_rotation + (spin_axis * total_angle)
 
 	for target in targets:
@@ -170,7 +170,7 @@ func _install_valve(player: Node3D) -> void:
 	
 	if wheel: wheel.show()
 	
-	var weapon_holder = player.get_node_or_null("%WeaponHolder")
+	var weapon_holder := player.get_node_or_null("%WeaponHolder")
 	if weapon_holder: weapon_holder.show()
 	print("Valve Auto-Installed!")
 
@@ -179,10 +179,10 @@ func _detach_valve() -> void:
 		push_warning("Cannot detach: No Pickable Valve Scene assigned!")
 		return
 
-	var player = get_tree().get_first_node_in_group("player")
+	var player := get_tree().get_first_node_in_group("player")
 	if not player: return
 
-	var spawned_valve = pickable_valve_scene.instantiate()
+	var spawned_valve := pickable_valve_scene.instantiate()
 	
 	if outline_material:
 		spawned_valve.outline_material = outline_material
@@ -201,7 +201,7 @@ func _detach_valve() -> void:
 	player.held_object = spawned_valve
 	spawned_valve.pick_up(player.hold_position, player)
 
-	var weapon_holder = player.get_node_or_null("%WeaponHolder")
+	var weapon_holder := player.get_node_or_null("%WeaponHolder")
 	if weapon_holder: weapon_holder.hide()
 	
 	is_installed = false
@@ -240,16 +240,16 @@ func _draw_connection_line() -> void:
 		debug_line.top_level = true 
 		debug_line.global_transform = Transform3D.IDENTITY
 		
-		var immediate_mesh = ImmediateMesh.new()
+		var immediate_mesh := ImmediateMesh.new()
 		debug_line.mesh = immediate_mesh
 		
-		var mat = StandardMaterial3D.new()
+		var mat := StandardMaterial3D.new()
 		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		mat.albedo_color = Color.RED
 		mat.no_depth_test = true 
 		debug_line.material_override = mat
 
-	var mesh = debug_line.mesh as ImmediateMesh
+	var mesh := debug_line.mesh as ImmediateMesh
 	mesh.clear_surfaces()
 	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
 	
@@ -267,11 +267,11 @@ func _update_valve_label() -> void:
 	# STATE 1: The valve is currently in the socket
 	if is_installed:
 		# 1. Get the current key name
-		var events = InputMap.action_get_events("interact")
-		var key_name = "???"
+		var events := InputMap.action_get_events("interact")
+		var key_name := "???"
 		
 		if events.size() > 0:
-			var raw_text = events[0].as_text()
+			var raw_text := events[0].as_text()
 			key_name = raw_text.replace(" (Physical)", "") \
 							   .replace(" - Physical", "") \
 							   .replace(" (Physics)", "") \
@@ -282,7 +282,7 @@ func _update_valve_label() -> void:
 							   .strip_edges()
 
 		# 2. Build the string
-		var text = "Hold [%s]" % key_name
+		var text := "Hold [%s]" % key_name
 		if can_be_detached:
 			text += "\nDouble tap [%s] to detach" % key_name
 			

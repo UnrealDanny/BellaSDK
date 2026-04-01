@@ -1,9 +1,9 @@
 extends StaticBody3D
 @onready var label: Label = $Label
 
-var is_open = false
+var is_open := false
 
-func interact():
+func interact() -> void:
 	if is_open:
 		print("Closing Door")
 		# Add animation code here

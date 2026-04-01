@@ -19,26 +19,26 @@ func _ready() -> void:
 		
 	interact_component.interacted.connect(_on_interact_component_interacted)
 
-func _on_interact_component_interacted() -> void:
-	# 1. If someone is already riding, completely ignore new clicks!
-	if player_on_zipline: 
-		return
+# Remove the underscore from 'player' so we can use it!
+func _on_interact_component_interacted(player: CharacterBody3D) -> void:
+	if player_on_zipline: return
 
-	var player = interact_component.get_character_hovered_by_cur_camera()
 	if player and player.has_method("_on_zipline_grabbed"):
-		
-		# 2. Lock the zipline so it can't be clicked again
 		player_on_zipline = true
 		
-		var start_pos = to_global(curve.get_point_position(0))
-		var end_pos = to_global(curve.get_point_position(curve.get_point_count() - 1))
-
-		# 3. Pass 'self' as the first argument so the player can release it later!
-		player._on_zipline_grabbed(self, start_pos, end_pos)
+		# Point A is ALWAYS the start of the curve, Point B is ALWAYS the end
+		var point_a := to_global(curve.get_point_position(0))
+		var point_b := to_global(curve.get_point_position(curve.get_point_count() - 1))
 		
-		# 4. Turn off the outline immediately
+		# Determine if the player is closer to the start or the end
+		var start_at_end : bool = player.global_position.distance_to(point_a) > player.global_position.distance_to(point_b)
+
+		# We always pass Point A and Point B in the same order so 'zipline_dir' stays consistent
+		player._on_zipline_grabbed(self, point_a, point_b, start_at_end)
+		
 		if highlight_component:
 			highlight_component.suppress(true)
+			
 		
 # 5. The player script will call this when they jump off or reach the end
 func on_player_released() -> void:

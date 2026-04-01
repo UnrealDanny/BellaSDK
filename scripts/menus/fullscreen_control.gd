@@ -1,7 +1,7 @@
 extends CheckButton
 
 func _on_toggled(toggled_on: bool) -> void:
-	var main_window = get_tree().root
+	var main_window := get_tree().root
 	
 	if toggled_on:
 		# EXCLUSIVE mode forcibly bypasses the standard X11 window manager rules

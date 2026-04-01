@@ -70,7 +70,7 @@ func _ready() -> void:
 		original_line_thickness = line_thickness
 		original_base_color = base_color
 		
-		var trigger_field = get_node_or_null("TriggerField")
+		var trigger_field := get_node_or_null("TriggerField")
 		if trigger_field:
 			trigger_field.hide()
 			
@@ -79,14 +79,14 @@ func _ready() -> void:
 func _update_trigger_shape() -> void:
 	if not is_node_ready(): return
 	
-	var col = get_node_or_null("CollisionShape3D")
+	var col := get_node_or_null("CollisionShape3D")
 	if col:
 		if not col.shape is BoxShape3D: col.shape = BoxShape3D.new()
 		col.shape = col.shape.duplicate()
 		col.shape.size = trigger_size
 		col.position = trigger_offset
 		
-	var mesh_node = get_node_or_null("TriggerField")
+	var mesh_node := get_node_or_null("TriggerField")
 	if mesh_node:
 		if not mesh_node.mesh is BoxMesh: mesh_node.mesh = BoxMesh.new()
 		mesh_node.mesh = mesh_node.mesh.duplicate()
@@ -94,7 +94,7 @@ func _update_trigger_shape() -> void:
 		mesh_node.position = trigger_offset
 
 func _update_visuals() -> void:
-	var mesh = get_node_or_null("HologramMesh") 
+	var mesh := get_node_or_null("HologramMesh") 
 	if not mesh: return
 		
 	mesh.set_instance_shader_parameter("line_color", line_color)
@@ -104,7 +104,7 @@ func _update_visuals() -> void:
 	mesh.set_instance_shader_parameter("line_thickness", line_thickness)
 	mesh.set_instance_shader_parameter("glow_multiplier", glow_multiplier)
 	
-	var label = get_node_or_null("Label3D")
+	var label := get_node_or_null("Label3D")
 	if label:
 		label.text = label_text
 

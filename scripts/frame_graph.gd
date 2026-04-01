@@ -23,35 +23,35 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if history.is_empty(): return
 
-	var w = size.x
-	var h = size.y
+	var w := size.x
+	var h := size.y
 
 	# 1. PREPARE AND DRAW THE GREEN POLYGON FIRST
-	var step = w / max_points
-	var points = PackedVector2Array()
+	var step := w / max_points
+	var points := PackedVector2Array()
 	points.append(Vector2(0, h)) 
 
 	for i in range(history.size()):
-		var x = i * step
-		var current_ms = min(history[i], ceiling_ms) 
-		var y = h - (current_ms / ceiling_ms) * h
+		var x := i * step
+		var current_ms: float = min(history[i], ceiling_ms) 
+		var y: float = h - (current_ms / float(ceiling_ms)) * h
 		points.append(Vector2(x, y))
 
 	points.append(Vector2((history.size() - 1) * step, h)) 
 	draw_colored_polygon(points, Color(0.2, 0.8, 0.2, 0.6))
 
 	# 2. DRAW THE YELLOW 60 FPS LINE ON TOP
-	var target_y = h - (target_ms / ceiling_ms) * h
+	var target_y := h - (target_ms / ceiling_ms) * h
 	draw_line(Vector2(0, target_y), Vector2(w, target_y), Color(1, 1, 0, 0.8), 2.0)
 
 	# 3. DRAW THE TEXT STATUS
 	# Grab the very last frame time we recorded
-	var latest_ms = history.back() 
+	var latest_ms: float = history.back() if not history.is_empty() else 0.0
 
 	# Grab the default system font so we don't have to load a custom one
-	var font = ThemeDB.fallback_font 
-	var text_color = Color.GREEN
-	var status_text = "16.66ms - Good"
+	var font := ThemeDB.fallback_font 
+	var text_color := Color.GREEN
+	var status_text := "16.66ms - Good"
 
 	# If the frame took longer than our target, turn the text red and yell!
 	if latest_ms > target_ms:
@@ -59,7 +59,7 @@ func _draw() -> void:
 		status_text = "16.66ms - Problem!"
 
 	# Draw the text 5 pixels from the left, and 5 pixels above the yellow line
-	var text_pos = Vector2(5, target_y - 5)
+	var text_pos := Vector2(5, target_y - 5)
 
 	# syntax: font, position, text, alignment, max_width, font_size, color
 	draw_string(font, text_pos, status_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 14, text_color)

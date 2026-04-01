@@ -26,18 +26,18 @@ func _update_cable() -> void:
 		curve.remove_point(curve.get_point_count() - 1)
 
 	# 2. AUTO-FINDER: Automatically searches its children for a Mesh and Collision!
-	var mesh_node = _get_first_node_of_type(self, "MeshInstance3D")
-	var col_node = _get_first_node_of_type(self, "CollisionShape3D")
+	var mesh_node := _get_first_node_of_type(self, "MeshInstance3D")
+	var col_node := _get_first_node_of_type(self, "CollisionShape3D")
 
 	# 3. Math (Global space ensures it works perfectly no matter how you arrange the child nodes)
-	var global_start = to_global(curve.get_point_position(0))
-	var global_end = to_global(curve.get_point_position(1))
+	var global_start := to_global(curve.get_point_position(0))
+	var global_end := to_global(curve.get_point_position(1))
 
-	var distance = global_start.distance_to(global_end)
-	var global_center = global_start.lerp(global_end, 0.5)
-	var direction = (global_end - global_start).normalized()
+	var distance := global_start.distance_to(global_end)
+	var global_center := global_start.lerp(global_end, 0.5)
+	var direction := (global_end - global_start).normalized()
 
-	var up_vector = Vector3.UP
+	var up_vector := Vector3.UP
 	if abs(direction.y) > 0.99:
 		up_vector = Vector3.RIGHT
 
@@ -65,6 +65,6 @@ func _update_cable() -> void:
 func _get_first_node_of_type(parent: Node, type_name: String) -> Node:
 	for child in parent.get_children():
 		if child.is_class(type_name): return child
-		var found = _get_first_node_of_type(child, type_name)
+		var found := _get_first_node_of_type(child, type_name)
 		if found: return found
 	return null	

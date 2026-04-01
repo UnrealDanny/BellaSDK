@@ -20,97 +20,98 @@ extends CharacterBody3D
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
 @onready var hold_position: Marker3D = $Head/Eyes/Camera3D/HoldPosition
 
-@export var walking_speed 	:= 5.0
-@export var sprinting_speed := 6.5
-@export var crouching_speed := 3.0
-@export var swimming_speed  := 4.0
+@export var walking_speed: float = 5.0
+@export var sprinting_speed: float = 6.5
+@export var crouching_speed: float = 3.0
+@export var swimming_speed: float = 4.0
 
-@export var sway_amount : float = 5.0
-@export var smooth_speed : float = 10.0
+@export var sway_amount: float = 5.0
+@export var smooth_speed: float = 10.0
 
-@export var base_fov 	:= 75.0
-@export var sprint_fov 	:= 85.0
+@export var base_fov: float = 75.0
+@export var sprint_fov: float = 85.0
 
 # SPEED VARS
 
-var current_speed 			:= 0.0
-const jump_velocity 		:= 4.5
-const crouch_jump_velocity 	:= 3.5
-const sprint_jump_velocity 	:= 5
+var current_speed: float = 0.0
+const jump_velocity: float = 4.5
+const crouch_jump_velocity: float = 3.5
+const sprint_jump_velocity: float = 5.0
 
 # SPEED STATES
 
-var walking 		:= false
-var sprinting 		:= false
-var crouching 		:= false
-var sprint_active 	:= false
-var flying 			:= false
-var swimming 		:= false
+var walking: bool = false
+var sprinting: bool = false
+var crouching: bool = false
+var sprint_active: bool = false
+var flying: bool = false
+var swimming: bool = false
 
-var is_stunned := false
-var is_vaulting := false
+var is_stunned: bool = false
+var is_vaulting: bool = false
 
 # INPUT VARS
 
-var mouse_sensitivity := 0.5
-var mouse_sensitivity_base := 0.5
-var mouse_sensitivity_zoom := mouse_sensitivity / 10
-var direction 			:= Vector3.ZERO
+var mouse_sensitivity: float = 0.5
+var mouse_sensitivity_base: float = 0.5
+var mouse_sensitivity_zoom: float = mouse_sensitivity / 10.0
+var direction: Vector3 = Vector3.ZERO
 
 # HEADBOB VARS
-const head_bobbing_sprinting_speed 	:= 22.0
-const head_bobbing_walking_speed 	:= 14.0
-const head_bobbing_crouching_speed 	:= 10.0
-const head_bobbing_idle_speed 		:= 3.0
+const head_bobbing_sprinting_speed: float = 22.0
+const head_bobbing_walking_speed: float = 14.0
+const head_bobbing_crouching_speed: float = 10.0
+const head_bobbing_idle_speed: float = 3.0
 
-const head_bobbing_sprinting_intensity 	:= 0.2
-const head_bobbing_walking_intensity 	:= 0.1
-const head_bobbing_crouching_intensity 	:= 0.08
-const head_bobbing_idle_intensity 		:= 0.02
+const head_bobbing_sprinting_intensity: float = 0.2
+const head_bobbing_walking_intensity: float = 0.1
+const head_bobbing_crouching_intensity: float = 0.08
+const head_bobbing_idle_intensity: float = 0.02
 
-var head_bobbing_vector 			:= Vector2.ZERO
-var head_bobbing_index 				:= 0.0
-var head_bobbing_current_intensity 	:= 0.0
+var head_bobbing_vector: Vector2 = Vector2.ZERO
+var head_bobbing_index: float = 0.0
+var head_bobbing_current_intensity: float = 0.0
+
+var headbob_time: float = 0.0
+var headbob_frequency: float = 2.4 # How fast the bob is
+var headbob_amplitude: float = 0.08 # How high the bob goes
 
 # MOVEMENT VARS
-var lerp_speed 			:= 15.0
-var air_lerp_speed 		:= 3.0
-var crouching_depth		:= 0.7
-var last_velocity 		:= Vector3.ZERO
+var lerp_speed: float = 15.0
+var air_lerp_speed: float = 3.0
+var crouching_depth: float = 0.7
+var last_velocity: Vector3 = Vector3.ZERO
 
-const CameraTiltLeft 		:= 3.0
-const CameraTiltRight 	:= -3.0
+const CameraTiltLeft: float = 3.0
+const CameraTiltRight: float = -3.0
 
 var stair_offset: float = 0.0
 var headbob_offset: Vector2 = Vector2.ZERO
 
 ## FLASHLIGHT VARS
-var flashlight_rotation_smoothness := 10.0
-var flashlight_position_smoothness := 10.0
+var flashlight_rotation_smoothness: float = 10.0
+var flashlight_position_smoothness: float = 10.0
 
-var default_flashlight_pos := Vector3.ZERO
-var sway_target := Vector2.ZERO
+var default_flashlight_pos: Vector3 = Vector3.ZERO
+var sway_target: Vector2 = Vector2.ZERO
 
-var bob_freq 	:= 2.0
-var bob_amp 	:= 1.0
-var bob_time 	:= 0.0
+var bob_freq: float = 2.0
+var bob_amp: float = 1.0
+var bob_time: float = 0.0
 
 # SPRINT FOV VARS
-var zoom_fov := 10.0
-var fov_change_speed 	:= 12.0
-var target_fov = base_fov
-
-# UI VARS
+var zoom_fov: float = 10.0
+var fov_change_speed: float = 12.0
+var target_fov: float = base_fov
 
 # INTERACT VARS
-
 var current_interactable: Interact_Component = null
 var held_object: PickableObject = null
 
 # STAIRS AND STEEP SURFACES VARS
-const MAX_STEP_HEIGHT = 0.5
-var _snapped_to_stairs_last_frame := false
-var _last_frame_was_on_floor = -INF
+const MAX_STEP_HEIGHT: float = 0.5
+var _snapped_to_stairs_last_frame: bool = false
+var _last_frame_was_on_floor: int = -999999 # Safe integer instead of -INF
 
 # LADDER VARS
 var on_ladder: bool = false
@@ -120,22 +121,24 @@ var LADDER_SPEED: float = 5.0
 var current_rope: RigidBody3D = null
 var rope_offset: float = 0.0
 const ROPE_CLIMB_SPEED: float = 1.0
-var rope_local_grab_dir: Vector3 = Vector3.ZERO
+var rope_local_grab_dir := Vector3.ZERO
+var rope_lerp_weight: float = 0.0
+
 
 # SWIM VARS
-var swim_up_speed 		:= 5
+var swim_up_speed: float = 5.0
 var base_light_energy: float = 1.0
 var base_spot_range: float = 10.0
 var is_swimming: bool = false
-var head_in_water := false
+var head_in_water: bool = false
 
 # UPDRAFT VARS
 var in_updraft: bool = false
 var current_updraft_strength: float = 0.0
-var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
+var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity") as float
 
 # DEVTOOLS VARS
-var noclip_speed_multiplier := 4.0
+var noclip_speed_multiplier: float = 4.0
 var is_menu_open: bool = false
 
 # ZIPLINE VARS
@@ -149,20 +152,22 @@ var zipline_dir: Vector3
 var zipline_length: float
 var zipline_progress: float = 0.0
 var is_zipline_sliding: bool = false
+var is_zipline_transitioning: bool = false
+var zipline_grace_timer: float = 0.0
 
 var ZIPLINE_SLIDE_SPEED: float = 18.0
-var ZIPLINE_HANG_OFFSET: float = 1.9 # Distance from the wire to the player's origin
+var ZIPLINE_HANG_OFFSET: float = 1.9 
 
 # MONKE VARS
 var current_monkey_bar_path: Path3D = null
 
 # SHOOT VARS
-var damage = 100
+var damage: int = 100
 
 # PAUSE VARS
-var is_paused : bool = false
-var menu_scene = preload("res://scenes/menus/main_menu.tscn")
-var menu_instance
+var is_paused: bool = false
+var menu_scene: PackedScene = preload("res://scenes/menus/main_menu.tscn")
+var menu_instance: CanvasLayer
 
 # VAULT SCANNER VARS
 var vault_indicator: MeshInstance3D
@@ -175,35 +180,31 @@ var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
 var is_using_zoom: bool = false
 
-
-
-
 # --------------------------------------
 # MAIN SCRIPT
 # --------------------------------------
 func _ready() -> void:
-	
 	# --- DYNAMIC VAULT INDICATOR ---
 	vault_indicator = MeshInstance3D.new()
-	var dot_mesh = SphereMesh.new()
+	var dot_mesh := SphereMesh.new()
 	dot_mesh.radius = 0.03
 	dot_mesh.height = 0.06
 	vault_indicator.mesh = dot_mesh
 
-	var dot_mat = StandardMaterial3D.new()
+	var dot_mat := StandardMaterial3D.new()
 	dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	dot_mat.albedo_color = Color.WHITE
 	dot_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	dot_mat.albedo_color.a = 0.6 # Slightly see-through so it isn't blinding
-	dot_mat.no_depth_test = true # Draws ON TOP of the ledge so it's always visible
+	dot_mat.albedo_color.a = 0.6 
+	dot_mat.no_depth_test = true 
 
 	vault_indicator.material_override = dot_mat
 	vault_indicator.top_level = true 
 	add_child(vault_indicator)
 	vault_indicator.hide()
 	
-	# 1. Spawn the menu into the game, but keep it hidden
-	menu_instance = menu_scene.instantiate()
+	# Spawn menu
+	menu_instance = menu_scene.instantiate() as CanvasLayer
 	add_child(menu_instance)
 	menu_instance.hide()
 	
@@ -218,43 +219,38 @@ func _ready() -> void:
 		base_light_energy = flashlight.light_energy
 		base_spot_range = flashlight.spot_range
 	
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	
 func _unhandled_input(event: InputEvent) -> void:
 	if is_paused: 
-		return # Block shooting and scrolling while paused
+		return 
 		
 	if event is InputEventMouseButton and event.is_pressed():
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			noclip_speed_multiplier = min(100, noclip_speed_multiplier * 1.1)
+			noclip_speed_multiplier = min(100.0, noclip_speed_multiplier * 1.1)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			noclip_speed_multiplier = max(0.1, noclip_speed_multiplier * 0.9)
 			
 	# --- COMBAT & THROW INPUTS ---
 	if event.is_action_pressed("shoot"): 
-		
-		# 1. IF HOLDING A BOX: Throw it and show the weapon again!
 		if held_object:
-			var throw_force = 12.0
-			var throw_direction = -cam.global_transform.basis.z.normalized()
+			var throw_force: float = 12.0
+			var throw_direction: Vector3 = -cam.global_transform.basis.z.normalized()
 			throw_direction.y += 0.2 
 			held_object.throw(throw_direction.normalized() * throw_force)
 			held_object = null
 			
-			var weapon_holder = get_node_or_null("%WeaponHolder")
+			var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 			if weapon_holder:
 				weapon_holder.show()
 				
-		# 2. IF HANDS ARE EMPTY: Shoot the weapon!
 		else:
-			var holder = get_node_or_null("%WeaponHolder")
+			var holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 			if holder and holder.get_child_count() > 0:
-				var current_weapon = holder.get_child(0)
+				var current_weapon: Node = holder.get_child(0)
 				if current_weapon.has_method("shoot"):
-					current_weapon.shoot(cam)
+					# Safe call bypasses compiler errors for missing methods on base Node
+					current_weapon.call("shoot", cam)
 	
 func _input(event: InputEvent) -> void:
-# THE FIX: Ignore all mouse movement if any menu is open!
 	if is_menu_open or is_paused: 
 		return
 
@@ -262,51 +258,34 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
 		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
-		head.rotation.x = clamp(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
+		head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 		sway_target += event.relative
+
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
 # --------------------------------------
-func is_surface_too_steep(normal : Vector3) -> bool:
+func is_surface_too_steep(normal: Vector3) -> bool:
 	return normal.angle_to(Vector3.UP) > self.floor_max_angle
 	
-func _run_body_test_motion(from : Transform3D, motion : Vector3, result = null) -> bool:
+func _run_body_test_motion(from: Transform3D, motion: Vector3, result: PhysicsTestMotionResult3D = null) -> bool:
 	if not result: result = PhysicsTestMotionResult3D.new()
-	var params = PhysicsTestMotionParameters3D.new()
+	var params := PhysicsTestMotionParameters3D.new()
 	params.from = from
 	params.motion = motion
 	return PhysicsServer3D.body_test_motion(self.get_rid(), params, result)
-	
-#func _snap_down_to_stairs_check() -> void:
-	#var did_snap := false
-	#var floor_below : bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
-	#var was_on_floor_last_frame = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
-	#if not is_on_floor() and velocity.y <= 0 and (was_on_floor_last_frame or _snapped_to_stairs_last_frame) and floor_below:
-		#var body_test_result = PhysicsTestMotionResult3D.new()
-		#if _run_body_test_motion(self.global_transform, Vector3(0, -MAX_STEP_HEIGHT,0), body_test_result):
-			##_save_camera_pos_for_smoothing()
-			#var old_pos_y = self.global_position.y
-			#var translate_y = body_test_result.get_travel().y
-			#self.position.y += translate_y
-			#apply_floor_snap()
-			#did_snap = true
-			#
-			#_apply_camera_smoothing(self.global_position.y - old_pos_y)
-	#_snapped_to_stairs_last_frame = did_snap
 
 func _snap_down_to_stairs_check() -> void:
-	var did_snap := false
-	var floor_below : bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
-	var was_on_floor_last_frame = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
+	var did_snap: bool = false
+	var floor_below: bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
+	var was_on_floor_last_frame: bool = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
 	
 	if not is_on_floor() and velocity.y <= 0 and (was_on_floor_last_frame or _snapped_to_stairs_last_frame) and floor_below:
-		var body_test_result = PhysicsTestMotionResult3D.new()
+		var body_test_result := PhysicsTestMotionResult3D.new()
 		if _run_body_test_motion(self.global_transform, Vector3(0, -MAX_STEP_HEIGHT, 0), body_test_result):
-			var travel_y = body_test_result.get_travel().y
+			var travel_y: float = body_test_result.get_travel().y
 			
-			# THE FIX: Ignore microscopic snaps to prevent the bouncing camera!
 			if travel_y < -0.05:
-				var old_pos_y = self.global_position.y
+				var old_pos_y: float = self.global_position.y
 				self.position.y += travel_y
 				apply_floor_snap()
 				did_snap = true
@@ -314,28 +293,28 @@ func _snap_down_to_stairs_check() -> void:
 				
 	_snapped_to_stairs_last_frame = did_snap
 	
-func _snap_up_stairs_check(delta) -> bool:
+func _snap_up_stairs_check(delta: float) -> bool:
 	if not is_on_floor() and not _snapped_to_stairs_last_frame: return false
 	if self.velocity.y > 0 or (self.velocity * Vector3(1,0,1)).length() == 0: return false
 	
-	var expected_move_motion = self.velocity * Vector3(1, 0, 1) * delta
-	var step_pos_with_clearance = self.global_transform
+	var expected_move_motion: Vector3 = self.velocity * Vector3(1, 0, 1) * delta
+	var step_pos_with_clearance: Transform3D = self.global_transform
 	
 	# 1. Test moving UP safely
-	var up_test = PhysicsTestMotionResult3D.new()
+	var up_test := PhysicsTestMotionResult3D.new()
 	_run_body_test_motion(step_pos_with_clearance, Vector3(0, MAX_STEP_HEIGHT * 2, 0), up_test)
 	step_pos_with_clearance.origin += up_test.get_travel()
 	
-	# 2. Test moving FORWARD safely (This prevents wall clipping!)
-	var forward_test = PhysicsTestMotionResult3D.new()
+	# 2. Test moving FORWARD safely
+	var forward_test := PhysicsTestMotionResult3D.new()
 	_run_body_test_motion(step_pos_with_clearance, expected_move_motion, forward_test)
 	step_pos_with_clearance.origin += forward_test.get_travel()
 	
 	# 3. NOW test moving DOWN onto the step
-	var down_check_result = PhysicsTestMotionResult3D.new()
+	var down_check_result := PhysicsTestMotionResult3D.new()
 	if (_run_body_test_motion(step_pos_with_clearance, Vector3(0, -MAX_STEP_HEIGHT * 2, 0), down_check_result) 
 	and (down_check_result.get_collider().is_class("StaticBody3D") or down_check_result.get_collider().is_class("CSGShape3D"))):
-		var step_height = ((step_pos_with_clearance.origin + down_check_result.get_travel()) - self.global_position).y
+		var step_height: float = ((step_pos_with_clearance.origin + down_check_result.get_travel()) - self.global_position).y
 		
 		if step_height > MAX_STEP_HEIGHT or step_height <= 0.01 or (down_check_result.get_collision_point() - self.global_position).y > MAX_STEP_HEIGHT: return false
 		
@@ -343,7 +322,7 @@ func _snap_up_stairs_check(delta) -> bool:
 		%StairsAheadCast.force_raycast_update()
 		
 		if %StairsAheadCast.is_colliding() and not is_surface_too_steep(%StairsAheadCast.get_collision_normal()):
-			var old_pos_y = self.global_position.y
+			var old_pos_y: float = self.global_position.y
 			self.global_position = step_pos_with_clearance.origin + down_check_result.get_travel()
 			apply_floor_snap()
 			_snapped_to_stairs_last_frame = true
@@ -351,60 +330,29 @@ func _snap_up_stairs_check(delta) -> bool:
 			return true
 			
 	return false
-#func _snap_up_stairs_check(delta) -> bool:
-	#if not is_on_floor() and not _snapped_to_stairs_last_frame: return false
-	#if self.velocity.y > 0 or (self.velocity * Vector3(1,0,1)).length() == 0: return false
-	#var expected_move_motion = self.velocity * Vector3(1, 0, 1) * delta
-	#
-	#var step_pos_with_clearance = self.global_transform
-	#step_pos_with_clearance.origin += expected_move_motion + Vector3(0, MAX_STEP_HEIGHT * 2, 0)
-	#
-	##var step_pos_with_clearance = self.global_transform.translated(expected_move_motion + Vector3(0, MAX_STEP_HEIGHT *2,0))
-	#var down_check_result = PhysicsTestMotionResult3D.new()
-	#if (_run_body_test_motion(step_pos_with_clearance, Vector3(0, -MAX_STEP_HEIGHT * 2, 0), down_check_result) 
-	#and (down_check_result.get_collider().is_class("StaticBody3D") or down_check_result.get_collider().is_class("CSGShape3D"))):
-		#var step_height = ((step_pos_with_clearance.origin + down_check_result.get_travel()) - self.global_position).y
-		#if step_height > MAX_STEP_HEIGHT or step_height <= 0.01 or (down_check_result.get_collision_point() - self.global_position).y > MAX_STEP_HEIGHT: return false
-		#%StairsAheadCast.global_position = down_check_result.get_collision_point() + Vector3(0, MAX_STEP_HEIGHT, 0) + expected_move_motion.normalized() * 0.1
-		#%StairsAheadCast.force_raycast_update()
-		#if %StairsAheadCast.is_colliding() and not is_surface_too_steep(%StairsAheadCast.get_collision_normal()):
-			##_save_camera_pos_for_smoothing()
-			#var old_pos_y = self.global_position.y
-			#self.global_position = step_pos_with_clearance.origin + down_check_result.get_travel()
-			#apply_floor_snap()
-			#_snapped_to_stairs_last_frame = true
-			#_apply_camera_smoothing(self.global_position.y - old_pos_y)
-			#return true
-	#return false
 
-func _apply_camera_smoothing(snap_amount: float):
+func _apply_camera_smoothing(snap_amount: float) -> void:
 	stair_offset -= snap_amount
 	stair_offset = clampf(stair_offset, -0.5, 0.5)
-	
-	#eyes.position.y -= snap_amount
-	#eyes.position.y = clampf(eyes.position.y, -0.5, 0.5)
 
-func _slide_camera_smooth_back_to_origin(delta):
+func _slide_camera_smooth_back_to_origin(delta: float) -> void:
 	if stair_offset == 0.0: 
 		return
 		
-	var move_amount = max(self.velocity.length() * delta, walking_speed / 2.0 * delta)
+	var move_amount: float = maxf(self.velocity.length() * delta, walking_speed / 2.0 * delta)
 	stair_offset = move_toward(stair_offset, 0.0, move_amount)
 
 func _physics_process(delta: float) -> void:
-# Keep the player frozen if paused or stunned
 	if is_paused or is_stunned:
 		velocity = Vector3.ZERO
 		move_and_slide()
 		return
-	# ---------------------------------------------------------
-	# 1. GLOBAL GATHERING (Things that apply to every state)
-	# ---------------------------------------------------------
+
 	input_dir = Input.get_vector("left", "right", "forward", "backward")
 	if Input.is_action_pressed("zoom"):
-		input_dir = Vector2.ZERO # Stop moving if zooming
+		input_dir = Vector2.ZERO 
 		
-	var is_truly_grounded = _frames_since_grounded < 3
+	var is_truly_grounded: bool = _frames_since_grounded < 3
 	if is_on_floor(): _last_frame_was_on_floor = Engine.get_physics_frames()
 	
 	if is_on_floor() or _snapped_to_stairs_last_frame:
@@ -412,19 +360,15 @@ func _physics_process(delta: float) -> void:
 	else:
 		_frames_since_grounded += 1
 
-	# Check for swimming (this handles its own states internally)
 	is_swimming = _handle_water_physics(delta)
 	if not is_swimming: swimming = false
 	
-	# Run the vault scanner every frame unless we are already vaulting
 	if not is_vaulting and not is_paused:
 		_scan_for_ledges()
 	elif vault_indicator:
 		vault_indicator.hide()
 		can_vault_current_ledge = false
-	# ---------------------------------------------------------
-	# 2. THE STATE MACHINE (Only ONE of these will run per frame)
-	# ---------------------------------------------------------
+
 	if Input.is_action_just_pressed("noclip"):
 		toggle_noclip()
 		
@@ -433,90 +377,68 @@ func _physics_process(delta: float) -> void:
 
 	if flying:
 		_handle_noclip_physics(delta)
-		
 	elif is_swimming:
-		pass # Velocity is already handled perfectly inside _handle_water_physics!
-		
+		pass 
 	elif on_ladder:
 		_handle_ladder_physics(delta)
-		
 	elif on_monkey_bars:
 		_handle_monkey_bars_physics(delta)
-		
 	elif on_zipline:
 		_handle_zipline_physics(delta)
-		
 	elif current_rope != null:
 		_handle_rope_physics(delta)
-		
+		return
 	else:
-		# If we aren't doing anything special, run standard walking/gravity
 		_handle_ground_physics(delta, is_truly_grounded)
 
-	# ---------------------------------------------------------
-	# 3. FINALIZE MOVEMENT (Always happens at the very end)
-	# ---------------------------------------------------------
 	last_velocity = velocity 
 	
 	if not _snap_up_stairs_check(delta):
 		move_and_slide()         
 		_snap_down_to_stairs_check()
 		
-	_slide_camera_smooth_back_to_origin(delta)		
+	_slide_camera_smooth_back_to_origin(delta)        
 	
 func _process(delta: float) -> void:
-	# 1. Listen for the ESC key FIRST
 	if Input.is_action_just_pressed("ui_cancel"):
 		toggle_pause()
 		
-	# 2. IF WE ARE PAUSED, STOP RUNNING THE REST OF THIS FUNCTION!
 	if is_paused:
 		return
 		
-	# 1. FLASHLIGHT ANIMATION
 	update_flashlight(delta)
 	if Input.is_action_just_pressed("flashlight"):
 		flashlight.visible = !flashlight.visible
 		
-# 2. INTERACT & DROP
 	current_interactable = get_interactable_component_at_shapecast()
 	if current_interactable:
-		current_interactable.hover_cursor(self)
+		# 1. Get the world position of where the ShapeCast hit the rope
+		# We use index 0 because that's the first thing the cast hit
+		var hit_point : Vector3 = interact_shapecast.get_collision_point(0)
+	
+		# 2. Send the player AND the hit point to the rope's component
+		current_interactable.hover_cursor(self, hit_point)
 	
 	if Input.is_action_just_pressed("interact"):
-		
-		# IF DROPPING AN OBJECT
 		if held_object:
 			held_object.drop()
 			held_object = null
-			
-			# Bring the gun back up!
-			var weapon_holder = get_node_or_null("%WeaponHolder")
+			var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 			if weapon_holder:
 				weapon_holder.show()
 				
-		# IF PICKING UP OR PRESSING BUTTONS
 		elif current_interactable:
-			current_interactable.interact_with()
-			var parent_node = current_interactable.get_parent()
+			current_interactable.interact_with(self)
+			var parent_node: Node = current_interactable.get_parent()
 			
 			if parent_node is PickableObject:
-				held_object = parent_node
+				held_object = parent_node as PickableObject
 				held_object.pick_up(hold_position, self)
 				
-				# Put the gun away while holding the box!
-				var weapon_holder = get_node_or_null("%WeaponHolder")
+				var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 				if weapon_holder:
 					weapon_holder.hide()
-				
-	#if Input.is_action_just_pressed("shoot") and held_object:
-		#var throw_force = 12.0
-		#var throw_direction = -cam.global_transform.basis.z.normalized()
-		#throw_direction.y += 0.2 
-		#held_object.throw(throw_direction.normalized() * throw_force)
-		#held_object = null
 
-	# 3. CAMERA ZOOM CONTROLS
 	if Input.is_action_just_pressed("zoom"):
 		Events.player_zoomed.emit(true)
 		is_using_zoom = true
@@ -534,22 +456,15 @@ func _process(delta: float) -> void:
 		target_fov = base_fov
 		mouse_sensitivity = mouse_sensitivity_base
 
-	# 4. RENDER SMOOTH FOV (Only do this ONCE per frame!)
-	cam.fov = lerp(cam.fov, target_fov, delta * fov_change_speed)
-	
-# ---------------------------------------------
-# FUNCTIONS
-# ---------------------------------------------
+	cam.fov = lerpf(cam.fov, target_fov, delta * fov_change_speed)
 	
 func update_flashlight(delta: float) -> void:
-	# 1. Start from your custom offset, NOT Vector3.ZERO!
-	var target_pos = default_flashlight_pos 
-	
-	var current_f = 0.0
-	var current_a = 0.0
+	var target_pos: Vector3 = default_flashlight_pos 
+	var current_f: float = 0.0
+	var current_a: float = 0.0
 	
 	if is_on_floor():
-		var is_actually_moving = velocity.length() > 0.1
+		var is_actually_moving: bool = velocity.length() > 0.1
 		
 		if is_actually_moving:
 			if sprinting:
@@ -570,78 +485,48 @@ func update_flashlight(delta: float) -> void:
 				current_a = bob_amp * 0.21
 
 	if current_f > 0:
-		var speed_factor = velocity.length()
+		var speed_factor: float = velocity.length()
 		if speed_factor < 0.1:
 			bob_time += delta * 2.0 * current_f
 		else:
 			bob_time += delta * speed_factor * current_f
 			
-		# Add the bob offsets directly to your default position
 		target_pos.x += cos(bob_time * 0.5) * current_a
 		target_pos.y += sin(bob_time) * current_a
 	else:
-		bob_time = 0
+		bob_time = 0.0
 
-	# --- 2. LOCAL SWAY (The Spring System) ---
-	# Clamp the accumulated mouse movement so the flashlight doesn't snap your neck
-	var max_sway = 150.0 # Adjust this to allow more/less maximum drag
-	sway_target.x = clamp(sway_target.x, -max_sway, max_sway)
-	sway_target.y = clamp(sway_target.y, -max_sway, max_sway)
+	var max_sway: float = 150.0 
+	sway_target.x = clampf(sway_target.x, -max_sway, max_sway)
+	sway_target.y = clampf(sway_target.y, -max_sway, max_sway)
 
-	# Convert the mouse drag into a tiny rotation target
-	var target_rot = Vector3(
+	var target_rot := Vector3(
 		-sway_target.y * (sway_amount * -0.002), 
 		-sway_target.x * (sway_amount * -0.002), 
 		0.0
 	)
 
-	# --- 3. APPLY LERPS TO THE NODE ---
 	flash_light_node.position = flash_light_node.position.lerp(target_pos, delta * flashlight_position_smoothness)
 	flash_light_node.rotation = flash_light_node.rotation.lerp(target_rot, delta * flashlight_rotation_smoothness)
-
-	# --- 4. THE MAGIC: Drain the spring! ---
-	# This smoothly pulls the target back to zero over time, creating the rubber-band lag effect
 	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
-	
-# --------------------------------------
-# INTERACT
-# --------------------------------------
-#func get_interactable_component_at_shapecast() -> Interact_Component:
-	#for i in interact_shapecast.get_collision_count():
-		#var collider = interact_shapecast.get_collider(i)
-		#
-		## Skip the player if the cast accidentally hits our own hitbox
-		#if collider == self:
-			#continue
-			#
-		#var comp = collider.get_node_or_null("Interact_Component")
-		#if comp is Interact_Component:
-			#return comp
-			#
-	#return null
+
 func get_interactable_component_at_shapecast() -> Interact_Component:
-	for i in interact_shapecast.get_collision_count():
-		var collider = interact_shapecast.get_collider(i)
+	for i: int in interact_shapecast.get_collision_count():
+		var collider: Object = interact_shapecast.get_collider(i)
 		
-		# 1. SAFETY CHECK: Ensure the collider actually exists and hasn't just been deleted
 		if not is_instance_valid(collider):
 			continue
 		
-		# Skip the player if the cast accidentally hits our own hitbox
 		if collider == self:
 			continue
 			
-		# 2. TYPE CHECK: Ensure it's a standard Node before asking for children
 		if collider is Node:
-			var comp = collider.get_node_or_null("Interact_Component")
+			var comp: Node = collider.get_node_or_null("Interact_Component")
 			if comp is Interact_Component:
-				return comp
+				return comp as Interact_Component
 			
 	return null
 	
-# --------------------------------------
-# LADDERS
-# --------------------------------------
 func enter_ladder() -> void:
 	on_ladder = true
 
@@ -654,7 +539,7 @@ func exit_ladder() -> void:
 var on_monkey_bars: bool = false
 var MONKEY_BAR_SPEED: float = 2.5 
 var MONKEY_BAR_HANG_OFFSET: float = 2.1 
-var current_monkey_bar_volume: CSGBox3D = null # <--- CHANGED THIS
+var current_monkey_bar_volume: CSGBox3D = null 
 
 func enter_monkey_bars(volume_node: CSGBox3D) -> void:
 	if on_monkey_bars and current_monkey_bar_volume == volume_node: 
@@ -663,23 +548,17 @@ func enter_monkey_bars(volume_node: CSGBox3D) -> void:
 	if not on_monkey_bars and is_on_floor() and velocity.y <= 0: 
 		return 
 
-	# Remember if we were already swinging before we switch the active box
-	var was_already_on_bars = on_monkey_bars 
+	var was_already_on_bars: bool = on_monkey_bars 
 	
 	on_monkey_bars = true
 	current_monkey_bar_volume = volume_node
 	
-	# THE FIX: Only kill vertical momentum if we are grabbing out of thin air.
-	# If we are just handing off between boxes, do not interrupt the flow!
 	if not was_already_on_bars:
 		velocity.y = 0
 
-# THE FIX: Add a default parameter so manual jumping still works without a node
 func exit_monkey_bars(volume_node: CSGBox3D = null) -> void:
 	if not on_monkey_bars: return
 	
-	# --- THE HAND-OFF CHECK ---
-	# If a box is telling us to let go, but we are currently holding a DIFFERENT box, ignore it!
 	if volume_node != null and volume_node != current_monkey_bar_volume:
 		return
 	
@@ -696,37 +575,32 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 	sprinting = false
 	crouching = false
 
-	var look_dir = -cam.global_transform.basis.z 
-	var right_dir = cam.global_transform.basis.x 
-	look_dir.y = 0; right_dir.y = 0
+	var look_dir: Vector3 = -cam.global_transform.basis.z 
+	var right_dir: Vector3 = cam.global_transform.basis.x 
+	look_dir.y = 0.0; right_dir.y = 0.0
 	look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
 
-	var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
+	var bar_vel: Vector3 = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
 	velocity.x = bar_vel.x * MONKEY_BAR_SPEED
 	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
 
-# --- THE PLANE SNAPPER (SMOOTH GLIDE) ---
 	if current_monkey_bar_volume and is_instance_valid(current_monkey_bar_volume):
-		var local_pos = current_monkey_bar_volume.to_local(global_position)
+		var local_pos: Vector3 = current_monkey_bar_volume.to_local(global_position)
 		local_pos.y = current_monkey_bar_volume.size.y / 2.0
-		var global_top = current_monkey_bar_volume.to_global(local_pos)
+		var global_top: Vector3 = current_monkey_bar_volume.to_global(local_pos)
 		
-		var target_y = global_top.y - MONKEY_BAR_HANG_OFFSET
-		var distance_to_target = target_y - global_position.y
+		var target_y: float = global_top.y - MONKEY_BAR_HANG_OFFSET
+		var distance_to_target: float = target_y - global_position.y
 		
-		if abs(distance_to_target) > 4.0:
+		if absf(distance_to_target) > 4.0:
 			exit_monkey_bars()
 			return
 			
-		# THE FIX: The Shock Absorber!
-		# Multiply by 12 for a strong pull, but CLAMP the max speed to 6.0 m/s.
-		# This creates a perfectly smooth "hoist" when you grab, and absorbs bumps between boxes.
-		var pull_speed = distance_to_target * 12.0
+		var pull_speed: float = distance_to_target * 12.0
 		velocity.y = clampf(pull_speed, -6.0, 6.0)
 	else:
 		exit_monkey_bars()
 
-	# --- ANIMATIONS ---
 	if input_dir.length() > 0.1:
 		if camera_anims.current_animation != "MonkeMoves":
 			camera_anims.play("MonkeMoves", 0.3)
@@ -749,75 +623,89 @@ func _on_rope_grabbed(rope_body: RigidBody3D) -> void:
 	add_collision_exception_with(current_rope)
 	on_rope = true
 	
-	# 1. Ask the swinging body exactly where the player is
-	var local_pos = current_rope.to_local(global_position)
+	rope_lerp_weight = 4.0 
+	
+	# Get vertical offset
+	var local_pos: Vector3 = current_rope.to_local(global_position)
 	rope_offset = local_pos.y
 
-	# 2. Extract horizontal direction so we hang on the outside
-	var local_flat_dir = Vector3(local_pos.x, 0, local_pos.z)
-	if local_flat_dir.length() < 0.01:
-		local_flat_dir = Vector3(0, 0, 1) 
-	rope_local_grab_dir = local_flat_dir.normalized() * 0.6
+	var rope_root: Node3D = current_rope.get_parent() as Node3D
+	var local_top: float = current_rope.to_local(rope_root.global_position).y
 
-	# 3. THE FIX: Dynamically find the exact local position of the ceiling anchor!
-	var rope_root = current_rope.get_parent()
-	var local_top = current_rope.to_local(rope_root.global_position).y
+	var max_length: float = rope_root.get("rope_length") as float if "rope_length" in rope_root else 10.0
+	var top_limit: float = local_top - 2.5
+	var bottom_limit: float = local_top - max_length + 0.5
 
-	# 4. Build our limits straight down from that anchor
-	var max_length = rope_root.rope_length
-	var top_limit = local_top -2.5
-	var bottom_limit = local_top - max_length + 0.5
+	rope_offset = clampf(rope_offset, bottom_limit, top_limit)
 
-	# Clamp our starting grab height
-	rope_offset = clamp(rope_offset, bottom_limit, top_limit)
-
-	# 5. Instant snap
-	var target_local_pos = Vector3(rope_local_grab_dir.x, rope_offset, rope_local_grab_dir.z)
-	global_position = current_rope.to_global(target_local_pos)
-
-func _on_rope_released() -> void:
-	# Tell the rope to re-enable its outline logic
+	# Smoothly turn the camera to face the rope exactly when you grab it
+	var face_pos := Vector3(current_rope.global_position.x, global_position.y, current_rope.global_position.z)
+	if global_position.distance_to(face_pos) > 0.1:
+		var target_transform := global_transform.looking_at(face_pos, Vector3.UP)
+		var tween := create_tween()
+		tween.tween_property(self, "quaternion", target_transform.basis.get_rotation_quaternion(), 0.3).set_trans(Tween.TRANS_SINE)
+		
+func _on_rope_released(target_forward: Vector3 = Vector3.ZERO) -> void:
 	if current_rope and current_rope.get_parent().has_method("on_player_released"):
-		current_rope.get_parent().on_player_released()
+		current_rope.get_parent().call("on_player_released")
 
 	current_rope = null
 	on_rope = false
+	
+	var release_forward: Vector3
+	if target_forward != Vector3.ZERO:
+		release_forward = Vector3(target_forward.x, 0.0, target_forward.z).normalized()
+	else:
+		release_forward = Vector3(-global_transform.basis.z.x, 0.0, -global_transform.basis.z.z).normalized()
+		
+	if release_forward.length_squared() < 0.001:
+		release_forward = -global_transform.basis.z
+
+	# Clean target rotation (upright only)
+	var target_basis := Basis.looking_at(release_forward, Vector3.UP)
+	
+	var release_tween := create_tween().set_parallel(true)
+	
+	# Reset Body (Shortest path rotation)
+	release_tween.tween_property(self, "quaternion", target_basis.get_rotation_quaternion(), 0.3)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# Reset Eyes Tilt
+	release_tween.tween_property(eyes, "rotation", Vector3.ZERO, 0.3)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 # ----------------------------
 # WATER MECHANICS
 # -----------------------------
 func _handle_water_physics(delta: float) -> bool:
-	# 1. Cleaner, more reliable water detection
-	var in_water := false
-	var water_areas = get_tree().get_nodes_in_group("water_area")
+	var in_water: bool = false
+	var water_areas: Array[Node] = get_tree().get_nodes_in_group("water_area")
 	
-	for area in water_areas:
-		if area.overlaps_body(self):
-			in_water = true
-			break
+	for node: Node in water_areas:
+		if node is Area3D:
+			var area: Area3D = node as Area3D
+			if area.overlaps_body(self):
+				in_water = true
+				break
 			
-# --- 100% SUBMERGED FLASHLIGHT LOGIC ---
 	head_in_water = false
-	
-	# Ask the physics engine what is exactly at the camera's coordinate
-	var space_state = get_world_3d().direct_space_state
-	var query = PhysicsPointQueryParameters3D.new()
-	var chin_offset = Vector3(0.0, 0.2, 0.0)
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var query := PhysicsPointQueryParameters3D.new()
+	var chin_offset := Vector3(0.0, 0.2, 0.0)
 	query.position = cam.global_position - chin_offset
 	query.collide_with_areas = true
 	query.collide_with_bodies = false
 	
-	var results = space_state.intersect_point(query)
-	for result in results:
-		if result.collider.is_in_group("water_area"):
+	var results: Array[Dictionary] = space_state.intersect_point(query)
+	for result: Dictionary in results:
+		var collider: Object = result.get("collider")
+		if collider is Node and collider.is_in_group("water_area"):
 			head_in_water = true
 			break
 			
-	var target_energy = base_light_energy * 4.0 if head_in_water else base_light_energy
-	var target_range = base_spot_range * 2.0 if head_in_water else base_spot_range
+	var target_energy: float = base_light_energy * 4.0 if head_in_water else base_light_energy
+	var target_range: float = base_spot_range * 2.0 if head_in_water else base_spot_range
 
-	# Smoothly Lerp the flashlight! 
-	# (A weight of 4.0 * delta visually completes the transition in about ~1 second)
 	if flashlight:
 		flashlight.light_energy = lerpf(flashlight.light_energy, target_energy, 4.0 * delta)
 		flashlight.spot_range = lerpf(flashlight.spot_range, target_range, 4.0 * delta)
@@ -825,8 +713,6 @@ func _handle_water_physics(delta: float) -> bool:
 	if not in_water:
 		return false
 
-	# --- PREVENT SPRINTING & CROUCHING ---
-	# We force these states off. 
 	walking = false
 	sprinting = false
 	crouching = false
@@ -836,27 +722,24 @@ func _handle_water_physics(delta: float) -> bool:
 	
 	standing_collision_shape.disabled = false
 	crouching_collision_shape.disabled = true
-	head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
+	head.position.y = lerpf(head.position.y, 1.8, delta * lerp_speed)
 
-	# --- TRUE 3D SWIMMING ---
 	input_dir = Input.get_vector("left", "right", "forward", "backward")
-	var swim_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	var target_velocity = swim_dir * swimming_speed
+	var swim_dir: Vector3 = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var target_velocity: Vector3 = swim_dir * swimming_speed
 		
-	var actively_swimming_vertical = false
-	var just_water_jumped = false
+	var actively_swimming_vertical: bool = false
+	var just_water_jumped: bool = false
 	
-	if Input.is_action_just_pressed("jump") and !head_in_water:
+	if Input.is_action_just_pressed("jump") and not head_in_water:
 		if _try_vault():
-			pass # The vaulting tween takes over smoothly
+			pass 
 		else:
-			# THE MISSING FALLBACK: Jump out normally if there's no ledge!
-			velocity.y = 12 
+			velocity.y = 12.0 
 			
 		actively_swimming_vertical = true
 		just_water_jumped = true
 
-	# 2. MANUAL DIVING / SWIMMING UP
 	elif Input.is_action_pressed("crouch"): 
 		target_velocity.y -= swim_up_speed
 		actively_swimming_vertical = true
@@ -865,56 +748,44 @@ func _handle_water_physics(delta: float) -> bool:
 			target_velocity.y += swim_up_speed
 			actively_swimming_vertical = true
 
-	# 3. AUTO-TREADING WATER (The Anti-Annoyance System)
 	if not actively_swimming_vertical:
 		if head_in_water:
 			if input_dir == Vector2.ZERO:
-				target_velocity.y = 3.0 # Natural buoyancy speed
-			else:
-				pass
+				target_velocity.y = 3.0 
 		else:
 			if target_velocity.y < 0.0:
-				target_velocity.y = 0
+				target_velocity.y = 0.0
 			if velocity.y < 1.0 and velocity.y > -4.0:
 				velocity.y = lerpf(velocity.y, 0.0, 10.0 * delta)
 
-	# --- APPLY HORIZONTAL LERP (Steering) ---
-	var target_xz = Vector2(target_velocity.x, target_velocity.z)
-	var current_xz = Vector2(velocity.x, velocity.z)
+	var target_xz := Vector2(target_velocity.x, target_velocity.z)
+	var current_xz := Vector2(velocity.x, velocity.z)
 	current_xz = current_xz.lerp(target_xz, 8.0 * delta)
 	velocity.x = current_xz.x
 	velocity.z = current_xz.y
 
-	# --- APPLY VERTICAL LERP (Swimming/Sinking) ---
-	# We skip the smoothing lerp on the exact frame we jump, so the burst is instant!
 	if not just_water_jumped:
 		velocity.y = lerpf(velocity.y, target_velocity.y, 4.0 * delta)
 
-# --- APPLY VERTICAL LERP (Swimming/Sinking) ---
-	if not just_water_jumped:
-		velocity.y = lerpf(velocity.y, target_velocity.y, 4.0 * delta)
-
-	# --- THE LOST SWIMMING ANIMATIONS ---
-	var target_anim = ""
-	if input_dir.x > 0.1: # Moving Right
+	var target_anim: String = ""
+	if input_dir.x > 0.1: 
 		target_anim = "swimming_underwater_sideways_right"
-		eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3)
-	elif input_dir.x < -0.1: # Moving Left
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3.0)
+	elif input_dir.x < -0.1: 
 		target_anim = "swimming_underwater_sideways_left"
-		eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3)
-	elif abs(input_dir.y) > 0.1: # Forward/Backward
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3.0)
+	elif absf(input_dir.y) > 0.1: 
 		target_anim = "swimming"
-		eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
+		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed / 3.0)
 	elif (Input.is_action_pressed("jump") or Input.is_action_pressed("sprint")) and head_in_water:
 		target_anim = "swimming_up"
-		eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
+		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed / 3.0)
 	else:
 		target_anim = "RESET"
-		eyes.rotation.z = lerp(eyes.rotation.z, 0.0, delta * lerp_speed / 3)
+		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed / 3.0)
 			
 	if target_anim != "" and camera_anims.current_animation != target_anim:
-		camera_anims.play(target_anim, 2)
-	# ------------------------------------
+		camera_anims.play(target_anim, 2.0)
 
 	return true
 	
@@ -934,7 +805,6 @@ func toggle_noclip() -> void:
 	flying = !flying
 	noclip_speed_multiplier = 4.0
 	
-	# Handle collisions ONCE when toggled, not every frame
 	if flying:
 		standing_collision_shape.disabled = true
 		crouching_collision_shape.disabled = true
@@ -942,81 +812,129 @@ func toggle_noclip() -> void:
 		standing_collision_shape.disabled = false
 		crouching_collision_shape.disabled = false
 		
-	# Tell the UI to update its button text and messages
 	Events.noclip_toggled.emit(flying)
 
-# -----------------------------
-# ZIPLINE LOGIC
-# -----------------------------
-func _on_zipline_grabbed(zipline_node: Node, start_pos: Vector3, end_pos: Vector3) -> void:
-	current_zipline = zipline_node
+func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vector3, start_at_end: bool) -> void:
+	current_zipline = zipline_ref
 	zipline_start = start_pos
 	zipline_end = end_pos
-	velocity = Vector3.ZERO
-	on_zipline = true
-
 	zipline_dir = (zipline_end - zipline_start).normalized()
 	zipline_length = zipline_start.distance_to(zipline_end)
-
-	var grab_point = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
-	var grab_distance = zipline_start.distance_to(grab_point)
-	zipline_progress = grab_distance / zipline_length
-	zipline_progress = clamp(zipline_progress, 0.05, 0.95)
-
-	is_zipline_sliding = abs(zipline_dir.y) > 0.15
-
-	if is_zipline_sliding:
-		var mid_point_y = (zipline_start.y + zipline_end.y) / 2.0
-		is_auto_sliding = global_position.y > mid_point_y
-	else:
-		is_auto_sliding = false
-		
-func _on_zipline_released() -> void:
-	on_zipline = false
-	velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
 	
+	on_zipline = true
+	zipline_grace_timer = 0.0 # <--- RESET THE TIMER HERE
+	is_auto_sliding = false
+	is_zipline_transitioning = true
+	
+	# Start at 0.0 (Point A) or 1.0 (Point B)
+	zipline_progress = 1.0 if start_at_end else 0.0
+	
+	velocity = Vector3.ZERO
+	scale = Vector3.ONE 
+
+	# Calculate where the player should actually be hanging
+	var initial_world_pos := zipline_start.lerp(zipline_end, zipline_progress)
+	var real_target_pos: Vector3 = initial_world_pos - Vector3(0, ZIPLINE_HANG_OFFSET, 0)
+	
+	# Determine rotation (Face Point B if at Start, Face Point A if at End)
+	var face_dir := zipline_dir if not start_at_end else -zipline_dir
+	var target_quat := Basis.looking_at(face_dir, Vector3.UP).get_rotation_quaternion()
+
+	# THE TWEEN
+	var attach_tween := create_tween().set_parallel(true)
+	attach_tween.tween_property(self, "global_position", real_target_pos, 0.25).set_trans(Tween.TRANS_SINE)
+	attach_tween.tween_property(self, "quaternion", target_quat, 0.25).set_trans(Tween.TRANS_SINE)
+
+	attach_tween.set_parallel(false)
+	attach_tween.tween_callback(func() -> void:
+		is_zipline_transitioning = false
+	)
+
+func _on_zipline_released() -> void:
 	if current_zipline and current_zipline.has_method("on_player_released"):
 		current_zipline.on_player_released()
-		current_zipline = null
+	
+	on_zipline = false
+	current_zipline = null
+	is_zipline_transitioning = false
+	scale = Vector3.ONE 
+	
+	# Fix "Standing Up" on release
+	var current_fwd := -global_transform.basis.z
+	var flat_fwd := Vector3(current_fwd.x, 0, current_fwd.z).normalized()
+	if flat_fwd.length_squared() < 0.01: flat_fwd = Vector3.FORWARD
+	
+	var upright_basis := Basis.looking_at(flat_fwd, Vector3.UP)
+	
+	var detach_tween := create_tween().set_parallel(true)
+	detach_tween.tween_property(self, "quaternion", upright_basis.get_rotation_quaternion(), 0.15)\
+		.set_trans(Tween.TRANS_SINE)
+	
+	# Reset camera shake/tilt
+	detach_tween.tween_property(eyes, "rotation:z", 0.0, 0.15)
+	
+#func _on_zipline_grabbed(zipline_node: Node, start_pos: Vector3, end_pos: Vector3) -> void:
+	#current_zipline = zipline_node as Node3D
+	#zipline_start = start_pos
+	#zipline_end = end_pos
+	#velocity = Vector3.ZERO
+	#on_zipline = true
+#
+	#zipline_dir = (zipline_end - zipline_start).normalized()
+	#zipline_length = zipline_start.distance_to(zipline_end)
+#
+	#var grab_point: Vector3 = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
+	#var grab_distance: float = zipline_start.distance_to(grab_point)
+	#zipline_progress = grab_distance / zipline_length
+	#zipline_progress = clampf(zipline_progress, 0.05, 0.95)
+#
+	#is_zipline_sliding = absf(zipline_dir.y) > 0.15
+#
+	#if is_zipline_sliding:
+		#var mid_point_y: float = (zipline_start.y + zipline_end.y) / 2.0
+		#is_auto_sliding = global_position.y > mid_point_y
+	#else:
+		#is_auto_sliding = false
+		#
+#func _on_zipline_released() -> void:
+	#on_zipline = false
+	#velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
+	#
+	#if current_zipline and current_zipline.has_method("on_player_released"):
+		#current_zipline.call("on_player_released")
+		#current_zipline = null
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:
 	is_menu_open = is_open
 
-# -------------------------------------------------------------------
-# HELPER FUNCTIONS
-# -------------------------------------------------------------------
 func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
-	# 1. CAMERA TILT
 	if Input.is_action_pressed("left"):
-		eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
 	elif Input.is_action_pressed("right"):
-		eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
 	else:
-		eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(0), delta * lerp_speed)
+		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
-	# 2. CROUCHING
 	if Input.is_action_pressed("crouch") and is_truly_grounded:
 		if not crouching: 
 			Events.player_crouch_changed.emit(true)
 		crouching = true 
-		current_speed = lerp(current_speed, crouching_speed, delta * lerp_speed)
-		head.position.y = lerp(head.position.y, crouching_depth, delta * lerp_speed)
+		current_speed = lerpf(current_speed, crouching_speed, delta * lerp_speed)
+		head.position.y = lerpf(head.position.y, crouching_depth, delta * lerp_speed)
 		standing_collision_shape.disabled = true
 		crouching_collision_shape.disabled = false
 		walking = false
 		sprinting = false
 
-	# 3. STANDING UP
-	elif !crouch_cast_check.is_colliding():
+	elif not crouch_cast_check.is_colliding():
 		if crouching: 
 			Events.player_crouch_changed.emit(false)
 		crouching = false 
 		standing_collision_shape.disabled = false
 		crouching_collision_shape.disabled = true
-		head.position.y = lerp(head.position.y, 1.8, delta * lerp_speed)
+		head.position.y = lerpf(head.position.y, 1.8, delta * lerp_speed)
 
-	# 4. SPRINTING & WALKING
-	var is_moving = input_dir.length() > 0.1
+	var is_moving: bool = input_dir.length() > 0.1
 	
 	if Input.is_action_pressed("sprint") and standing_collision_shape.disabled == false and is_moving and is_on_floor(): 
 		sprint_active = true
@@ -1024,23 +942,19 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 		sprint_active = false
 		
 	if sprint_active:
-		current_speed = lerp(current_speed, sprinting_speed, delta * lerp_speed)
+		current_speed = lerpf(current_speed, sprinting_speed, delta * lerp_speed)
 		walking = false
 		sprinting = true
 	elif is_moving and crouching_collision_shape.disabled == true:
-		current_speed = lerp(current_speed, walking_speed, delta * lerp_speed)
+		current_speed = lerpf(current_speed, walking_speed, delta * lerp_speed)
 		walking = true    
 		sprinting = false    
 
-	# 5. HEADBOB
-	_handle_headbob(delta) # (You should make a helper for headbob too!)
+	_handle_headbob(delta) 
 
-	# 6. JUMPING
 	if Input.is_action_just_pressed("jump"):
-		# Check if we are facing a climbable wall FIRST
 		if _try_vault():
 			camera_anims.play("jump")
-		# If no wall, do a standard jump
 		elif is_on_floor():
 			if sprinting:
 				velocity.y = sprint_jump_velocity
@@ -1050,7 +964,6 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 				velocity.y = jump_velocity
 			camera_anims.play("jump")
 
-	# Handle landing anims...
 	if is_on_floor() and not _snapped_to_stairs_last_frame:
 		if last_velocity.y < -2.0: 
 			if sprinting: 
@@ -1058,249 +971,282 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 			else: 
 				camera_anims.play("landing")
 
-	# 7. APPLY MOVEMENT TO VELOCITY
 	if is_on_floor():
-		direction = lerp(direction, (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * lerp_speed)
+		direction = direction.lerp((transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * lerp_speed)
 	else:
 		if input_dir != Vector2.ZERO:
-			direction = lerp(direction, (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * air_lerp_speed)
+			direction = direction.lerp((transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * air_lerp_speed)
 	
-	if direction:
+	if direction.length() > 0:
 		velocity.x = direction.x * current_speed
 		velocity.z = direction.z * current_speed
 	else:
-		velocity.x = move_toward(velocity.x, 0, current_speed)
-		velocity.z = move_toward(velocity.z, 0, current_speed)
+		velocity.x = move_toward(velocity.x, 0.0, current_speed)
+		velocity.z = move_toward(velocity.z, 0.0, current_speed)
 
-	# 8. GRAVITY
 	if in_updraft:
-		velocity.y = lerp(velocity.y, current_updraft_strength, delta * 4.0)
+		velocity.y = lerpf(velocity.y, current_updraft_strength, delta * 4.0)
 	elif not is_on_floor():
 		velocity.y -= gravity * delta
 
 func _handle_ladder_physics(_delta: float) -> void:
-	#if on_ladder:
-	# 1. Force state restrictions
 	sprinting = false
 	crouching = false
 
-	# 2. Get camera directions for Source-style movement
-	var look_dir = -cam.global_transform.basis.z # Forward
-	var right_dir = cam.global_transform.basis.x # Right
+	var look_dir: Vector3 = -cam.global_transform.basis.z 
+	var right_dir: Vector3 = cam.global_transform.basis.x 
 
-	# 3. Calculate movement vector based on where we are looking
-	var ladder_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-
-	# 4. Apply speed
+	var ladder_vel: Vector3 = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
 	velocity = ladder_vel.normalized() * LADDER_SPEED
 
-	# 5. Dismount by jumping backwards off the ladder
 	if Input.is_action_just_pressed("jump"):
 		on_ladder = false
-		velocity = -look_dir * 5.0 # Shove player backward
-		velocity.y = 5.0 # And slightly up
+		velocity = -look_dir * 5.0 
+		velocity.y = 5.0 
 			
-#func _handle_monkey_bars_physics(_delta: float) -> void:
-	#sprinting = false
-	#crouching = false
-#
-	## 1. Horizontal Movement
-	#var look_dir = -cam.global_transform.basis.z 
-	#var right_dir = cam.global_transform.basis.x 
-	#look_dir.y = 0; right_dir.y = 0
-	#look_dir = look_dir.normalized(); right_dir = right_dir.normalized()
-#
-	#var bar_vel = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-	#velocity.x = bar_vel.x * MONKEY_BAR_SPEED
-	#velocity.z = bar_vel.z * MONKEY_BAR_SPEED
-#
-	## --- 2. THE PATH SNAPPER ---
-	#if current_monkey_bar_path:
-		#var path_curve = current_monkey_bar_path.curve
-		#var local_player_pos = current_monkey_bar_path.to_local(global_position)
-		#var closest_point_local = path_curve.get_closest_point(local_player_pos)
-		#var closest_point_global = current_monkey_bar_path.to_global(closest_point_local)
-		#
-		#var target_y = closest_point_global.y - MONKEY_BAR_HANG_OFFSET
-		#var distance_to_target = target_y - global_position.y
-		#
-		## We increase the "Glue Range" to 4.0 meters just for the snap
-		#if abs(distance_to_target) > 4.0:
-			#exit_monkey_bars()
-			#return
-			#
-		## PULL: Snapping the player to the Y height
-		#velocity.y = distance_to_target * 25.0
-	#else:
-		#exit_monkey_bars()
-
-	# --- 3. ANIMATIONS ---
-	if input_dir.length() > 0.1:
-		if camera_anims.current_animation != "MonkeMoves":
-			camera_anims.play("MonkeMoves", 0.3)
-		# Match animation speed to move direction (W = forward, S = backward)
-		camera_anims.speed_scale = 1.0 if input_dir.y < 0 else -1.0
-	else:
-		# If not moving, crossfade back to RESET
-		if camera_anims.current_animation == "MonkeMoves":
-			camera_anims.play("RESET", 0.3)
-			camera_anims.speed_scale = 1.0
-
-	# 4. Manual Dismount
-	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
-		exit_monkey_bars()
-		
 func _handle_zipline_physics(delta: float) -> void:
-		#elif on_zipline:
+	if not on_zipline or is_zipline_transitioning:
+		return
+		
+	# 1. Update the grace timer
+	zipline_grace_timer += delta
+		
 	sprinting = false
 	crouching = false
 	walking = false
 
-	# 1. Base directions
-	var slide_direction = 1.0 if zipline_dir.y < 0 else -1.0
-	var downhill_vector = zipline_dir * slide_direction
+	# --- YOUR EXISTING MOVEMENT LOGIC ---
+	var slide_direction: float = 1.0 if zipline_dir.y < 0 else -1.0
+	var downhill_vector: Vector3 = zipline_dir * slide_direction
 
-	var look_forward = -cam.global_transform.basis.z
-	if not is_zipline_sliding:
-		look_forward.y = 0
+	var look_forward: Vector3 = -cam.global_transform.basis.z
+	look_forward.y = 0.0
 	look_forward = look_forward.normalized()
 
-	# --- THE NEW MODE SWITCHER ---
-	# If we are holding on manually, check if the player wants to let go and slide!
-	if not is_auto_sliding and is_zipline_sliding:
-		var looking_downhill = look_forward.dot(downhill_vector) > 0
-		
-		# ONLY trigger auto-slide if looking downhill AND pressing forward
+	if not is_auto_sliding:
+		var looking_downhill: bool = look_forward.dot(downhill_vector) > 0.4
 		if Input.is_action_just_pressed("forward") and looking_downhill:
 			is_auto_sliding = true
-	# -----------------------------
 
-	# 2. Apply Movement
 	if is_auto_sliding:
-		# UNSTOPPABLE GRAVITY SLIDE (Hands-free)
 		zipline_progress += slide_direction * (ZIPLINE_SLIDE_SPEED / zipline_length) * delta
-		
-		if camera_anims.assigned_animation != "RESET":
-			camera_anims.play("RESET", 0.3)
-			camera_anims.speed_scale = 1.0
-			
 	else:
-		# MANUAL CLIMBING (Going Uphill, Uphill-Backwards, or Flat wire)
-		var move_input = -input_dir.y # +1 for W, -1 for S
-
-		if move_input == 0:
-			# Freeze in place when letting go of keys!
-			if camera_anims.assigned_animation != "RESET":
-				camera_anims.play("RESET", 0.3)
-				camera_anims.speed_scale = 1.0
-		else:
-			var requested_dir = look_forward * move_input
-			var move_amount = requested_dir.dot(zipline_dir)
-
-			# Determine if our manual input is pushing us downhill
-			var moving_downhill = false
-			if is_zipline_sliding:
-				if (slide_direction > 0 and move_amount > 0) or (slide_direction < 0 and move_amount < 0):
-					moving_downhill = true
-			
-			# Uphill is a slow struggle. Downhill manual backing-up is regular climbing speed.
+		var move_input: float = -input_dir.y 
+		if move_input != 0.0:
+			var requested_dir: Vector3 = look_forward * move_input
+			var move_amount: float = requested_dir.dot(zipline_dir)
 			current_speed = MONKEY_BAR_SPEED
-			if is_zipline_sliding and not moving_downhill:
-				current_speed *= 0.5 
-				
 			zipline_progress += move_amount * (current_speed / zipline_length) * delta
 
-			# Play climbing animations
-			if camera_anims.assigned_animation != "MonkeMoves":
-				camera_anims.play("MonkeMoves", 0.3)
-			camera_anims.speed_scale = sign(move_input)
-
-	# 3. Apply exact position
-	zipline_progress = clamp(zipline_progress, 0.0, 1.0)
-	var target_pos = zipline_start.lerp(zipline_end, zipline_progress)
+	# --- POSITION UPDATE ---
+	zipline_progress = clampf(zipline_progress, 0.0, 1.0)
+	var target_pos: Vector3 = zipline_start.lerp(zipline_end, zipline_progress)
 	target_pos.y -= ZIPLINE_HANG_OFFSET
+	
 	global_position = target_pos
 	velocity = Vector3.ZERO
 
-	# 4. Dismount checks
-	if zipline_progress >= 1.0 or zipline_progress <= 0.0:
+	# --- 2. IMPROVED EXIT CONDITIONS ---
+	# Only auto-release if the grace period is over (0.5 seconds)
+	if zipline_grace_timer > 0.5:
+		if zipline_progress >= 0.999 or zipline_progress <= 0.001:
+			_on_zipline_released()
+	
+	# Manual exit (Jump/Crouch) always works, even during grace period
+	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
 		_on_zipline_released()
-	elif Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
-		_on_zipline_released()
-		
+	
 func _handle_rope_physics(delta: float) -> void:
-	#if current_rope != null:
 	sprinting = false
 	crouching = false
 	walking = false
-	
-	_handle_headbob(delta)
 
+	# 1. SETUP & REUSE VARIABLES
+	var rope_root: Node3D = current_rope.get_parent() as Node3D
+	var rope_up: Vector3 = current_rope.global_transform.basis.y.normalized()
 	var look_dir := -cam.global_transform.basis.z
-		
-	var rope_root = current_rope.get_parent()
-	var local_top = current_rope.to_local(rope_root.global_position).y
-	var max_length = rope_root.rope_length
-	var top_limit = local_top - 2.5
-	var bottom_limit = local_top - max_length + 0.5
+	
+	# Common Calculations
+	var center_grab_pos: Vector3 = current_rope.to_global(Vector3(0.0, rope_offset, 0.0))
+	var look_dot_rope: float = look_dir.dot(rope_up)
+	
+	# Logic Flags
+	var can_swing: bool = rope_root.get("is_swingable") as bool if "is_swingable" in rope_root else false
+	var force_amount: float = rope_root.get("swing_force") as float if "swing_force" in rope_root else 300.0
+	var swing_angle_deg: float = rad_to_deg(acos(clampf(rope_up.dot(Vector3.UP), -1.0, 1.0)))
+	var is_actively_swinging: bool = swing_angle_deg > 5.0 or current_rope.angular_velocity.length() > 0.2
 
-	# 2. Climb Math
-	var climb_input: float = (look_dir * -input_dir.y).y
-	if abs(climb_input) > 0.1:
-		rope_offset += climb_input * ROPE_CLIMB_SPEED * delta
-		rope_offset = clamp(rope_offset, bottom_limit, top_limit)
+	var is_pressing_w: bool = input_dir.y < -0.1
+	var is_pressing_s: bool = input_dir.y > 0.1
+	var is_looking_up: bool = look_dot_rope > 0.6
+	var is_looking_down: bool = look_dot_rope < -0.2
+	var is_sliding: bool = Input.is_action_pressed("crouch") and is_looking_down
+	
+	var intent_is_climbing: bool = false
+	var climb_direction: float = 0.0
+	
+	# --- 1. CLIMBING LOGIC ---
+	if not is_sliding:
+		if is_looking_up:
+			if is_pressing_w:
+				intent_is_climbing = true
+				climb_direction = 1.0
+			elif is_pressing_s and not is_actively_swinging:
+				intent_is_climbing = true
+				climb_direction = -1.0
+		elif is_looking_down:
+			if is_pressing_w and not is_actively_swinging:
+				intent_is_climbing = true
+				climb_direction = -1.0
 
-	# 3. Position Update
-	var target_local_pos = Vector3(rope_local_grab_dir.x, rope_offset, rope_local_grab_dir.z)
-	var target_pos = current_rope.to_global(target_local_pos)
+	var is_climbing_actively: bool = false
+	var local_top: float = current_rope.to_local(rope_root.global_position).y
+	var max_length: float = rope_root.get("rope_length") as float if "rope_length" in rope_root else 10.0
+	var top_limit: float = local_top - 2.5
+	var bottom_limit: float = local_top - max_length + 0.5
 
-	global_position = global_position.lerp(target_pos, delta * 30.0)
+	if is_sliding:
+		rope_offset -= (ROPE_CLIMB_SPEED * 7.0) * delta
+		rope_offset = clampf(rope_offset, bottom_limit, top_limit)
+	elif intent_is_climbing:
+		rope_offset += climb_direction * ROPE_CLIMB_SPEED * delta
+		rope_offset = clampf(rope_offset, bottom_limit, top_limit)
+		is_climbing_actively = true 
+	else:
+		# --- 2. SWINGING LOGIC ---
+		if can_swing and input_dir.length() > 0.01:
+			current_rope.sleeping = false 
+			var flat_fwd := Vector3(look_dir.x, 0.0, look_dir.z).normalized()
+			var flat_right := flat_fwd.cross(Vector3.UP).normalized()
+			var push_dir := (flat_fwd * -input_dir.y) + (flat_right * input_dir.x)
+			
+			if push_dir.length_squared() > 0.01:
+				current_rope.apply_force(push_dir.normalized() * force_amount, center_grab_pos - current_rope.global_position)
+
+	if is_climbing_actively:
+		_handle_headbob(delta, 0.6) 
+	else:
+		cam.transform.origin = cam.transform.origin.lerp(Vector3.ZERO, delta * 10.0)
+
+	# --- 3. APPLY POSITIONS & COMFORT ---
+	# A. FREE LOOK ORBIT: Use camera's actual vectors to place the player
+	var cam_fwd := -cam.global_transform.basis.z.normalized()
+	var cam_right := -cam.global_transform.basis.x.normalized() # Pull to the side
+	
+	# Flatten them so orbiting doesn't change your height
+	var orbit_fwd := Vector3(cam_fwd.x, 0, cam_fwd.z).normalized()
+	var orbit_right := Vector3(cam_right.x, 0, cam_right.z).normalized()
+	
+	# THE OFFSET FIX: Move backward (0.7) and LEFT (0.5) so the rope is on your RIGHT
+	var target_pos: Vector3 = center_grab_pos - (orbit_fwd * 0.7) + (orbit_right * 0.5)
+
+	if rope_lerp_weight < 45.0:
+		rope_lerp_weight += delta * 150.0 
+		global_position = global_position.lerp(target_pos, delta * 15.0)
+	else:
+		global_position = target_pos 
+
+	# B. UPRIGHT STABILIZATION: Keep player body vertical (Yaw only)
+	# This allows the mouse script to continue working without being overwritten
+	global_rotation.x = 0.0
+	global_rotation.z = 0.0
+	
+	# C. COMFORT TILT (Applied to EYES so it doesn't fight mouse Pitch)
+	var tilt_quat := Quaternion(Vector3.UP, rope_up)
+	eyes.quaternion = Quaternion.IDENTITY.slerp(tilt_quat, 0.15)
+	
 	velocity = Vector3.ZERO
 
+# --- 4. DISMOUNTS ---
 	if Input.is_action_just_pressed("jump"):
-		_on_rope_released()
-		velocity = look_dir + Vector3.UP
+		var grab_offset: Vector3 = global_position - current_rope.global_position
+		var rope_momentum: Vector3 = current_rope.angular_velocity.cross(grab_offset)
+		var jump_dir := -cam.global_transform.basis.z.normalized()
+		var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
+		
+		# Define variables to be filled by the branch
+		var vertical_hop: float = 0.0
+		var forward_push: float = 0.0
+		
+		if can_swing and input_dir.length() > 0.1:
+			# --- TARZAN MODE (Swing-able) ---
+			# Apply the physics kickback only to swinging ropes
+			current_rope.apply_impulse(-flat_jump_dir * 12.0, Vector3.ZERO)
+			
+			var total_swing_speed: float = rope_momentum.length()
+			vertical_hop = 10.0 + (maxf(jump_dir.y, 0.0) * 12.0)
+			forward_push = 40.0 + (total_swing_speed * 1.2)
+		else:
+			# --- STANDARD MODE (Static) ---
+			# A much smaller "hop" off a frozen rope
+			vertical_hop = 4.5 
+			forward_push = 7.0
+	
+		_on_rope_released(jump_dir)
+		
+		# Apply the final calculated velocity
+		velocity = (flat_jump_dir * forward_push) + Vector3(0, vertical_hop, 0)
+		
+		# Sync the ground controller
+		direction = flat_jump_dir
+		current_speed = forward_push
+		
+		# Anti-Ghost Collision teleport
+		global_position += jump_dir * 0.5
+		
 	elif Input.is_action_just_pressed("interact"):
-		_on_rope_released()
+		# If the lerp weight is still very low, we just got on! 
+		# Don't let the player off yet.
+		if rope_lerp_weight > 10.0: 
+			_on_rope_released(-cam.global_transform.basis.z)
 			
 func _handle_noclip_physics(delta: float) -> void:
-	var fly_dir = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	var fly_dir: Vector3 = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	current_speed = sprinting_speed * noclip_speed_multiplier
 
 	Events.noclip_speed_changed.emit(noclip_speed_multiplier)
 				
-	if fly_dir:
+	if fly_dir.length() > 0:
 		velocity = fly_dir * current_speed
 	else:
 		velocity = Vector3.ZERO
 		direction = Vector3.ZERO
 	
-	if !swimming:
+	if not swimming:
 		if Input.is_action_pressed("left"):
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
+			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
 		elif Input.is_action_pressed("right"):
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
+			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
 		else:
-			eyes.rotation.z = lerp(eyes.rotation.z, deg_to_rad(0), delta * lerp_speed)
+			eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
-func _handle_headbob(delta: float) -> void:
-	var is_climbing_rope = false
-	var climb_factor = 0.0
+func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
+	var is_climbing_rope: bool = false
+	var climb_factor: float = 0.0
+	var bob_amount: float = _calculate_bob() * intensity_modifier
+	cam.transform.origin.y = bob_amount
+	
+	if input_dir.length() > 0.1:
+		headbob_time += delta
+	else:
+		# Smoothly reset the bob to center when stopping
+		headbob_time = lerpf(headbob_time, 0.0, delta * 10.0)
+	
+	# 3. Apply to camera with a lerp to keep it buttery smooth
+	cam.transform.origin.y = lerpf(cam.transform.origin.y, bob_amount, delta * 15.0)
 	
 	if current_rope != null:
 		var look_dir := -cam.global_transform.basis.z
 		var climb_input: float = (look_dir * -input_dir.y).y
-		if abs(climb_input) > 0.1:
+		if absf(climb_input) > 0.1:
 			is_climbing_rope = true
-			climb_factor = abs(climb_input)
+			climb_factor = absf(climb_input)
 
-	 #2. Add the climbing state to your intensity/speed checks
 	if is_climbing_rope:
-		# Rope climbing feels heavy! We multiply the walking intensity slightly.
 		head_bobbing_current_intensity = head_bobbing_walking_intensity * 1.5 
 		head_bobbing_index += ROPE_CLIMB_SPEED * climb_factor * delta * 12.6
 	elif sprinting and input_dir != Vector2.ZERO:
-		if abs(input_dir.y) > 0.1:
+		if absf(input_dir.y) > 0.1:
 			head_bobbing_current_intensity = head_bobbing_sprinting_intensity * 1.2
 			head_bobbing_index += head_bobbing_sprinting_speed * 1.2 * delta
 		else:
@@ -1313,126 +1259,97 @@ func _handle_headbob(delta: float) -> void:
 		head_bobbing_current_intensity = head_bobbing_crouching_intensity
 		head_bobbing_index += head_bobbing_crouching_speed * 1.4 * delta
 	else:
-		# Idle — slow subtle breathing bob (This now handles floor idle AND hanging idle!)
 		head_bobbing_current_intensity = head_bobbing_idle_intensity
 		head_bobbing_index += head_bobbing_idle_speed * delta
 		
-	# 3. Calculate target bob values
-	var target_bob_y = 0.0
-	var target_bob_x = 0.0
+	var target_bob_y: float = 0.0
+	var target_bob_x: float = 0.0
 	
 	if is_on_floor() or current_rope != null:
 		head_bobbing_vector.y = sin(head_bobbing_index)
-		head_bobbing_vector.x = sin(head_bobbing_index/2) + 0.5
+		head_bobbing_vector.x = sin(head_bobbing_index / 2.0) + 0.5
 		
 		target_bob_y = head_bobbing_vector.y * (head_bobbing_current_intensity / 2.0)
 		target_bob_x = head_bobbing_vector.x * head_bobbing_current_intensity
 
-	# Smoothly lerp our independent headbob memory
-	headbob_offset.y = lerp(headbob_offset.y, target_bob_y, delta * lerp_speed)
-	headbob_offset.x = lerp(headbob_offset.x, target_bob_x, delta * lerp_speed)
+	headbob_offset.y = lerpf(headbob_offset.y, target_bob_y, delta * lerp_speed)
+	headbob_offset.x = lerpf(headbob_offset.x, target_bob_x, delta * lerp_speed)
 
-	# 4. THE FIX: Combine them peacefully!
 	eyes.position.y = headbob_offset.y + stair_offset
 	eyes.position.x = headbob_offset.x
-# --------------------------------------
-# TELEPORT & STUN SYSTEM
-# --------------------------------------
+
 func teleport_to(new_position: Vector3, stun_time: float = 0.1) -> void:
-	# 1. Instantly move the player
 	global_position = new_position
 	
-	# 2. Hard reset ALL movement math
 	velocity = Vector3.ZERO
 	last_velocity = Vector3.ZERO
 	direction = Vector3.ZERO
 	input_dir = Vector2.ZERO
 	
-	# 3. GLUE THE PLAYER
 	is_stunned = true
 	
-	# 4. Create a tiny invisible timer that un-stuns them automatically
-	get_tree().create_timer(stun_time).timeout.connect(func(): is_stunned = false)
+	get_tree().create_timer(stun_time).timeout.connect(func() -> void: is_stunned = false)
 	
-# --------------------------------------
-# PAUSE MENU
-# --------------------------------------
-func toggle_pause():
+func toggle_pause() -> void:
 	is_paused = !is_paused
 	
-	# 3. Pause or unpause the engine
 	get_tree().paused = is_paused
 	
 	if is_paused:
 		menu_instance.show()
-		# Crucial for first-person: Free the mouse so you can click menu buttons
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE 
 	else:
 		menu_instance.hide()
-		# Lock the mouse back to the center of the screen for camera movement
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
-# --------------------------------------
-# VAULTING & MANTLING
-# --------------------------------------
 func _scan_for_ledges() -> void:
-	var space_state = get_world_3d().direct_space_state
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 	
-	var forward_dir = -cam.global_transform.basis.z
-	forward_dir.y = 0
+	var forward_dir: Vector3 = -cam.global_transform.basis.z
+	forward_dir.y = 0.0
 	forward_dir = forward_dir.normalized()
 	
-	# Reset state every frame
 	can_vault_current_ledge = false
 	if vault_indicator:
 		vault_indicator.hide()
 	
-	var detect_height = global_position + Vector3(0, 0.5, 0)
-	var forward_query = PhysicsRayQueryParameters3D.create(detect_height, detect_height + forward_dir * 1.2)
+	var detect_height: Vector3 = global_position + Vector3(0, 0.5, 0)
+	var forward_query := PhysicsRayQueryParameters3D.create(detect_height, detect_height + forward_dir * 1.2)
 	forward_query.exclude = [self.get_rid()] 
 	
-	var forward_result = space_state.intersect_ray(forward_query)
+	var forward_result: Dictionary = space_state.intersect_ray(forward_query)
 	
 	if forward_result:
-		var wall_normal = forward_result.normal
-		if abs(wall_normal.y) > 0.2: return
+		var wall_normal: Vector3 = forward_result.get("normal") as Vector3
+		if absf(wall_normal.y) > 0.2: return
 		
-		#var down_start = forward_result.position - wall_normal * 0.4 + Vector3(0, 2.0, 0)
-		var down_start = forward_result.position - wall_normal * 0.15 + Vector3(0, 2.0, 0)
+		var down_start: Vector3 = (forward_result.get("position") as Vector3) - wall_normal * 0.15 + Vector3(0, 2.0, 0)
 
-		# Change the clearance_start calculation:
-		var down_query = PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -2.5, 0))
+		var down_query := PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -2.5, 0))
 		down_query.exclude = [self.get_rid()]
 		
-		var down_result = space_state.intersect_ray(down_query)
+		var down_result: Dictionary = space_state.intersect_ray(down_query)
 		
 		if down_result:
-			var ledge_point = down_result.position
-			var vault_height = ledge_point.y - global_position.y
+			var ledge_point: Vector3 = down_result.get("position") as Vector3
+			var vault_height: float = ledge_point.y - global_position.y
 			
-			# 1. Is it a valid climb? (Between a stair step and 1.8m)
 			if vault_height > MAX_STEP_HEIGHT and vault_height <= 1.8:
 				
-				# --- THE NEW CLEARANCE CHECK ---
-				# Shoot a ray straight up from the landing zone to check for roofs/window frames
-				#var clearance_start = ledge_point + (forward_dir * 0.2) + Vector3(0, 0.05, 0)
-				var clearance_start = ledge_point + (forward_dir * 0.15) + Vector3(0, 0.05, 0)
-				var clearance_end = clearance_start + Vector3(0, 1.8, 0) # Your player's height
-				var clearance_query = PhysicsRayQueryParameters3D.create(clearance_start, clearance_end)
+				var clearance_start: Vector3 = ledge_point + (forward_dir * 0.15) + Vector3(0, 0.05, 0)
+				var clearance_end: Vector3 = clearance_start + Vector3(0, 1.8, 0) 
+				var clearance_query := PhysicsRayQueryParameters3D.create(clearance_start, clearance_end)
 				clearance_query.exclude = [self.get_rid()]
 				
-				# If this ray hits anything, the gap is too small. Abort!
 				if space_state.intersect_ray(clearance_query):
 					return 
-				# -------------------------------
 				
 				can_vault_current_ledge = true
 				current_ledge_point = ledge_point
 				current_vault_height = vault_height
 				
-				# 2. THE DOT LOGIC: Only show if > 1.6m
 				if vault_height > 1.6 and vault_indicator:
-					var exact_edge = forward_result.position
+					var exact_edge: Vector3 = forward_result.get("position") as Vector3
 					exact_edge.y = ledge_point.y
 					
 					exact_edge += wall_normal * 0.05
@@ -1442,88 +1359,40 @@ func _scan_for_ledges() -> void:
 					vault_indicator.show()
 
 func _try_vault() -> bool:
-	# We no longer do math here! We just check the scanner's homework.
 	if can_vault_current_ledge:
-		var forward_dir = -cam.global_transform.basis.z
-		forward_dir.y = 0
+		var forward_dir: Vector3 = -cam.global_transform.basis.z
+		forward_dir.y = 0.0
 		forward_dir = forward_dir.normalized()
 		
-		vault_indicator.hide() # Turn off the dot immediately
+		vault_indicator.hide() 
 		_perform_vault(current_ledge_point, forward_dir, current_vault_height)
 		return true
 		
 	return false
 
-# (Keep your existing _perform_vault function here!)
-#func _try_vault() -> bool:
-	#var space_state = get_world_3d().direct_space_state
-	#
-	#var forward_dir = -cam.global_transform.basis.z
-	#forward_dir.y = 0
-	#forward_dir = forward_dir.normalized()
-	#
-	## 1. Cast from knee-height (0.5m) so we catch low boxes
-	#var detect_height = global_position + Vector3(0, 0.5, 0)
-	#var forward_query = PhysicsRayQueryParameters3D.create(detect_height, detect_height + forward_dir * 1.2)
-	#forward_query.exclude = [self.get_rid()] 
-	#
-	#var forward_result = space_state.intersect_ray(forward_query)
-	#
-	#if forward_result:
-		#var wall_normal = forward_result.normal
-		#if abs(wall_normal.y) > 0.2: return false
-		#
-		## 2. Shoot down from 2.0m (just above the player's 1.8m height)
-		#var down_start = forward_result.position - wall_normal * 0.4 + Vector3(0, 2.0, 0)
-		#var down_query = PhysicsRayQueryParameters3D.create(down_start, down_start + Vector3(0, -2.5, 0))
-		#down_query.exclude = [self.get_rid()]
-		#
-		#var down_result = space_state.intersect_ray(down_query)
-		#
-		#if down_result:
-			#var ledge_point = down_result.position
-			#var vault_height = ledge_point.y - global_position.y
-			#
-			## 3. Vault if it is taller than a stair step, but <= your full height (1.8m)
-			#if vault_height > MAX_STEP_HEIGHT and vault_height <= 1.8:
-				## Pass the height into the function so it knows how slow to go!
-				#_perform_vault(ledge_point, forward_dir, vault_height)
-				#return true
-				#
-	#return false
-
 func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: float) -> void:
 	is_vaulting = true
 	velocity = Vector3.ZERO
 	
-	# 1. DYNAMIC SPEED CALCULATION
-	# A 0.6m box will take ~0.45 seconds. A full 1.8m wall will take ~1.35 seconds.
-	var vault_time = clamp(vault_height * 0.75, 0.4, 1.5)
+	var vault_time: float = clampf(vault_height * 0.75, 0.4, 1.5)
 	
-	#var final_pos = target_point + (forward_dir * 0.4)
-	var final_pos = target_point + (forward_dir * 0.2)
+	var final_pos: Vector3 = target_point + (forward_dir * 0.2)
 	
-	var vault_tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
-	
-	# 2. PARALLEL MODE: Run the movement and the camera tilt at the exact same time
+	var vault_tween: Tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
 	vault_tween.set_parallel(true)
 	
-	# --- MOVEMENT ---
-	# Pull up to the ledge (takes 70% of the total vault time)
 	vault_tween.tween_property(self, "global_position:y", final_pos.y + 0.1, vault_time * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Pull forward onto the ledge (delayed until the pull-up is mostly done)
 	vault_tween.tween_property(self, "global_position", final_pos, vault_time * 0.3).set_trans(Tween.TRANS_LINEAR).set_delay(vault_time * 0.7)
 	
-	# --- CAMERA FEEL (THE STRAIN) ---
-	# Tilt the camera 5 degrees to simulate hauling your weight on one arm
-	var tilt_amount = deg_to_rad(5.0) # You can make this negative to tilt the other way!
+	var tilt_amount: float = deg_to_rad(5.0) 
 	vault_tween.tween_property(eyes, "rotation:z", tilt_amount, vault_time * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	# Snap the camera back to straight as you plant your feet
 	vault_tween.tween_property(eyes, "rotation:z", 0.0, vault_time * 0.5).set_delay(vault_time * 0.5)
 	
-	# 3. CHAIN MODE: Wait for all parallel animations to finish before unlocking the player
-	vault_tween.chain().tween_callback(func(): 
+	vault_tween.chain().tween_callback(func() -> void: 
 		is_vaulting = false
-		eyes.rotation.z = 0.0 # Safety lock to ensure the camera is perfectly straight
+		eyes.rotation.z = 0.0 
 	)
-	
+
+func _calculate_bob() -> float:
+	# This creates a smooth cycle between -1 and 1
+	return sin(headbob_time * headbob_frequency) * headbob_amplitude

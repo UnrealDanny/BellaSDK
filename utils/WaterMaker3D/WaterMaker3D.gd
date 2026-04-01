@@ -9,31 +9,44 @@ extends CSGBox3D
 
 static var last_frame_drew_underwater_effect : int = -999
 
-func _ready():
+func _ready() -> void:
 	self.process_priority = 999 # Call _process last to update move after any camera movement
 
 # Track the current camera with an area so we can check if it is inside the water
-func should_draw_camera_underwater_effect():
-	var camera := get_viewport().get_camera_3d() if get_viewport() else null
-	if not camera: return false
-	var aabb = self.global_transform * self.get_aabb().grow(0.025)
-	if not aabb.has_point(camera.global_position): return false
-	# Don't draw multiple overlays at once, incase 2 water bodies overlap
-	if last_frame_drew_underwater_effect == Engine.get_process_frames(): return false
+# CHANGED: void -> bool so we can actually return true/false
+func should_draw_camera_underwater_effect() -> bool: 
+	var viewport: Viewport = get_viewport()
+	# CASTING: Ensure 'camera' isn't a Variant
+	var camera: Camera3D = viewport.get_camera_3d() if viewport else null
+	
+	if not camera: 
+		return false
+		
+	# TYPING: Explicitly defining the AABB type
+	var aabb: AABB = (global_transform * get_aabb()).grow(0.025)
+	
+	if not aabb.has_point(camera.global_position): 
+		return false
+		
+	# TYPING: Ensure frame check is compared correctly
+	if last_frame_drew_underwater_effect == Engine.get_process_frames(): 
+		return false
 	
 	%CameraPosShapeCast3D.global_position = camera.global_position
 	%CameraPosShapeCast3D.force_shapecast_update()
-	var _camera_is_in_water_area3d := false
-	for i in %CameraPosShapeCast3D.get_collision_count():
+	
+	# TYPING: Typed iterator for the loop
+	for i: int in range(%CameraPosShapeCast3D.get_collision_count()):
 		if %CameraPosShapeCast3D.get_collider(i) == %SwimmableArea3D:
 			return true
+			
 	return false
 
-func _update_mesh():
+func _update_mesh() -> void:
 	if get_node_or_null("%CollisionShape3D"):
 		%CollisionShape3D.shape.size = self.size
 
-func _process(delta):
+func _process(delta: float) -> void:
 	_update_mesh()
 	if self.material is StandardMaterial3D:
 		if not Engine.is_editor_hint():

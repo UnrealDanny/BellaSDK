@@ -1,12 +1,12 @@
 extends Node3D
 #
-@onready var anim_player = $Anim
+@onready var anim_player := $Anim
 @onready var close_timer: Timer = $CloseTimer
 #
-var is_moving = false
-var is_open = false
-var player_detected = false
-var pending_open = false
+var is_moving := false
+var is_open := false
+var player_detected := false
+var pending_open := false
 
 func _on_detector_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player") and not is_open and not is_moving:
@@ -24,7 +24,7 @@ func _on_detector_body_exited(body: Node3D) -> void:
 		player_detected = false
 		pending_open = false
 	
-func open():
+func open() -> void:
 	is_moving = true
 	anim_player.play("Open")
 	await anim_player.animation_finished
@@ -37,7 +37,7 @@ func open():
 	elif close_timer.time_left == 0 and !player_detected:
 		close()
 
-func close():
+func close() -> void:
 	is_moving = true
 	anim_player.play_backwards("Open")
 	await anim_player.animation_finished

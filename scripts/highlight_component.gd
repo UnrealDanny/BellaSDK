@@ -12,7 +12,7 @@ var _is_suppressed: bool = false
 func _ready() -> void:
 	if Engine.is_editor_hint(): return
 	
-	var interact = get_parent().get_node_or_null("Interact_Component")
+	var interact := get_parent().get_node_or_null("Interact_Component")
 	if interact:
 		interact.focused.connect(_on_focus)
 		interact.unfocused.connect(_on_unfocus)

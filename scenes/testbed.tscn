@@ -49,14 +49,14 @@ script/source = "extends StaticBody3D
 
 @onready var prompt_label: Label3D = $Label3D
 
-func interact():
+func interact() -> void:
 	print(\"picked up the item!\")
 	queue_free()
 	
-func show_prompt():
+func show_prompt() -> void:
 	prompt_label.visible = true
 	
-func hide_prompt():
+func hide_prompt() -> void:
 	prompt_label.visible = false
 "
 
@@ -64,22 +64,22 @@ func hide_prompt():
 
 [sub_resource type="BoxMesh" id="BoxMesh_qfnet"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_0wf3h"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_o7her"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_arwuo"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_gp0ty"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_0wf3h")
+noise = SubResource("FastNoiseLite_o7her")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nefr7"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_o4kb0"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_0wf3h")
+noise = SubResource("FastNoiseLite_o7her")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xt2vi"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_oipxx"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -87,14 +87,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_arwuo")
+normal_texture = SubResource("NoiseTexture2D_gp0ty")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_nefr7")
+refraction_texture = SubResource("NoiseTexture2D_o4kb0")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_f3k8r"]
+[sub_resource type="Curve3D" id="Curve3D_j34x5"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.25461578, -4.3673134),
@@ -111,14 +111,14 @@ albedo_texture = SubResource("ViewportTexture_jhx03")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cmtte"]
 
-[sub_resource type="Curve3D" id="Curve3D_dpsb6"]
+[sub_resource type="Curve3D" id="Curve3D_0wf3h"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.470448, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_nqxml"]
+[sub_resource type="Curve3D" id="Curve3D_arwuo"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.454609, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -157,7 +157,7 @@ albedo_color = Color(1, 0, 0, 0.6)
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(-1.6391277e-07, 0, -0.9999999, 0, 1, 0, 0.9999999, 0, -1.6391277e-07, 33.79506, 5.2452087e-06, -11.42056)
+transform = Transform3D(0.82571447, 0, 0.56408805, 0, 1, 0, -0.56408805, 0, 0.82571447, -18.316944, 8.802429, -12.346851)
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -212,14 +212,10 @@ transform = Transform3D(4.1478043, 0, 0, 0, 1.9011474, 0, 0, 0, 1, -13.020535, 2
 [node name="FadeTrigger" parent="InteractiveObjects" unique_id=656862380 instance=ExtResource("8_ue7dh")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.83236, -0.17634273, -26.042675)
 
-[node name="ClimableRope" parent="InteractiveObjects" unique_id=1704021531 instance=ExtResource("9_jgmty")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.940326, 26.999271, -3.7289972)
-rope_length = 17.4
-
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_xt2vi")
+material = SubResource("StandardMaterial3D_oipxx")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(-2, 1.7484555e-07, 7.642742e-15, 0, -8.742278e-08, 2, 1.7484555e-07, 2, 8.742278e-08, 30.55747, 1.0914047, 9.622128)
@@ -234,7 +230,7 @@ DO NOT GO THERE!"
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_f3k8r")
+curve = SubResource("Curve3D_j34x5")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 32.936016, 2.3380308, -0.2335968)
@@ -303,11 +299,11 @@ ropes = Array[NodePath]([NodePath("../UniversalCable3D")])
 
 [node name="UniversalCable3D" parent="InteractiveObjects" unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_dpsb6")
+curve = SubResource("Curve3D_0wf3h")
 
 [node name="UniversalCable3D2" parent="InteractiveObjects" unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_nqxml")
+curve = SubResource("Curve3D_arwuo")
 
 [node name="Gate" parent="InteractiveObjects" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
@@ -1382,6 +1378,18 @@ size = Vector3(9.185547, 9.478546, 1)
 transform = Transform3D(1.9106855e-15, -1, -4.371139e-08, -4.371139e-08, -4.371139e-08, 1, -1, 0, -4.371139e-08, -11.322478, 17.266907, -4.197374)
 size = Vector3(9.185547, 8.185577, 1)
 
+[node name="CSGBox3D13" type="CSGBox3D" parent="Objects/Treehouse" unique_id=771459856]
+transform = Transform3D(1.9106855e-15, -1, -4.371139e-08, -4.371139e-08, -4.371139e-08, 1, -1, 0, -4.371139e-08, -11.660594, 17.266907, -10.493744)
+size = Vector3(4.1049805, 7.509346, 1)
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="Objects/Treehouse" unique_id=1870751410]
+transform = Transform3D(1.9106855e-15, -1, -4.371139e-08, -4.371139e-08, -4.371139e-08, 1, -1, 0, -4.371139e-08, -13.882572, 16.30026, -14.506826)
+size = Vector3(4.1049805, 5.0123634, 1)
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="Objects/Treehouse" unique_id=1414633999]
+transform = Transform3D(0.5903662, -0.8071355, -9.47529e-09, -4.371139e-08, -4.371139e-08, 1, -0.8071355, -0.5903662, -6.108674e-08, -16.977095, 23.185246, -12.481113)
+size = Vector3(1.1125488, 14.71769, 1)
+
 [node name="CSGBox3D8" type="CSGBox3D" parent="Objects/Treehouse" unique_id=45374486]
 transform = Transform3D(1.9106855e-15, -1, -4.371139e-08, -4.371139e-08, -4.371139e-08, 1, -1, 0, -4.371139e-08, -10.503261, 17.222107, -3.8335433)
 operation = 2
@@ -2123,3 +2131,16 @@ size = Vector3(8.329346, 1, 5.307129)
 
 [node name="PickableValve" parent="." unique_id=594279821 instance=ExtResource("50_nefr7")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.71226, 0.025005728, -13.08078)
+
+[node name="ClimableRope" parent="." unique_id=1704021531 instance=ExtResource("9_jgmty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.067865, 24.705517, -3.3210979)
+is_swingable = false
+label_offset_amount = 0.35
+rope_length = 15.0
+
+[node name="ClimableRope2" parent="." unique_id=1736568801 instance=ExtResource("9_jgmty")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.46974, 22.662626, -16.57901)
+swing_force = 100.0
+label_offset_amount = 0.35
+activate_slomo = true
+rope_length = 13.0

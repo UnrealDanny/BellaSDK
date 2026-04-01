@@ -18,12 +18,12 @@ func _process(_delta: float) -> void:
 	if not visible or not player: 
 		return
 
-	var fps = Engine.get_frames_per_second()
-	var vel = player.velocity
-	var speed = vel.length()
+	var fps := Engine.get_frames_per_second()
+	var vel := player.velocity
+	var speed := vel.length()
 
 	# --- YOUR ROBUST COLOR LOGIC ---
-	var fps_color = "green"
+	var fps_color := "green"
 	if fps >= 60:
 		fps_color = "green"
 	elif fps >= 30:
@@ -31,9 +31,9 @@ func _process(_delta: float) -> void:
 	else:
 		fps_color = "red"
 			
-	var is_pressing_keys = player.input_dir.length() > 0.1
+	var is_pressing_keys: bool = player.input_dir.length() > 0.1
 
-	var state = "IDLE"
+	var state := "IDLE"
 	if player.flying: state = "NOCLIP"
 	elif player.swimming: state = "SWIMMING"
 	elif player.on_zipline: state = "ZIPLINE"
@@ -47,21 +47,21 @@ func _process(_delta: float) -> void:
 	elif player.is_on_floor(): state = "WALKING" if is_pressing_keys else "IDLE"
 	else: state = "AIRBORNE"
 
-	var static_mem = OS.get_static_memory_usage()
+	var static_mem := OS.get_static_memory_usage()
 	# VRAM is the memory on your Graphics Card
-	var vram_usage = Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED)
+	var vram_usage := Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED)
 
 	# --- NEW BOOLEAN CHECKS ---
-	var flashlight_str = "ON" if player.flashlight.visible else "OFF"
-	var weapon_str = "NONE"
+	var flashlight_str := "ON" if player.flashlight.visible else "OFF"
+	var weapon_str := "NONE"
 	if player.get_node("%WeaponHolder").get_child_count() > 0:
 		weapon_str = player.get_node("%WeaponHolder").get_child(0).name
 
-	var text = ""
+	var text := ""
 	text += "--- ENGINE ---\n"
 	text += "[color=%s]FPS: %d[/color]\n" % [fps_color, fps]
 	text += "RAM: %s\n" % String.humanize_size(static_mem)
-	text += "VRAM: %s\n" % String.humanize_size(vram_usage)
+	text += "VRAM: %s\n" % String.humanize_size(int(vram_usage))
 
 	text += "\n--- PLAYER STATE ---\n"
 	text += "STATE: %s\n" % state

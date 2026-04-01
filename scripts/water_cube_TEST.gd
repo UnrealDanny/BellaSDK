@@ -1,16 +1,16 @@
 extends StaticBody3D
 
-@onready var water_wrapper = $WaterWrapper
+@onready var water_wrapper := $WaterWrapper
 
 var target_scale_y: float = 1.0
 var drain_speed: float = 0.5 # How fast the water lowers
 
 func leak_at(hit_pos: Vector3) -> void:
 	# 1. Convert global hit to local space
-	var local_hit = to_local(hit_pos)
+	var local_hit := to_local(hit_pos)
 
 	# 2. Grab the height of the bullet hole
-	var new_scale = local_hit.y
+	var new_scale := local_hit.y
 	
 	# --- NEW: THE FATAL SHOT CHECK ---
 	# If they shoot the very bottom (below 0.05 on the local Y), force it to 0

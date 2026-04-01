@@ -10,7 +10,7 @@ var is_powered_door: bool = false # Tracks if this is a puzzle door or normal do
 
 var is_on_cooldown: bool = false
 
-@export var open = false :
+@export var open := false :
 	set(v):
 		if v != open:
 			open = v
@@ -35,7 +35,7 @@ func _on_powered_off() -> void:
 	open = false
 
 # --- ANIMATION LOGIC ---
-func update_door():
+func update_door() -> void:
 	if not is_node_ready():
 		await ready
 		
@@ -49,14 +49,14 @@ func update_door():
 			animation_player.play_backwards("open")
 
 # --- MANUAL INTERACT LOGIC ---
-func interact():
+func interact() -> void:
 	if is_powered_door:
 		print("This door is locked by a mechanism!")
 		return # Block manual interaction if it requires a button!
 		
 	toggle_open()
 
-func toggle_open():
+func toggle_open(_player: CharacterBody3D = null) -> void:
 	if is_on_cooldown:
 		return
 		
