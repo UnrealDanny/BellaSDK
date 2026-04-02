@@ -15,12 +15,14 @@ What is cool: dark ambient is cool, Arnold is cool, war is cool (to be fair: I'm
 
 Anyway, all I wanna say is that "The client is always right" and if our modern AAA industry refuses to understand this simple principle and APOLOGIZE - SICKNESS BEGONE! We don't need you no more. Why keep wasting time on arguing with these oafs when we can do our own shit. Fun shit. Cool shit. It's both educational and much more productive even if it's mid. Our mid is 100x better than theirs. 
 
-And so I decided to create BellaSDK - a free Source/Hammer killer to help noobs quickly get into GD/LD using modern day tools. Hammer was a good hoor. Great memories but it's time to move on. Unity keeps shooting itself in the foot and Unreal is a huge pile of shit that is thousands of years old. Everybody pooped there: mammonths, seals, birds, the whales and the snail, and even Gary The Stinky Pooper. You know who I'm talking about.  
+And so I decided to create BellaSDK - a free Source/Hammer killer to help noobs quickly get into GD/LD using modern day tools. Hammer was a good hoor. A total beast! Great memories but it's time to move on. Unity keeps shooting itself in the foot and Unreal is a huge pile of shit that is thousands of years old. Everybody pooped there: mammonths, seals, birds, the whales and the snail, and even Gary The Stinky Pooper. You know who I'm talking about.  
 
 Back to BellaSDK: I want this sweet little princess to have everything: all the gameplay mechanics such as boom-sticks, interactions, movements, AI, physics, puzzles, dialogue systems, handholding, you name it. 
 
 Besides that I also want textures, models (especially barrels), sounds, animations, VFX, elves, good and easy-to-use scripting system, doors that always open AWAY from you (if you are into that sort of thing)! 
 
 As for the story: I asked myself "what's the most honest thing?" A cute, lost, vulnerable girl in a dire situation, survivng against insurmountable odds because she's dedicated, confident, witty and (most importantly) has a good soul. That's HONEST! Always has been. 
+
+As someone from Igromania Magazine once said: HL was created by enthusiasts. HL2 - by professionals. Based on that logic HL3 is going to be created by old farts who couldn't care less. The real HL3 can only be created by US - The People. 
 
 And most importantly: I need your help. Take it, critisize it, send feedback, give advice. Just please don't ignore me.
