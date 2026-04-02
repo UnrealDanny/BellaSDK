@@ -14,3 +14,5 @@ bakes/
 .godot/
 
 addons/gemini_copilot/
+
+.vscode/

@@ -317,3 +317,10 @@ double_sided = false
 texture = ExtResource("7_cw2d6")
 
 [node name="UI" parent="." unique_id=1944889716 groups=["player"] instance=ExtResource("2_k2mo6")]
+
+[node name="WaterDetector" type="Area3D" parent="." unique_id=1554540487]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="WaterDetector" unique_id=1446250573]
+
+[connection signal="area_entered" from="WaterDetector" to="." method="_on_water_detector_area_entered"]
+[connection signal="area_exited" from="WaterDetector" to="." method="_on_water_detector_area_exited"]

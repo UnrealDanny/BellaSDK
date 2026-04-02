@@ -35,7 +35,7 @@ radial_segments = 16
 rings = 0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5yorj"]
-size = Vector3(0.3, 0.01, 0.3)
+size = Vector3(0.6, 0.06, 0.6)
 
 [node name="PickableValve" unique_id=594279821 instance=ExtResource("1_a558m")]
 continuous_cd = true

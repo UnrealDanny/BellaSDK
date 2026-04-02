@@ -24,25 +24,22 @@ func get_character_hovered_by_cur_camera() -> CharacterBody3D:
 	return null
 
 func _process(_delta: float) -> void:
-	# 1. Find stale hovers safely
-	var characters_to_remove := []
-	for character: CharacterBody3D in characters_hovering.keys():
-		if Engine.get_process_frames() - characters_hovering[character] > 1:
-			characters_to_remove.append(character)
-			
-	# 2. Erase them
-	for character: CharacterBody3D in characters_to_remove:
-		characters_hovering.erase(character)
-		
-	# 3. Handle the Outline Shader Signals
-	var should_be_focused := characters_hovering.size() > 0
+	# Instead of dictionary management every frame, 
+	# we only run the focus/unfocus logic when the state actually changes.
 	
-	# If someone is looking, and we aren't glowing yet, start glowing!
-	if should_be_focused and not is_currently_focused:
-		is_currently_focused = true
-		focused.emit()
-		
-	# If no one is looking, but we are still glowing, stop glowing!
-	elif not should_be_focused and is_currently_focused:
-		is_currently_focused = false
-		unfocused.emit()
+	# Check if the last hover update was within the current or previous frame
+	var is_hovered := false
+	var current_frame := Engine.get_process_frames()
+	
+	for character: CharacterBody3D in characters_hovering:
+		if current_frame - characters_hovering[character] <= 1:
+			is_hovered = true
+			break
+			
+	# Handle the Outline Shader Signals only when needed
+	if is_hovered != is_currently_focused:
+		is_currently_focused = is_hovered
+		if is_currently_focused:
+			focused.emit()
+		else:
+			unfocused.emit()

@@ -45,7 +45,7 @@ const sprint_jump_velocity 	:= 5
 # INPUT VARS
 
 const mouse_sensitivity = 0.5
-var direction 			= Vector3.ZERO
+var direction 			:= Vector3.ZERO
 
 # HEADBOB VARS
 const head_bobbing_sprinting_speed 	:= 22.0
@@ -58,18 +58,18 @@ const head_bobbing_walking_intensity 	:= 0.1
 const head_bobbing_crouching_intensity 	:= 0.08
 const head_bobbing_idle_intensity 		:= 0.02
 
-var head_bobbing_vector 			= Vector2.ZERO
-var head_bobbing_index 				= 0.0
-var head_bobbing_current_intensity 	= 0.0
+var head_bobbing_vector 			:= Vector2.ZERO
+var head_bobbing_index 				:= 0.0
+var head_bobbing_current_intensity 	:= 0.0
 
 # MOVEMENT VARS
-var lerp_speed 			= 15.0
-var air_lerp_speed 		= 3.0
-var crouching_depth		= -0.7
-var last_velocity 		= Vector3.ZERO
+var lerp_speed 			:= 15.0
+var air_lerp_speed 		:= 3.0
+var crouching_depth		:= -0.7
+var last_velocity 		:= Vector3.ZERO
 
-var CameraTiltLeft 		= 3.0
-var CameraTiltRight 	= -3.0
+var CameraTiltLeft 		:= 3.0
+var CameraTiltRight 	:= -3.0
 
 ## FLASHLIGHT VARS
 var flashlight_rotation_smoothness := 10.0
@@ -140,7 +140,7 @@ func _physics_process(delta: float) -> void:
 # ---------------------------------------------------------
 
 func determine_state(delta: float) -> void:
-	var target_fov = base_fov
+	var target_fov := base_fov
 	# 1. Overrides: If flying, ignore all normal ground/water logic
 	if current_state == State.FLYING:
 		# (You would toggle flying off via your debug menu input)
@@ -163,7 +163,7 @@ func determine_state(delta: float) -> void:
 		return
 		
 	# 5. Ground States (Depends on Input)
-	var input_dir = Input.get_vector("left", "right", "forward", "backward")
+	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	
 	if input_dir == Vector2.ZERO:
 		current_state = State.IDLE
@@ -189,7 +189,7 @@ func process_ground_movement(delta: float) -> void:
 	else: 
 		velocity.y = -0.1
 		
-	var input_dir = Input.get_vector("left", "right", "forward", "backward")
+	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:
@@ -204,7 +204,7 @@ func process_in_air(delta: float) -> void:
 	# Always apply full gravity
 	velocity.y -= gravity * delta
 	
-	var input_dir = Input.get_vector("left", "right", "forward", "backward")
+	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	# Air control (you can change current_speed here if you want less control in air)
@@ -217,7 +217,7 @@ func process_in_air(delta: float) -> void:
 
 func process_flying(delta: float) -> void:
 	# No gravity. Move freely based on the camera's look direction (Eyes node)
-	var input_dir = Input.get_vector("left", "right", "forward", "backward")
+	var input_dir := Input.get_vector("left", "right", "forward", "backward")
 	direction = (eyes.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:

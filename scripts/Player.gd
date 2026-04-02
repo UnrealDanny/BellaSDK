@@ -20,6 +20,12 @@ extends CharacterBody3D
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
 @onready var hold_position: Marker3D = $Head/Eyes/Camera3D/HoldPosition
 
+# --- ADD TO THE TOP OF Player.gd (Node Caching) ---
+@onready var weapon_holder: Node3D = %WeaponHolder
+@onready var stairs_below_cast: RayCast3D = %StairsBelowCast
+@onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
+# Note: interact_shapecast is already @onready in your code
+
 @export var walking_speed: float = 5.0
 @export var sprinting_speed: float = 6.5
 @export var crouching_speed: float = 3.0
@@ -72,10 +78,6 @@ var head_bobbing_vector: Vector2 = Vector2.ZERO
 var head_bobbing_index: float = 0.0
 var head_bobbing_current_intensity: float = 0.0
 
-var headbob_time: float = 0.0
-var headbob_frequency: float = 2.4 # How fast the bob is
-var headbob_amplitude: float = 0.08 # How high the bob goes
-
 # MOVEMENT VARS
 var lerp_speed: float = 15.0
 var air_lerp_speed: float = 3.0
@@ -88,16 +90,16 @@ const CameraTiltRight: float = -3.0
 var stair_offset: float = 0.0
 var headbob_offset: Vector2 = Vector2.ZERO
 
+# --- ADD TO THE MOVEMENT VARS SECTION (Optimization) ---
+var _motion_params := PhysicsTestMotionParameters3D.new()
+var _motion_result := PhysicsTestMotionResult3D.new()
+
 ## FLASHLIGHT VARS
 var flashlight_rotation_smoothness: float = 10.0
 var flashlight_position_smoothness: float = 10.0
 
 var default_flashlight_pos: Vector3 = Vector3.ZERO
 var sway_target: Vector2 = Vector2.ZERO
-
-var bob_freq: float = 2.0
-var bob_amp: float = 1.0
-var bob_time: float = 0.0
 
 # SPRINT FOV VARS
 var zoom_fov: float = 10.0
@@ -123,7 +125,6 @@ var rope_offset: float = 0.0
 const ROPE_CLIMB_SPEED: float = 1.0
 var rope_local_grab_dir := Vector3.ZERO
 var rope_lerp_weight: float = 0.0
-
 
 # SWIM VARS
 var swim_up_speed: float = 5.0
@@ -155,8 +156,11 @@ var is_zipline_sliding: bool = false
 var is_zipline_transitioning: bool = false
 var zipline_grace_timer: float = 0.0
 
-var ZIPLINE_SLIDE_SPEED: float = 18.0
-var ZIPLINE_HANG_OFFSET: float = 1.9 
+var ZIPLINE_SLIDE_SPEED: float = 8.0
+var ZIPLINE_HANG_OFFSET: float = 2.0 # Adjust this until your hands line up with the rope
+
+var zipline_speed := 30.0 # How fast you move
+var zipline_gravity_pull := 5.0 # How much the slope pulls you down
 
 # MONKE VARS
 var current_monkey_bar_path: Path3D = null
@@ -179,6 +183,7 @@ var current_vault_height: float = 0.0
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
 var is_using_zoom: bool = false
+var overlapping_water_areas: Array[Area3D] = []
 
 # --------------------------------------
 # MAIN SCRIPT
@@ -238,14 +243,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			held_object.throw(throw_direction.normalized() * throw_force)
 			held_object = null
 			
-			var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 			if weapon_holder:
 				weapon_holder.show()
 				
 		else:
-			var holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
-			if holder and holder.get_child_count() > 0:
-				var current_weapon: Node = holder.get_child(0)
+			if weapon_holder and weapon_holder.get_child_count() > 0:
+				var current_weapon: Node = weapon_holder.get_child(0)
 				if current_weapon.has_method("shoot"):
 					# Safe call bypasses compiler errors for missing methods on base Node
 					current_weapon.call("shoot", cam)
@@ -268,15 +271,14 @@ func is_surface_too_steep(normal: Vector3) -> bool:
 	return normal.angle_to(Vector3.UP) > self.floor_max_angle
 	
 func _run_body_test_motion(from: Transform3D, motion: Vector3, result: PhysicsTestMotionResult3D = null) -> bool:
-	if not result: result = PhysicsTestMotionResult3D.new()
-	var params := PhysicsTestMotionParameters3D.new()
-	params.from = from
-	params.motion = motion
-	return PhysicsServer3D.body_test_motion(self.get_rid(), params, result)
+	_motion_params.from = from
+	_motion_params.motion = motion
+	# Using the PhysicsServer directly is faster than body_test_motion on the node
+	return PhysicsServer3D.body_test_motion(self.get_rid(), _motion_params, result if result else _motion_result)
 
 func _snap_down_to_stairs_check() -> void:
 	var did_snap: bool = false
-	var floor_below: bool = %StairsBelowCast.is_colliding() and not is_surface_too_steep(%StairsBelowCast.get_collision_normal())
+	var floor_below: bool = stairs_below_cast.is_colliding() and not is_surface_too_steep(stairs_below_cast.get_collision_normal())
 	var was_on_floor_last_frame: bool = Engine.get_physics_frames() - _last_frame_was_on_floor == 1
 	
 	if not is_on_floor() and velocity.y <= 0 and (was_on_floor_last_frame or _snapped_to_stairs_last_frame) and floor_below:
@@ -318,10 +320,10 @@ func _snap_up_stairs_check(delta: float) -> bool:
 		
 		if step_height > MAX_STEP_HEIGHT or step_height <= 0.01 or (down_check_result.get_collision_point() - self.global_position).y > MAX_STEP_HEIGHT: return false
 		
-		%StairsAheadCast.global_position = down_check_result.get_collision_point() + Vector3(0, MAX_STEP_HEIGHT, 0) + expected_move_motion.normalized() * 0.1
-		%StairsAheadCast.force_raycast_update()
+		stairs_ahead_cast.global_position = down_check_result.get_collision_point() + Vector3(0, MAX_STEP_HEIGHT, 0) + expected_move_motion.normalized() * 0.1
+		stairs_ahead_cast.force_raycast_update()
 		
-		if %StairsAheadCast.is_colliding() and not is_surface_too_steep(%StairsAheadCast.get_collision_normal()):
+		if stairs_ahead_cast.is_colliding() and not is_surface_too_steep(stairs_ahead_cast.get_collision_normal()):
 			var old_pos_y: float = self.global_position.y
 			self.global_position = step_pos_with_clearance.origin + down_check_result.get_travel()
 			apply_floor_snap()
@@ -383,7 +385,7 @@ func _physics_process(delta: float) -> void:
 		_handle_ladder_physics(delta)
 	elif on_monkey_bars:
 		_handle_monkey_bars_physics(delta)
-	elif on_zipline:
+	elif on_zipline and not is_zipline_transitioning:
 		_handle_zipline_physics(delta)
 	elif current_rope != null:
 		_handle_rope_physics(delta)
@@ -423,7 +425,6 @@ func _process(delta: float) -> void:
 		if held_object:
 			held_object.drop()
 			held_object = null
-			var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 			if weapon_holder:
 				weapon_holder.show()
 				
@@ -435,7 +436,6 @@ func _process(delta: float) -> void:
 				held_object = parent_node as PickableObject
 				held_object.pick_up(hold_position, self)
 				
-				var weapon_holder: Node3D = get_node_or_null("%WeaponHolder") as Node3D
 				if weapon_holder:
 					weapon_holder.hide()
 
@@ -460,54 +460,28 @@ func _process(delta: float) -> void:
 	
 func update_flashlight(delta: float) -> void:
 	var target_pos: Vector3 = default_flashlight_pos 
-	var current_f: float = 0.0
-	var current_a: float = 0.0
+	var light_intensity: float = head_bobbing_current_intensity * 0.15
+
+	# Flashlight bobs exactly like the head (synced)
+	target_pos.x += sin(head_bobbing_index / 2.0) * (light_intensity * 1.5)
+	target_pos.y += sin(head_bobbing_index) * light_intensity
+
+	# Smooth the positional movement and rotation (Sway/Lag)
+	flash_light_node.position = flash_light_node.position.lerp(target_pos, delta * flashlight_position_smoothness)
 	
-	if is_on_floor():
-		var is_actually_moving: bool = velocity.length() > 0.1
-		
-		if is_actually_moving:
-			if sprinting:
-				current_f = bob_freq * 2.5
-				current_a = bob_amp * 0.2
-			elif crouching:
-				current_f = bob_freq * 3.0
-				current_a = bob_amp * 0.15
-			elif walking:
-				current_f = bob_freq
-				current_a = bob_amp * 0.20
-		else: 
-			if crouching:
-				current_f = bob_freq * 0.3 
-				current_a = bob_amp * 0.1  
-			else:
-				current_f = bob_freq * 0.5
-				current_a = bob_amp * 0.21
-
-	if current_f > 0:
-		var speed_factor: float = velocity.length()
-		if speed_factor < 0.1:
-			bob_time += delta * 2.0 * current_f
-		else:
-			bob_time += delta * speed_factor * current_f
-			
-		target_pos.x += cos(bob_time * 0.5) * current_a
-		target_pos.y += sin(bob_time) * current_a
-	else:
-		bob_time = 0.0
-
+	# Calculate target rotation for sway (when looking around)
 	var max_sway: float = 150.0 
 	sway_target.x = clampf(sway_target.x, -max_sway, max_sway)
 	sway_target.y = clampf(sway_target.y, -max_sway, max_sway)
-
+	
 	var target_rot := Vector3(
 		-sway_target.y * (sway_amount * -0.002), 
 		-sway_target.x * (sway_amount * -0.002), 
 		0.0
 	)
-
-	flash_light_node.position = flash_light_node.position.lerp(target_pos, delta * flashlight_position_smoothness)
 	flash_light_node.rotation = flash_light_node.rotation.lerp(target_rot, delta * flashlight_rotation_smoothness)
+	
+	# Dampen the sway target back to zero
 	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
 
 func get_interactable_component_at_shapecast() -> Interact_Component:
@@ -678,31 +652,27 @@ func _on_rope_released(target_forward: Vector3 = Vector3.ZERO) -> void:
 # WATER MECHANICS
 # -----------------------------
 func _handle_water_physics(delta: float) -> bool:
-	var in_water: bool = false
-	var water_areas: Array[Node] = get_tree().get_nodes_in_group("water_area")
+	# 1. Faster check: only true if the detector is inside a water area
+	var in_water: bool = not overlapping_water_areas.is_empty()
 	
-	for node: Node in water_areas:
-		if node is Area3D:
-			var area: Area3D = node as Area3D
-			if area.overlaps_body(self):
-				in_water = true
-				break
-			
+	# 2. Only do the expensive "head in water" check if we are actually in water
 	head_in_water = false
-	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
-	var query := PhysicsPointQueryParameters3D.new()
-	var chin_offset := Vector3(0.0, 0.2, 0.0)
-	query.position = cam.global_position - chin_offset
-	query.collide_with_areas = true
-	query.collide_with_bodies = false
-	
-	var results: Array[Dictionary] = space_state.intersect_point(query)
-	for result: Dictionary in results:
-		var collider: Object = result.get("collider")
-		if collider is Node and collider.is_in_group("water_area"):
-			head_in_water = true
-			break
-			
+	if in_water:
+		var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+		var query := PhysicsPointQueryParameters3D.new()
+		var chin_offset := Vector3(0.0, 0.2, 0.0)
+		query.position = cam.global_position - chin_offset
+		query.collide_with_areas = true
+		query.collide_with_bodies = false
+		
+		var results: Array[Dictionary] = space_state.intersect_point(query)
+		for result: Dictionary in results:
+			var collider: Object = result.get("collider")
+			# Check if the collider is one of our known water areas
+			if collider is Area3D and collider.is_in_group("water_area"):
+				head_in_water = true
+				break
+				
 	var target_energy: float = base_light_energy * 4.0 if head_in_water else base_light_energy
 	var target_range: float = base_spot_range * 2.0 if head_in_water else base_spot_range
 
@@ -711,6 +681,10 @@ func _handle_water_physics(delta: float) -> bool:
 		flashlight.spot_range = lerpf(flashlight.spot_range, target_range, 4.0 * delta)
 			
 	if not in_water:
+		# Clean up swimming states if we just left the water
+		if swimming:
+			swimming = false
+			# Reset anything else needed here
 		return false
 
 	walking = false
@@ -814,7 +788,7 @@ func toggle_noclip() -> void:
 		
 	Events.noclip_toggled.emit(flying)
 
-func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vector3, start_at_end: bool) -> void:
+func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vector3) -> void:
 	current_zipline = zipline_ref
 	zipline_start = start_pos
 	zipline_end = end_pos
@@ -822,28 +796,34 @@ func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vecto
 	zipline_length = zipline_start.distance_to(zipline_end)
 	
 	on_zipline = true
-	zipline_grace_timer = 0.0 # <--- RESET THE TIMER HERE
-	is_auto_sliding = false
+	zipline_grace_timer = 0.0 
 	is_zipline_transitioning = true
 	
-	# Start at 0.0 (Point A) or 1.0 (Point B)
-	zipline_progress = 1.0 if start_at_end else 0.0
+	var line_vec := zipline_end - zipline_start
+	var player_vec := global_position - zipline_start
+	var t := player_vec.dot(line_vec) / line_vec.length_squared()
+	zipline_progress = clampf(t, 0.0, 1.0)
+	
+	var is_start_highest: bool = zipline_start.y > zipline_end.y
+	var top_progress: float = 0.0 if is_start_highest else 1.0
+	var grabbed_at_top: bool = absf(zipline_progress - top_progress) < 0.10
+	
+	is_auto_sliding = grabbed_at_top 
 	
 	velocity = Vector3.ZERO
 	scale = Vector3.ONE 
 
-	# Calculate where the player should actually be hanging
-	var initial_world_pos := zipline_start.lerp(zipline_end, zipline_progress)
-	var real_target_pos: Vector3 = initial_world_pos - Vector3(0, ZIPLINE_HANG_OFFSET, 0)
-	
-	# Determine rotation (Face Point B if at Start, Face Point A if at End)
-	var face_dir := zipline_dir if not start_at_end else -zipline_dir
-	var target_quat := Basis.looking_at(face_dir, Vector3.UP).get_rotation_quaternion()
+	# --- HANG OFFSET APPLIED HERE ---
+	var real_target_pos := zipline_start.lerp(zipline_end, zipline_progress)
+	real_target_pos.y -= ZIPLINE_HANG_OFFSET
 
-	# THE TWEEN
 	var attach_tween := create_tween().set_parallel(true)
 	attach_tween.tween_property(self, "global_position", real_target_pos, 0.25).set_trans(Tween.TRANS_SINE)
-	attach_tween.tween_property(self, "quaternion", target_quat, 0.25).set_trans(Tween.TRANS_SINE)
+	
+	if grabbed_at_top:
+		var downhill_dir := zipline_dir if is_start_highest else -zipline_dir
+		var target_quat := Basis.looking_at(downhill_dir, Vector3.UP).get_rotation_quaternion()
+		attach_tween.tween_property(self, "quaternion", target_quat, 0.25).set_trans(Tween.TRANS_SINE)
 
 	attach_tween.set_parallel(false)
 	attach_tween.tween_callback(func() -> void:
@@ -872,37 +852,6 @@ func _on_zipline_released() -> void:
 	
 	# Reset camera shake/tilt
 	detach_tween.tween_property(eyes, "rotation:z", 0.0, 0.15)
-	
-#func _on_zipline_grabbed(zipline_node: Node, start_pos: Vector3, end_pos: Vector3) -> void:
-	#current_zipline = zipline_node as Node3D
-	#zipline_start = start_pos
-	#zipline_end = end_pos
-	#velocity = Vector3.ZERO
-	#on_zipline = true
-#
-	#zipline_dir = (zipline_end - zipline_start).normalized()
-	#zipline_length = zipline_start.distance_to(zipline_end)
-#
-	#var grab_point: Vector3 = Geometry3D.get_closest_point_to_segment(cam.global_position, zipline_start, zipline_end)
-	#var grab_distance: float = zipline_start.distance_to(grab_point)
-	#zipline_progress = grab_distance / zipline_length
-	#zipline_progress = clampf(zipline_progress, 0.05, 0.95)
-#
-	#is_zipline_sliding = absf(zipline_dir.y) > 0.15
-#
-	#if is_zipline_sliding:
-		#var mid_point_y: float = (zipline_start.y + zipline_end.y) / 2.0
-		#is_auto_sliding = global_position.y > mid_point_y
-	#else:
-		#is_auto_sliding = false
-		#
-#func _on_zipline_released() -> void:
-	#on_zipline = false
-	#velocity = (cam.global_transform.basis.z * -3.0) + Vector3(0, 1.5, 0)
-	#
-	#if current_zipline and current_zipline.has_method("on_player_released"):
-		#current_zipline.call("on_player_released")
-		#current_zipline = null
 	
 func _on_debug_menu_toggled(is_open: bool) -> void:
 	is_menu_open = is_open
@@ -1008,51 +957,59 @@ func _handle_zipline_physics(delta: float) -> void:
 	if not on_zipline or is_zipline_transitioning:
 		return
 		
-	# 1. Update the grace timer
 	zipline_grace_timer += delta
 		
 	sprinting = false
 	crouching = false
 	walking = false
 
-	# --- YOUR EXISTING MOVEMENT LOGIC ---
-	var slide_direction: float = 1.0 if zipline_dir.y < 0 else -1.0
-	var downhill_vector: Vector3 = zipline_dir * slide_direction
-
-	var look_forward: Vector3 = -cam.global_transform.basis.z
-	look_forward.y = 0.0
-	look_forward = look_forward.normalized()
-
-	if not is_auto_sliding:
-		var looking_downhill: bool = look_forward.dot(downhill_vector) > 0.4
-		if Input.is_action_just_pressed("forward") and looking_downhill:
-			is_auto_sliding = true
-
+	var downhill_sign := 1.0 if zipline_dir.y < 0 else -1.0
+	var downhill_vector := zipline_dir * downhill_sign
+	
+	var look_forward := -cam.global_transform.basis.z
+	var look_dot_downhill := look_forward.dot(downhill_vector)
+	
+	var is_looking_downhill: bool = look_dot_downhill > 0.1
+	var is_looking_uphill: bool = look_dot_downhill < -0.1
+	
+	var is_pressing_w: bool = input_dir.y < -0.1
+	var is_pressing_s: bool = input_dir.y > 0.1
+	
+	var frame_movement: float = 0.0
+	
 	if is_auto_sliding:
-		zipline_progress += slide_direction * (ZIPLINE_SLIDE_SPEED / zipline_length) * delta
+		var fast_slide_speed := ZIPLINE_SLIDE_SPEED * 1.8
+		frame_movement = downhill_sign * (fast_slide_speed / zipline_length) * delta
 	else:
-		var move_input: float = -input_dir.y 
-		if move_input != 0.0:
-			var requested_dir: Vector3 = look_forward * move_input
-			var move_amount: float = requested_dir.dot(zipline_dir)
-			current_speed = MONKEY_BAR_SPEED
-			zipline_progress += move_amount * (current_speed / zipline_length) * delta
+		if is_looking_downhill and is_pressing_w:
+			is_auto_sliding = true 
+		else:
+			var climb_speed := 4.0 
+			var climb_amount := (climb_speed / zipline_length) * delta
+			
+			if is_looking_uphill and is_pressing_w:
+				frame_movement = -downhill_sign * climb_amount
+			elif is_looking_downhill and is_pressing_s:
+				frame_movement = -downhill_sign * climb_amount
+			elif is_looking_uphill and is_pressing_s:
+				frame_movement = downhill_sign * climb_amount
 
-	# --- POSITION UPDATE ---
+	zipline_progress += frame_movement
 	zipline_progress = clampf(zipline_progress, 0.0, 1.0)
+
+	# --- HANG OFFSET APPLIED HERE ---
 	var target_pos: Vector3 = zipline_start.lerp(zipline_end, zipline_progress)
 	target_pos.y -= ZIPLINE_HANG_OFFSET
 	
 	global_position = target_pos
 	velocity = Vector3.ZERO
 
-	# --- 2. IMPROVED EXIT CONDITIONS ---
-	# Only auto-release if the grace period is over (0.5 seconds)
+	_handle_headbob(delta)
+
 	if zipline_grace_timer > 0.5:
 		if zipline_progress >= 0.999 or zipline_progress <= 0.001:
 			_on_zipline_released()
 	
-	# Manual exit (Jump/Crouch) always works, even during grace period
 	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
 		_on_zipline_released()
 	
@@ -1221,60 +1178,42 @@ func _handle_noclip_physics(delta: float) -> void:
 			eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
 func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
-	var is_climbing_rope: bool = false
-	var climb_factor: float = 0.0
-	var bob_amount: float = _calculate_bob() * intensity_modifier
-	cam.transform.origin.y = bob_amount
+	var is_climbing_rope: bool = (current_rope != null)
+	var is_zipline_moving: bool = (on_zipline and not is_auto_sliding and absf(input_dir.y) > 0.1)
 	
-	if input_dir.length() > 0.1:
-		headbob_time += delta
-	else:
-		# Smoothly reset the bob to center when stopping
-		headbob_time = lerpf(headbob_time, 0.0, delta * 10.0)
-	
-	# 3. Apply to camera with a lerp to keep it buttery smooth
-	cam.transform.origin.y = lerpf(cam.transform.origin.y, bob_amount, delta * 15.0)
-	
-	if current_rope != null:
-		var look_dir := -cam.global_transform.basis.z
-		var climb_input: float = (look_dir * -input_dir.y).y
-		if absf(climb_input) > 0.1:
-			is_climbing_rope = true
-			climb_factor = absf(climb_input)
-
+	# Calculate how fast to increment the bob index based on state
+	var bob_speed: float = head_bobbing_idle_speed
 	if is_climbing_rope:
-		head_bobbing_current_intensity = head_bobbing_walking_intensity * 1.5 
-		head_bobbing_index += ROPE_CLIMB_SPEED * climb_factor * delta * 12.6
-	elif sprinting and input_dir != Vector2.ZERO:
-		if absf(input_dir.y) > 0.1:
-			head_bobbing_current_intensity = head_bobbing_sprinting_intensity * 1.2
-			head_bobbing_index += head_bobbing_sprinting_speed * 1.2 * delta
-		else:
-			head_bobbing_current_intensity = head_bobbing_walking_intensity * 0.5
-			head_bobbing_index += head_bobbing_walking_speed * delta
-	elif walking and input_dir != Vector2.ZERO:
+		bob_speed = 12.6 # Standardized rope speed
+		head_bobbing_current_intensity = head_bobbing_walking_intensity * 1.5
+	elif is_zipline_moving:
+		bob_speed = 6.0
 		head_bobbing_current_intensity = head_bobbing_walking_intensity
-		head_bobbing_index += head_bobbing_walking_speed * delta
+	elif sprinting and input_dir != Vector2.ZERO:
+		bob_speed = head_bobbing_sprinting_speed
+		head_bobbing_current_intensity = head_bobbing_sprinting_intensity
+	elif walking and input_dir != Vector2.ZERO:
+		bob_speed = head_bobbing_walking_speed
+		head_bobbing_current_intensity = head_bobbing_walking_intensity
 	elif crouching and input_dir != Vector2.ZERO:
+		bob_speed = head_bobbing_crouching_speed
 		head_bobbing_current_intensity = head_bobbing_crouching_intensity
-		head_bobbing_index += head_bobbing_crouching_speed * 1.4 * delta
 	else:
 		head_bobbing_current_intensity = head_bobbing_idle_intensity
-		head_bobbing_index += head_bobbing_idle_speed * delta
-		
-	var target_bob_y: float = 0.0
-	var target_bob_x: float = 0.0
-	
-	if is_on_floor() or current_rope != null:
-		head_bobbing_vector.y = sin(head_bobbing_index)
-		head_bobbing_vector.x = sin(head_bobbing_index / 2.0) + 0.5
-		
-		target_bob_y = head_bobbing_vector.y * (head_bobbing_current_intensity / 2.0)
-		target_bob_x = head_bobbing_vector.x * head_bobbing_current_intensity
 
+	# Increment the shared timer
+	head_bobbing_index += bob_speed * delta * (1.0 if input_dir.length() > 0.1 or is_zipline_moving or is_climbing_rope else 0.5)
+
+	# Calculate actual offsets (Sine waves)
+	# Vector2(X = Side-to-Side, Y = Up-and-Down)
+	var target_bob_y: float = sin(head_bobbing_index) * (head_bobbing_current_intensity / 2.0) * intensity_modifier
+	var target_bob_x: float = sin(head_bobbing_index / 2.0) * head_bobbing_current_intensity * intensity_modifier
+
+	# Smooth the transition to the new bob position
 	headbob_offset.y = lerpf(headbob_offset.y, target_bob_y, delta * lerp_speed)
 	headbob_offset.x = lerpf(headbob_offset.x, target_bob_x, delta * lerp_speed)
 
+	# Apply to camera container (Eyes)
 	eyes.position.y = headbob_offset.y + stair_offset
 	eyes.position.x = headbob_offset.x
 
@@ -1393,6 +1332,9 @@ func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: f
 		eyes.rotation.z = 0.0 
 	)
 
-func _calculate_bob() -> float:
-	# This creates a smooth cycle between -1 and 1
-	return sin(headbob_time * headbob_frequency) * headbob_amplitude
+func _on_water_detector_area_entered(area: Area3D) -> void:
+	if area.is_in_group("water_area"):
+		overlapping_water_areas.append(area)
+
+func _on_water_detector_area_exited(area: Area3D) -> void:
+	overlapping_water_areas.erase(area)

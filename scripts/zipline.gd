@@ -31,10 +31,10 @@ func _on_interact_component_interacted(player: CharacterBody3D) -> void:
 		var point_b := to_global(curve.get_point_position(curve.get_point_count() - 1))
 		
 		# Determine if the player is closer to the start or the end
-		var start_at_end : bool = player.global_position.distance_to(point_a) > player.global_position.distance_to(point_b)
+		#var start_at_end : bool = player.global_position.distance_to(point_a) > player.global_position.distance_to(point_b)
 
 		# We always pass Point A and Point B in the same order so 'zipline_dir' stays consistent
-		player._on_zipline_grabbed(self, point_a, point_b, start_at_end)
+		player._on_zipline_grabbed(self, point_a, point_b)
 		
 		if highlight_component:
 			highlight_component.suppress(true)

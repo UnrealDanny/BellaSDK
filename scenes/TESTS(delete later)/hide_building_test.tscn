@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://cojcb8srg0tkn"]
+
+[node name="HideBuildingTEST" type="Node3D" unique_id=531998332]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=229477654]
+size = Vector3(30, 50, 20)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="CSGBox3D" unique_id=1422708434]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 16.158897, 9.264967)
+operation = 2
+size = Vector3(10, 10, 10)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="CSGBox3D" unique_id=1776026341]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 16.158897, 9.264967)
+operation = 2
+size = Vector3(10, 10, 10)
+
+[node name="CSGCylinder3D" type="CSGCylinder3D" parent="." unique_id=968059512]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.46, -15, 10.359)
+radius = 3.0
+height = 20.0
+sides = 64
+
+[node name="CSGCylinder3D2" type="CSGCylinder3D" parent="." unique_id=1286141988]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.54, -15, 10.359)
+radius = 3.0
+height = 20.0
+sides = 64
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="." unique_id=1451438899]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 11.529276)
+size = Vector3(30, 2, 4)
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="." unique_id=1597225288]
+transform = Transform3D(0.70710677, -0.70710677, 0, 0.70710677, 0.70710677, 0, 0, 0, 1, -10.587674, 0.19341302, 11.529276)
+size = Vector3(30, 2, 4)
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="." unique_id=704376424]
+transform = Transform3D(0.7071067, 0.7071068, 0, -0.7071068, 0.7071067, 0, 0, 0, 1, 9.304976, 0.19341302, 11.529276)
+size = Vector3(30, 2, 4)
