@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://mulnmiu1kw7m"]
+
+[ext_resource type="Material" uid="uid://cb4w5bg7xjju1" path="res://assets/shaders/rainy_window.material" id="1_j6ogs"]
+
+[sub_resource type="QuadMesh" id="QuadMesh_cx3ri"]
+material = ExtResource("1_j6ogs")
+size = Vector2(2, 2)
+
+[node name="Glass" type="MeshInstance3D" unique_id=1590738569]
+material_override = ExtResource("1_j6ogs")
+mesh = SubResource("QuadMesh_cx3ri")
