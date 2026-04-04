@@ -1,6 +1,7 @@
 <img src="https://github.com/UnrealDanny/BellaSDK/blob/main/Bella_SDK_Logo.svg">
 
 [COMPILED PROJECT](https://drive.google.com/drive/folders/1EIplMuRXGZBpfP5XdidS_mtlFUrvjh8J?usp=sharing) - will be updated infrequently.
+There you can also find the ASSETS.zip - just unzip it into the main folder
 
 BellaSDK - a fun project
 
@@ -26,3 +27,6 @@ As for the story: I asked myself "what's the most honest thing?" A cute, lost, v
 As someone from Igromania Magazine once said: HL was created by enthusiasts. HL2 - by professionals. Based on that logic HL3 is going to be created by old farts who couldn't care less. The real HL3 can only be created by US - The People. 
 
 And most importantly: I need your help. Take it, critisize it, send feedback, give advice. Just please don't ignore me.
+
+------------------
+3D Assets are made by Lucas Manzoni @luanmanz on Fiverr
