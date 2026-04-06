@@ -4,64 +4,24 @@
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="2_bxo18"]
 [ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_tqme0"]
 [ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_bxo18"]
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
-size = Vector3(0.3, 0.01, 0.3)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_87b3n"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="TorusMesh" id="TorusMesh_87b3n"]
-material = SubResource("StandardMaterial3D_87b3n")
-inner_radius = 0.25
-outer_radius = 0.3
-rings = 32
-ring_segments = 16
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_epeg1"]
-albedo_color = Color(1, 0, 0, 1)
-
-[sub_resource type="BoxMesh" id="BoxMesh_87b3n"]
-material = SubResource("StandardMaterial3D_epeg1")
-size = Vector3(0.01, 0.5, 0.01)
-
-[sub_resource type="CylinderMesh" id="CylinderMesh_tqme0"]
-top_radius = 0.05
-bottom_radius = 0.05
-height = 0.1
-radial_segments = 16
-rings = 0
+[ext_resource type="PackedScene" uid="uid://djch67ud4o5fw" path="res://assets/props/valve_wheel/valve_wheel.fbx" id="5_iygui"]
+[ext_resource type="PackedScene" uid="uid://c5xcq2xug3ti" path="res://assets/props/valve_wheel/valve_base.fbx" id="6_mhmik"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sid1s"]
 render_priority = 0
 shader = ExtResource("2_bxo18")
 shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
-shader_parameter/blink_speed = 4.0
+shader_parameter/blink_speed = 7.0000003325
 shader_parameter/min_intensity = 0.0
-shader_parameter/max_intensity = 0.5
+shader_parameter/max_intensity = 0.02000000095
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
+size = Vector3(0.6, 0.1, 0.6)
 
 [node name="Valve" type="StaticBody3D" unique_id=86858914 node_paths=PackedStringArray("label")]
 script = ExtResource("1_epeg1")
 is_back_and_forth = false
 label = NodePath("Label3D")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1748411192]
-shape = SubResource("BoxShape3D_epeg1")
-
-[node name="Wheel" type="MeshInstance3D" parent="." unique_id=111399811]
-mesh = SubResource("TorusMesh_87b3n")
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Wheel" unique_id=1258839770]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
-mesh = SubResource("BoxMesh_87b3n")
-
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Wheel" unique_id=1315402170]
-transform = Transform3D(-4.371139e-08, 1, 0, 4.371139e-08, 1.9106855e-15, 1, 1, 4.371139e-08, -4.371139e-08, 0, 0, 0)
-mesh = SubResource("BoxMesh_87b3n")
-
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="Wheel" unique_id=619858856]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
-mesh = SubResource("CylinderMesh_tqme0")
 
 [node name="Interact_Component" type="Node" parent="." unique_id=1430550788]
 script = ExtResource("2_tqme0")
@@ -73,5 +33,16 @@ outline_material = SubResource("ShaderMaterial_sid1s")
 metadata/_custom_type_script = "uid://dgig0tamvkdxx"
 
 [node name="Label3D" type="Label3D" parent="." unique_id=1180216320]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39249182, 0.2, 0.07568967)
 billboard = 1
 no_depth_test = true
+
+[node name="Wheel" parent="." unique_id=1857946508 instance=ExtResource("5_iygui")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0.27, 0)
+
+[node name="valve_base" parent="." unique_id=743200746 instance=ExtResource("6_mhmik")]
+transform = Transform3D(1.7, 0, 0, 0, 1.7, 0, 0, 0, 1.7, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1748411192]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.042541504, 0)
+shape = SubResource("BoxShape3D_epeg1")

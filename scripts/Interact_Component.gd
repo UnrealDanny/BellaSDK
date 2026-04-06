@@ -14,9 +14,9 @@ func interact_with(character: CharacterBody3D) -> void:
 	interacted.emit(character)
 
 # NEW: Accept a hit_position argument
-func hover_cursor(character : CharacterBody3D, hit_position : Vector3) -> void:
-	characters_hovering[character] = Engine.get_process_frames()
-	# Store the point we received from the player
+func hover_cursor(character: CharacterBody3D, hit_position: Vector3) -> void:
+	# Store the exact time in milliseconds instead of frames
+	characters_hovering[character] = Time.get_ticks_msec()
 	last_hit_position = hit_position
 	
 func get_character_hovered_by_cur_camera() -> CharacterBody3D:
@@ -24,15 +24,12 @@ func get_character_hovered_by_cur_camera() -> CharacterBody3D:
 	return null
 
 func _process(_delta: float) -> void:
-	# Instead of dictionary management every frame, 
-	# we only run the focus/unfocus logic when the state actually changes.
-	
-	# Check if the last hover update was within the current or previous frame
 	var is_hovered := false
-	var current_frame := Engine.get_process_frames()
+	var current_time := Time.get_ticks_msec()
 	
 	for character: CharacterBody3D in characters_hovering:
-		if current_frame - characters_hovering[character] <= 1:
+		# A 50ms buffer easily bridges the gap between 60Hz physics ticks
+		if current_time - characters_hovering[character] <= 50:
 			is_hovered = true
 			break
 			

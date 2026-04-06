@@ -194,7 +194,9 @@ func _detach_valve() -> void:
 	#spawned_valve.scale = Vector3.ONE
 	
 	if wheel:
-		spawned_valve.global_transform = wheel.global_transform
+		# Copy position and rotation individually so we don't accidentally copy scale!
+		spawned_valve.global_position = wheel.global_position
+		spawned_valve.global_rotation = wheel.global_rotation
 	else:
 		spawned_valve.global_position = global_position
 		

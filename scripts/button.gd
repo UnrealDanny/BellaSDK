@@ -2,11 +2,17 @@
 extends StaticBody3D
 
 @onready var interact_component: Interact_Component = $Interact_Component
-@onready var highlight_component: HighlightComponent = $HighlightComponent # Add this reference
-@onready var button: MeshInstance3D = $Button
-@onready var button_base: MeshInstance3D = $ButtonBase
+@onready var highlight_component: HighlightComponent = $HighlightComponent
 @onready var label_interact: Label3D = $LabelInteract
 
+@export_category("Button References")
+# Drag the node you want to physically move down here (e.g., the 'button' Node3D)
+@export var pressable_part: Node3D 
+# Drag the actual mesh you want to glow here (e.g., 'Circle_017')
+@export var mesh_to_highlight: MeshInstance3D 
+@export var outline_material: ShaderMaterial
+
+@export_category("Connections")
 @export var targets: Array[Node3D]
 
 var press_tween: Tween
@@ -16,25 +22,31 @@ func _ready() -> void:
 	if interact_component and not Engine.is_editor_hint():
 		interact_component.focused.connect(_on_focus)
 		interact_component.unfocused.connect(_on_unfocus)
-		interact_component.interacted.connect(_on_interact)
+		
+		# Make sure this is connected so the button actually works!
+		if not interact_component.interacted.is_connected(_on_interact):
+			interact_component.interacted.connect(_on_interact)
 		
 	label_interact.hide()
 
 func _on_focus() -> void:
-	# Highlighting is now handled automatically by HighlightComponent
 	label_interact.show()
+	# Apply the material directly to the exact mesh
+	if mesh_to_highlight and outline_material:
+		mesh_to_highlight.material_overlay = outline_material
 
 func _on_unfocus() -> void:
-	# Un-highlighting is now handled automatically by HighlightComponent
 	label_interact.hide()
+	# Remove the material
+	if mesh_to_highlight:
+		mesh_to_highlight.material_overlay = null
 		
 func _on_interact(_player: CharacterBody3D) -> void:
-	if not button or not can_press:
+	if not pressable_part or not can_press:
 		return
 		
 	can_press = false
 	
-	# Temporarily hide the glow while the animation plays
 	if highlight_component:
 		highlight_component.suppress(true)
 		
@@ -42,8 +54,13 @@ func _on_interact(_player: CharacterBody3D) -> void:
 		press_tween.kill()
 		
 	press_tween = create_tween()
-	press_tween.tween_property(button, "position:y", 0.02, 0.1).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	press_tween.tween_property(button, "position:y", -0.02, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	
+	# Get the current Y position so it always returns to the correct height
+	var base_y := pressable_part.position.y
+	
+	# Animate it down slightly, then back up to its original base_y
+	press_tween.tween_property(pressable_part, "position:y", base_y - 0.02, 0.1).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	press_tween.tween_property(pressable_part, "position:y", base_y, 0.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 
 	for target in targets:
 		if target != null and target.has_method("interact"):
@@ -52,7 +69,6 @@ func _on_interact(_player: CharacterBody3D) -> void:
 	await get_tree().create_timer(1.0).timeout
 	can_press = true
 	
-	# Un-suppress the glow. If the player is still looking at it, it will glow again.
 	if highlight_component:
 		highlight_component.suppress(false)
 		

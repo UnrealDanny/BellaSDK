@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" uid="uid://uwhga6c4q51o" path="res://scenes/zipline.tscn" id="24_xj7km"]
 [ext_resource type="PackedScene" uid="uid://dg62o2u1p8i7i" path="res://scenes/updraft_volume.tscn" id="25_jgmty"]
 [ext_resource type="PackedScene" uid="uid://q22xc6i00ls" path="res://scenes/dev_cylinder.tscn" id="25_m0e1v"]
+[ext_resource type="PackedScene" uid="uid://5ykf53kliu85" path="res://scenes/plug_and_cable.tscn" id="27_erim8"]
 [ext_resource type="Shader" uid="uid://6nbh24t00hff" path="res://assets/shaders/caustics_shader.gdshader" id="27_f3k8r"]
 [ext_resource type="PackedScene" uid="uid://2yaelfmj6lmg" path="res://scenes/dev_arrow.tscn" id="27_uvnoq"]
 [ext_resource type="PackedScene" uid="uid://bairuv4i4gc64" path="res://scenes/enemy_TEST.tscn" id="32_vvpuy"]
@@ -36,6 +37,8 @@
 [ext_resource type="PackedScene" uid="uid://b0h28ew50m1nm" path="res://scenes/draw_bridge_system.tscn" id="34_x3nsp"]
 [ext_resource type="PackedScene" uid="uid://dwusg7ievwjmh" path="res://scenes/breakable_rope.tscn" id="35_ovkd5"]
 [ext_resource type="PackedScene" uid="uid://dudx3baxpmytw" path="res://scenes/valve.tscn" id="36_cmtte"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="39_nqxml"]
+[ext_resource type="PackedScene" uid="uid://fxl0fqjgla74" path="res://scenes/socket.tscn" id="40_llsfp"]
 [ext_resource type="Script" uid="uid://bohybfp2i35ly" path="res://scripts/trigger_scripts/spotlight_seq_trigger.gd" id="44_gp0ty"]
 [ext_resource type="Script" uid="uid://c20bpd5d2f3c5" path="res://scripts/procedural_stairs_csg.gd" id="45_o4kb0"]
 [ext_resource type="PackedScene" uid="uid://cojcb8srg0tkn" path="res://scenes/TESTS(delete later)/hide_building_test.tscn" id="45_oipxx"]
@@ -74,22 +77,22 @@ func hide_prompt() -> void:
 
 [sub_resource type="BoxMesh" id="BoxMesh_qfnet"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_dpsb6"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_erim8"]
 resource_local_to_scene = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_nqxml"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_anvhq"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_dpsb6")
+noise = SubResource("FastNoiseLite_erim8")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_llsfp"]
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_3n431"]
 resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_dpsb6")
+noise = SubResource("FastNoiseLite_erim8")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_erim8"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_8wjit"]
 resource_local_to_scene = true
 transparency = 1
 cull_mode = 2
@@ -97,14 +100,14 @@ depth_draw_mode = 1
 albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
 roughness = 0.0
 normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_nqxml")
+normal_texture = SubResource("NoiseTexture2D_anvhq")
 refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_llsfp")
+refraction_texture = SubResource("NoiseTexture2D_3n431")
 uv1_scale = Vector3(0.04, 0.04, 0.04)
 uv1_triplanar = true
 uv1_world_triplanar = true
 
-[sub_resource type="Curve3D" id="Curve3D_anvhq"]
+[sub_resource type="Curve3D" id="Curve3D_c2wla"]
 resource_local_to_scene = true
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 19.383461, 29.629358, -0.064650536, 0, 0, 0, 0, 0, 0, 0.7377882, 0.2123375, -4.6749935),
@@ -121,14 +124,14 @@ albedo_texture = SubResource("ViewportTexture_jhx03")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_cmtte"]
 
-[sub_resource type="Curve3D" id="Curve3D_3n431"]
+[sub_resource type="Curve3D" id="Curve3D_isy8u"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.470448, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
 }
 point_count = 2
 
-[sub_resource type="Curve3D" id="Curve3D_8wjit"]
+[sub_resource type="Curve3D" id="Curve3D_5qfrm"]
 _data = {
 "points": PackedVector3Array(0, 0, 0, 0, 0, 0, 12.454609, 2.496851, 4.4036827, 0, 0, 0, 0, 0, 0, -6.768223, 7.0659237, 5.985403),
 "tilts": PackedFloat32Array(0, 0)
@@ -145,9 +148,6 @@ uv1_triplanar = true
 [sub_resource type="BoxShape3D" id="BoxShape3D_s52xd"]
 size = Vector3(4.60083, 1.9984741, 11.238403)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nefr7"]
-albedo_color = Color(0.6522701, 1, 0, 1)
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_7t5mc"]
 albedo_texture = ExtResource("18_f1d65")
 
@@ -159,6 +159,14 @@ albedo_color = Color(0, 0, 0, 1)
 
 [sub_resource type="QuadMesh" id="QuadMesh_w7kh3"]
 material = SubResource("StandardMaterial3D_w7kh3")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_5qfrm"]
+render_priority = 0
+shader = ExtResource("39_nqxml")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 8.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0wf3h"]
 transparency = 1
@@ -304,7 +312,7 @@ size = Vector2(8, 8)
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(0.04954724, 0, 0.9987718, 0, 1, 0, -0.9987718, 0, 0.04954724, 2.4654737, 20.781315, -57.88481)
+transform = Transform3D(-0.049547326, 0, -0.9987718, 0, 1, 0, 0.9987718, 0, -0.049547326, 31.832233, 5.2452087e-06, -22.122763)
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -357,12 +365,12 @@ open = true
 transform = Transform3D(4.1478043, 0, 0, 0, 1.9011474, 0, 0, 0, 1, -13.020535, 2.7101002, -3.3936052)
 
 [node name="FadeTrigger" parent="InteractiveObjects" unique_id=656862380 instance=ExtResource("8_ue7dh")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.83236, -0.17634273, -26.042675)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.83236, -0.17634273, -37.243073)
 
 [node name="WaterMaker3D" parent="InteractiveObjects" unique_id=133761907 instance=ExtResource("21_2dnug")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.790005, -9.162484, -23.94922)
 size = Vector3(37.36093, 16.020508, 22.725647)
-material = SubResource("StandardMaterial3D_erim8")
+material = SubResource("StandardMaterial3D_8wjit")
 
 [node name="DevArrow" parent="InteractiveObjects" unique_id=249012739 instance=ExtResource("27_uvnoq")]
 transform = Transform3D(-2, 1.7484555e-07, 7.642742e-15, 0, -8.742278e-08, 2, 1.7484555e-07, 2, 8.742278e-08, 30.55747, 1.0914047, 9.622128)
@@ -377,7 +385,7 @@ DO NOT GO THERE!"
 
 [node name="Zipline" parent="InteractiveObjects" unique_id=112234981 instance=ExtResource("24_xj7km")]
 transform = Transform3D(1, 0, 0, 0, -0.13613053, -0.9906909, 0, 0.9906909, -0.13613053, 12.472821, 18.358873, -49.09789)
-curve = SubResource("Curve3D_anvhq")
+curve = SubResource("Curve3D_c2wla")
 
 [node name="Mirror" type="CSGBox3D" parent="InteractiveObjects" unique_id=1572960312]
 transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 32.936016, 2.3380308, -0.2335968)
@@ -443,11 +451,11 @@ ropes = Array[NodePath]([NodePath("../UniversalCable3D")])
 
 [node name="UniversalCable3D" parent="InteractiveObjects" unique_id=190499329 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -18.699188)
-curve = SubResource("Curve3D_3n431")
+curve = SubResource("Curve3D_isy8u")
 
 [node name="UniversalCable3D2" parent="InteractiveObjects" unique_id=1107471249 instance=ExtResource("35_ovkd5")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.449627, 18.503117, -23.930923)
-curve = SubResource("Curve3D_8wjit")
+curve = SubResource("Curve3D_5qfrm")
 
 [node name="Gate" parent="InteractiveObjects" unique_id=1866459556 instance=ExtResource("17_1kj1a")]
 transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.69722, 1.4999905, -8.204649)
@@ -474,13 +482,12 @@ label_text = "Finish"
 base_color = Color(0.74509805, 0.8, 0, 0.101960786)
 
 [node name="Valve" parent="InteractiveObjects" unique_id=86858914 node_paths=PackedStringArray("targets") instance=ExtResource("36_cmtte")]
-transform = Transform3D(0, 1.0000001, 0, -1.0000001, 0, 0, 0, 0, 1, 36.000687, 1.4253691, -11.466214)
+transform = Transform3D(8.7422784e-08, -1.0000001, 0, 1.0000001, 8.7422784e-08, 0, 0, 0, 1, 36.081833, 1.4253691, -11.466214)
 targets = [NodePath("../Gate")]
 requires_installation = true
 pickable_valve_scene = ExtResource("50_nefr7")
 can_be_detached = true
 visual_rotations = 0.5
-turn_clockwise = false
 reverts_on_release = true
 
 [node name="PickableBox" parent="InteractiveObjects" unique_id=1145886146 instance=ExtResource("52_dpsb6")]
@@ -1395,11 +1402,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 81.8694, 16.058184, -13.5982)
 height = 10.0
 sides = 12
 
-[node name="CSGBox3D131" type="CSGBox3D" parent="Objects/Level" unique_id=1493191529]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 36.056797, 1.3756344, -11.490992)
-size = Vector3(0.07080078, 1, 1)
-material = SubResource("StandardMaterial3D_nefr7")
-
 [node name="GlassHouse" type="CSGCombiner3D" parent="Objects" unique_id=1740747144]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 23.459366, 0.67379284, 0)
 use_collision = true
@@ -2050,8 +2052,15 @@ overcome these 2cm
 *
 One of the coolest LD tricks I found. Hopefully you'll like it, too."
 
+[node name="Label3D41" type="Label3D" parent="Texts" unique_id=1792717569]
+transform = Transform3D(1, 0, -1.7484555e-07, 0, 1, 0, 1.7484555e-07, 0, 1, -11.025884, 4.3534617, 16.988474)
+text = "3D assets are made by 
+Created by Lucas Andres Manzoni  
+https://www.behance.net/lucasandresmanzoni"
+font_size = 64
+
 [node name="Label3D27" type="Label3D" parent="Texts" unique_id=875234757]
-transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -8.582672, 3.804318, 29.684008)
+transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -11.670322, 3.804318, 29.684008)
 text = "WASD	  - move
 SPACE	  - jump
 CTRL    - crouch
@@ -2248,42 +2257,49 @@ transform = Transform3D(1.3113417e-08, 0, -0.1, 0, 0.1, 0, 0.1, 0, 1.3113417e-08
 texture = ExtResource("18_k74e2")
 
 [node name="Label3D" type="Label3D" parent="Paintings/Sprite3D8" unique_id=2000101014]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -7.2960663, -0.19800186)
-text = "Михаил. Я сделал домашнее задание! "
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.214813, -7.2960663, -0.19802856)
+text = "Assets are made by Lucas Manzoni @luanmanz on Fiverr"
 font_size = 150
 
 [node name="Buttons" type="Node3D" parent="." unique_id=1747615155]
 
 [node name="Button" parent="Buttons" unique_id=1567218577 node_paths=PackedStringArray("targets") instance=ExtResource("16_cmtte")]
-transform = Transform3D(5.9604645e-08, 0.99999994, -4.3711385e-08, 0, -4.371139e-08, -1, -0.99999994, 5.9604645e-08, -2.6645353e-15, 25.978458, 1.9460464, -4.5066395)
+transform = Transform3D(5.9604645e-08, 0.99999994, -4.3711385e-08, 0, -4.371139e-08, -1, -0.99999994, 5.9604645e-08, -2.6645353e-15, 26.096222, 1.5805992, -4.5066395)
+outline_material = SubResource("ShaderMaterial_5qfrm")
 targets = [NodePath("../../InteractiveObjects/Door_Interact"), NodePath("../../InteractiveObjects/Door_Interact2")]
 
 [node name="Button2" parent="Buttons" unique_id=1280908531 instance=ExtResource("16_cmtte")]
-transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -10.710449, 1.5531785, 15.8636055)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, -10.710449, 1.5531785, 15.786121)
 
 [node name="Button3" parent="Buttons" unique_id=687643197 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.64848, 1.9246039, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.64848, 1.9246039, 4.979378)
 
 [node name="Button8" parent="Buttons" unique_id=1077937345 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.168526, 1.7875028, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.168526, 1.7875028, 4.979378)
 
 [node name="Button9" parent="Buttons" unique_id=605297199 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.713463, 1.3263373, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.713463, 1.3263373, 4.979378)
 
 [node name="Button10" parent="Buttons" unique_id=137574107 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.145813, 1.3263373, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.145813, 1.3263373, 4.979378)
 
 [node name="Button4" parent="Buttons" unique_id=1336180372 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.159374, 1.4854943, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 33.159374, 1.4854943, 4.979378)
 
 [node name="Button5" parent="Buttons" unique_id=915283986 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 32.551758, 0.9751388, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 32.551758, 0.9751388, 4.979378)
 
 [node name="Button6" parent="Buttons" unique_id=2084451947 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.184086, 2.297388, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.184086, 2.297388, 4.979378)
 
 [node name="Button7" parent="Buttons" unique_id=534077001 instance=ExtResource("16_cmtte")]
-transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.67585, 2.7592359, 5.056862)
+transform = Transform3D(-1, 2.6226832e-07, -1.1464113e-14, 0, -4.371139e-08, -1, -2.6226832e-07, -1, 4.371139e-08, 34.67585, 2.7592359, 4.979378)
+
+[node name="Socket" parent="Buttons" unique_id=1509623913 instance=ExtResource("40_llsfp")]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 36.064198, 1.3920441, -21.048925)
+
+[node name="CableSystem" parent="Buttons" unique_id=56375179 instance=ExtResource("27_erim8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33.89235, 1.5718777, -22.08929)
 
 [node name="Checkpoints" type="Node3D" parent="." unique_id=397650965]
 
@@ -2394,7 +2410,7 @@ script = ExtResource("46_oipxx")
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
 
 [node name="PickableValve" parent="." unique_id=594279821 instance=ExtResource("50_nefr7")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.71226, 0.025005728, -13.08078)
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 34.71226, 0.92063177, -13.08078)
 
 [node name="ClimableRope" parent="." unique_id=1704021531 instance=ExtResource("9_jgmty")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.067865, 24.705517, -3.3210979)

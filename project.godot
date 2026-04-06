@@ -45,6 +45,12 @@ enabled=PackedStringArray("res://addons/KGB_Agent/plugin.cfg")
 
 import/blender/enabled=false
 
+[importer_defaults]
+
+animation_library={
+&"materials/extract": 1
+}
+
 [input]
 
 forward={
