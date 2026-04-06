@@ -29,4 +29,4 @@ As someone from Igromania Magazine once said: HL was created by enthusiasts. HL2
 And most importantly: I need your help. Take it, critisize it, send feedback, give advice. Just please don't ignore me.
 
 ------------------
-3D Assets are made by Lucas Manzoni @luanmanz on Fiverr
+3D Assets are made by Lucas Manzoni [@luanmanz on Fiverr](https://www.fiverr.com/luanmanz?source=inbox)
