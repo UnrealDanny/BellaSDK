@@ -139,7 +139,7 @@ var current_updraft_strength: float = 0.0
 var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity") as float
 
 # DEVTOOLS VARS
-var noclip_speed_multiplier: float = 4.0
+var noclip_speed_multiplier: float = 8.0
 var is_menu_open: bool = false
 
 # ZIPLINE VARS
@@ -777,7 +777,7 @@ func toggle_noclip() -> void:
 	crouching = false
 	
 	flying = !flying
-	noclip_speed_multiplier = 4.0
+	noclip_speed_multiplier = 8.0
 	
 	if flying:
 		standing_collision_shape.disabled = true
@@ -1156,9 +1156,21 @@ func _handle_rope_physics(delta: float) -> void:
 		# Don't let the player off yet.
 		if rope_lerp_weight > 10.0: 
 			_on_rope_released(-cam.global_transform.basis.z)
-			
+
 func _handle_noclip_physics(delta: float) -> void:
-	var fly_dir: Vector3 = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	# 1. Get the base movement from your WASD input, relative to the camera
+	var fly_dir: Vector3 = cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)
+	
+	# 2. Get vertical input (assuming "crouch" is CTRL and "jump" is SPACE)
+	# This returns 1 if only jump is pressed, -1 if crouch is pressed, or 0 if neither/both.
+	var vertical_input: float = Input.get_axis("crouch", "jump")
+	
+	# 3. Add the vertical input to the global up direction
+	fly_dir += Vector3.UP * vertical_input
+	
+	# 4. Normalize after adding vertical input to keep speed consistent diagonally
+	fly_dir = fly_dir.normalized()
+	
 	current_speed = sprinting_speed * noclip_speed_multiplier
 
 	Events.noclip_speed_changed.emit(noclip_speed_multiplier)
@@ -1176,6 +1188,27 @@ func _handle_noclip_physics(delta: float) -> void:
 			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
 		else:
 			eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
+
+
+#func _handle_noclip_physics(delta: float) -> void:
+	#var fly_dir: Vector3 = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	#current_speed = sprinting_speed * noclip_speed_multiplier
+#
+	#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
+				#
+	#if fly_dir.length() > 0:
+		#velocity = fly_dir * current_speed
+	#else:
+		#velocity = Vector3.ZERO
+		#direction = Vector3.ZERO
+	#
+	#if not swimming:
+		#if Input.is_action_pressed("left"):
+			#eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
+		#elif Input.is_action_pressed("right"):
+			#eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
+		#else:
+			#eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
 func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
 	var is_climbing_rope: bool = (current_rope != null)
