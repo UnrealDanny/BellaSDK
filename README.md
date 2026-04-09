@@ -18,7 +18,7 @@ Anyway, all I wanna say is that "The client is always right" and if our modern A
 
 And so I decided to create BellaSDK - a free Source/Hammer killer to help noobs quickly get into GD/LD using modern day tools. Hammer was a good hoor. A total beast! Great memories but it's time to move on. Unity keeps shooting itself in the foot and Unreal is a huge pile of shit that is thousands of years old. Everybody pooped there: mammonths, seals, birds, the whales and the snail, and even Gary The Stinky Pooper. You know who I'm talking about.  
 
-Back to BellaSDK: I want this sweet little princess to have everything: all the gameplay mechanics such as boom-sticks, interactions, movements, AI, physics, puzzles, dialogue systems, handholding, you name it. 
+Back to BellaSDK: I want this sweet little princess to have everything: all the gameplay mechanics such as boom-sticks, interactions, movements, AI, physics, puzzles, dialogue systems, handholding, (at least) 5 kids, a nice house, plenty of sausages, a good economy around, you name it. 
 
 Besides that I also want textures, models (especially barrels), sounds, animations, VFX, elves, good and easy-to-use scripting system, doors that always open AWAY from you (if you are into that sort of thing)! 
 
