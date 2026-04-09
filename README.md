@@ -5,9 +5,11 @@ There you can also find the ASSETS.zip - just unzip it into the main folder
 
 ## <u>BellaSDK - a fun project</u>
 
-I like Neil Druckmann. Every time people ask him <i>"Who's the target audience for this?"</i> or <i>"Why u no listen to our feedback?"</i> he just says <i>"I don't care. This is how I feel"</i>. 
+I like Neil Druckmann. 
+Every time people ask him <i>"Who's the target audience for this?"</i> or <i>"Why u no listen to our feedback?"</i> he just says <i>"I don't care. This is how I feel"</i>. 
 I respect that and also decided to go against the general consensus that games ONLY have to be about gay and lame chicks doing misery porn like that [Save 10% on 1348 Ex Voto](https://store.steampowered.com/app/1895900/1348_Ex_Voto/) game. 
 WHAT WERE THEY THINKING?! They could've made it so great.
+
 <i>"Boys in heavy armor - sure, totally, no questions about it. BUT WHAT IF... GIRLS (yes, turn everyone into knight girls) in heavy armor?"</i> 
 If you feel unsure - just ask Japan. They've been doing samurai chicks, sci-fi chicks, cat chicks, all sorts of chicks for decades now. 
 I'd've paid a huge buck to play a game about chicks doing knight shit in semi-historically accurate armor and setting! IT'S SO COOL!
