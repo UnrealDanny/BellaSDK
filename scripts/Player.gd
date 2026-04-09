@@ -53,6 +53,16 @@ var sprint_active: bool = false
 var flying: bool = false
 var swimming: bool = false
 
+var can_sprint: bool = true
+
+var is_heavy_lifting: bool = false :
+	set(value):
+		is_heavy_lifting = value
+		if is_heavy_lifting:
+			heavy_lift_yaw_base = rotation.y # Remember our starting angle
+
+var heavy_lift_yaw_base: float = 0.0
+
 var is_stunned: bool = false
 var is_vaulting: bool = false
 
@@ -256,13 +266,31 @@ func _unhandled_input(event: InputEvent) -> void:
 func _input(event: InputEvent) -> void:
 	if is_menu_open or is_paused: 
 		return
+	if is_stunned: 
+		return
 
 	# MOUSE LOOKING LOGIC
 	if event is InputEventMouseMotion:
-		rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
+		if is_heavy_lifting:
+			# --- THE NECK CLAMP ---
+			# Calculate the new rotation, but clamp it so you can only look 45 degrees left or right!
+			var new_yaw: float = rotation.y - deg_to_rad(event.relative.x * mouse_sensitivity)
+			var diff: float = angle_difference(heavy_lift_yaw_base, new_yaw)
+			var clamped_diff: float = clampf(diff, deg_to_rad(-15.0), deg_to_rad(15.0))
+			rotation.y = heavy_lift_yaw_base + clamped_diff
+		else:
+			# Normal turning
+			rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
+			
 		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
 		head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 		sway_target += event.relative
+	## MOUSE LOOKING LOGIC
+	#if event is InputEventMouseMotion:
+		#rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
+		#head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
+		#head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
+		#sway_target += event.relative
 
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
@@ -885,7 +913,7 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 
 	var is_moving: bool = input_dir.length() > 0.1
 	
-	if Input.is_action_pressed("sprint") and standing_collision_shape.disabled == false and is_moving and is_on_floor(): 
+	if Input.is_action_pressed("sprint") and standing_collision_shape.disabled == false and is_moving and is_on_floor() and can_sprint: 
 		sprint_active = true
 	else:
 		sprint_active = false
@@ -895,14 +923,27 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 		walking = false
 		sprinting = true
 	elif is_moving and crouching_collision_shape.disabled == true:
-		current_speed = lerpf(current_speed, walking_speed, delta * lerp_speed)
-		walking = true    
-		sprinting = false    
+		# --- NEW: Check if we are lifting something heavy ---
+		if is_heavy_lifting:
+			current_speed = lerpf(current_speed, crouching_speed, delta * lerp_speed)
+		else:
+			current_speed = lerpf(current_speed, walking_speed, delta * lerp_speed)
+		# ----------------------------------------------------
+		walking = true	
+		sprinting = false
+	#elif is_moving and crouching_collision_shape.disabled == true:
+		#current_speed = lerpf(current_speed, walking_speed, delta * lerp_speed)
+		#walking = true    
+		#sprinting = false    
 
 	_handle_headbob(delta) 
 
 	if Input.is_action_just_pressed("jump"):
-		if _try_vault():
+		# --- NEW: Quick-release the box instead of jumping! ---
+		if is_heavy_lifting and held_object:
+			held_object.drop()
+		# ------------------------------------------------------
+		elif _try_vault():
 			camera_anims.play("jump")
 		elif is_on_floor():
 			if sprinting:

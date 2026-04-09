@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://bj5u88pj4vw4j"]
+
+[ext_resource type="PackedScene" uid="uid://bwx87famw5p7u" path="res://scenes/pickable_box.tscn" id="1_h1kgl"]
+[ext_resource type="Script" uid="uid://c3pb1k0kh7v3u" path="res://scripts/heavy_pickable_box.gd" id="2_4o347"]
+[ext_resource type="Texture2D" uid="uid://6jbvqeu8qf1j" path="res://assets/images/dev_textures/standard_5_orange_512.png" id="3_4o347"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj5oh"]
+albedo_texture = ExtResource("3_4o347")
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_3773a"]
+material = SubResource("StandardMaterial3D_fj5oh")
+size = Vector3(3, 3, 3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4o347"]
+size = Vector3(3, 3, 3)
+
+[node name="HeavyPickableBox" unique_id=594279821 instance=ExtResource("1_h1kgl")]
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
+mass = 20.0
+script = ExtResource("2_4o347")
+drag_speed = 20.0
+drop_distance = 1.0
+stand_distance = 1.5
+
+[node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
+mesh = SubResource("BoxMesh_3773a")
+
+[node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
+shape = SubResource("BoxShape3D_4o347")

@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://o1l1era7slhu"]
+
+[ext_resource type="Script" uid="uid://d1i8j7fheopce" path="res://scripts/basalt_magnet.gd" id="1_sflob"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_sflob"]
+radius = 1.0
+radial_segments = 24
+
+[node name="BasaltMagnet" type="Node3D" unique_id=903246176]
+script = ExtResource("1_sflob")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1700679224]
+mesh = SubResource("CapsuleMesh_sflob")
