@@ -11,7 +11,7 @@ static var last_frame_drew_underwater_effect : int = -999
 
 func _ready() -> void:
 	self.process_priority = 999 # Call _process last to update move after any camera movement
-
+	
 # Track the current camera with an area so we can check if it is inside the water
 # CHANGED: void -> bool so we can actually return true/false
 func should_draw_camera_underwater_effect() -> bool: 

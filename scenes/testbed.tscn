@@ -157,6 +157,13 @@ albedo_texture = ExtResource("18_f1d65")
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lakw3"]
 albedo_texture = ExtResource("18_f1d65")
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c2wla"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_8wjit"]
+material = SubResource("StandardMaterial3D_c2wla")
+size = Vector2(1.395, 9.57)
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_w7kh3"]
 albedo_color = Color(0, 0, 0, 1)
 
@@ -3293,17 +3300,18 @@ shading_mode = 2
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_kecw4"]
 points = PackedVector3Array(0.86602545, 0.2217529, 0.5, 0, 0.2217529, 1, 0.86602545, -0.22179629, 0.5, 0.86602545, 0.2217529, -0.50019574, 0, -0.22179629, 1, -0.86602545, 0.2217529, 0.49980426, 0.86602545, -0.22179629, -0.50019574, 0, 0.2217529, -1, -0.86602545, -0.22179629, 0.49980426, -0.86602545, 0.2217529, -0.5, 0, -0.22179629, -1, -0.86602545, -0.22179629, -0.5)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_c2wla"]
-albedo_color = Color(0, 0, 0, 1)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_8wjit"]
-material = SubResource("StandardMaterial3D_c2wla")
-size = Vector2(1.395, 9.57)
-
 [node name="Testbed" type="Node3D" unique_id=589896155]
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("20_v6x3g")]
-transform = Transform3D(0.9987718, 0, -0.04954728, 0, 1, 0, 0.04954728, 0, 0.9987718, 75.92099, 11.058201, -22.189476)
+transform = Transform3D(0.049547236, 0, 0.9987718, 0, 1, 0, -0.9987718, 0, 0.049547236, -22.952402, 0.6938243, -18.543106)
+walking_speed = 5.0
+sprinting_speed = 6.5
+crouching_speed = 3.0
+swimming_speed = 4.0
+sway_amount = 5.0
+smooth_speed = 10.0
+base_fov = 75.0
+sprint_fov = 85.0
 
 [node name="WorldEnvironment" parent="." unique_id=1645214105 instance=ExtResource("1_ecfbh")]
 
@@ -3509,6 +3517,13 @@ targets = [NodePath("../../LightLogic"), NodePath("../../Door_Interact")]
 
 [node name="Shotgun" parent="InteractiveObjects" unique_id=1655053297 instance=ExtResource("52_nqxml")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32.171364, 12.865319, -6.5463977)
+
+[node name="HeavyPickableBox" parent="InteractiveObjects" unique_id=1886093169 instance=ExtResource("59_8wjit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.63003, 12.558201, -29.297213)
+
+[node name="HeavyPickableBox2" parent="InteractiveObjects" unique_id=167706246 instance=ExtResource("59_8wjit")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.210134, 8.5, -25.19554)
+stand_distance = 1.3
 
 [node name="Objects" type="Node3D" parent="." unique_id=469775133]
 
@@ -4307,9 +4322,39 @@ use_collision = true
 size = Vector3(0.86364746, 0.78048706, 1)
 
 [node name="CSGBox3D11" type="CSGBox3D" parent="Objects/Level" unique_id=1758538071]
-transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -27.790962, 6.0030594, 23.718777)
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -27.790962, -4.210806, 27.576298)
 use_collision = true
-size = Vector3(1.1040039, 1, 1)
+size = Vector3(1.4753418, 1, 1.9246826)
+
+[node name="CSGBox3D134" type="CSGBox3D" parent="Objects/Level" unique_id=507941509]
+transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -19.93642, -12.613143, -0.8823272)
+use_collision = true
+size = Vector3(1.3400879, 0.08898926, 1.1640015)
+
+[node name="CSGBox3D135" type="CSGBox3D" parent="Objects/Level" unique_id=267008639]
+transform = Transform3D(3.969706e-14, -2.2737368e-13, 22.091614, -9.0816286e-07, 17.243574, 2.1402023e-35, -20.776346, -7.5374055e-07, 4.2210135e-14, 15.861269, -21.004955, 13.085657)
+use_collision = true
+size = Vector3(2.6846924, 0.08898926, 3.3452606)
+
+[node name="CSGBox3D136" type="CSGBox3D" parent="Objects/Level" unique_id=361089284]
+transform = Transform3D(3.969706e-14, -2.2737368e-13, 22.091614, -9.0816286e-07, 17.243574, 2.1402023e-35, -20.776346, -7.5374055e-07, 4.2210135e-14, 53.197956, -15.933657, 13.085657)
+use_collision = true
+size = Vector3(2.6846924, 0.67718506, 0.27528)
+
+[node name="CSGBox3D139" type="CSGBox3D" parent="Objects/Level" unique_id=803169946]
+transform = Transform3D(6.4216795e-07, -12.193047, 15.621128, -6.42168e-07, 12.193047, 15.621128, -20.776346, -7.5374044e-07, 4.2210135e-14, 52.13579, -6.13145, -2.755)
+use_collision = true
+size = Vector3(0.8952942, 0.8514099, 0.27528)
+
+[node name="CSGBox3D140" type="CSGBox3D" parent="Objects/Level" unique_id=1964519440]
+transform = Transform3D(8.772179e-07, -16.65601, -5.7177315, 2.3504982e-07, -4.462965, 21.33886, -20.776346, -7.5374055e-07, -2.6574517e-14, 45.126053, -1.5526147, 1.7954922)
+use_collision = true
+size = Vector3(0.4572487, 0.8514099, 0.27528)
+
+[node name="CSGBox3D137" type="CSGBox3D" parent="Objects/Level" unique_id=931726661]
+transform = Transform3D(-20.776344, -7.5374044e-07, -9.65655e-07, -9.0816275e-07, 17.243572, -1.4996049e-28, 9.0816286e-07, 3.2158222e-13, -22.091614, 26.11808, -11.019834, -13.017849)
+use_collision = true
+size = Vector3(2.9360962, 1.2471161, 0.13812828)
 
 [node name="CSGBox3D12" type="CSGBox3D" parent="Objects/Level" unique_id=30554749]
 transform = Transform3D(-9.0816286e-07, 17.243574, -9.656552e-07, 0, -7.537403e-07, -22.091614, -20.776344, -7.5374044e-07, 4.2210135e-14, -33.575478, 19.665848, 22.638367)
@@ -4351,6 +4396,15 @@ material_override = SubResource("StandardMaterial3D_62djl")
 use_collision = true
 size = Vector3(62.785225, 1, 72.3371)
 
+[node name="CSGBox3D" type="CSGBox3D" parent="Objects/Level/CSGBox3D88" unique_id=1051909750]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.416996, -0.30752563, 24.00165)
+operation = 2
+size = Vector3(11.065369, 2.312561, 2.4990234)
+
+[node name="DevArrow" parent="Objects/Level/CSGBox3D88" unique_id=2032800039 instance=ExtResource("27_uvnoq")]
+transform = Transform3D(-0.50000006, 0.8660254, 0, -0.8660254, -0.50000006, 0, 0, 0, 1, -19.725882, 1.5735579, 24.326588)
+speed = -2.0
+
 [node name="StaticBody3D" type="StaticBody3D" parent="Objects/Level" unique_id=1988884932]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.760336, 0, -16.394182)
 
@@ -4365,13 +4419,13 @@ height = 13.64917
 sides = 16
 
 [node name="CSGCylinder3D3" type="CSGCylinder3D" parent="Objects/Level" unique_id=1128568854]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.327641, 22.47818, -42.42841)
-height = 12.423767
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.327641, 23.161263, -42.42841)
+height = 11.057602
 sides = 16
 
 [node name="CSGCylinder3D4" type="CSGCylinder3D" parent="Objects/Level" unique_id=1509590880]
-transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, -7.327641, 23.808926, -33.222168)
-height = 17.168938
+transform = Transform3D(1, 0, 0, 0, 0.8660254, 0.5, 0, -0.5, 0.8660254, -7.327641, 24.913445, -33.859863)
+height = 14.61816
 sides = 16
 
 [node name="CSGCylinder3D2" type="CSGCylinder3D" parent="Objects/Level" unique_id=1170815066]
@@ -4552,7 +4606,7 @@ operation = 2
 size = Vector3(2.7758179, 0.87693024, 3.6456718)
 
 [node name="CSGBox3D6" type="CSGBox3D" parent="Objects/SwimmingPoolExit" unique_id=617234927]
-transform = Transform3D(1.216062e-07, -0.6010621, -0.7992023, 3.720449e-08, 0.7992023, -0.6010621, 1, 4.335896e-08, 1.1955015e-07, -33.911804, 0.010968208, -25.12802)
+transform = Transform3D(1.2715704e-07, -0.35440537, -0.9350919, 1.82459e-09, 0.9350919, -0.35440537, 1, 4.3358963e-08, 1.1955015e-07, -33.911804, 0.6395719, -25.12802)
 operation = 2
 size = Vector3(2.7758179, 2.3146515, 3.7252617)
 
@@ -4651,6 +4705,46 @@ stair_width = 3.0
 landing_step_indices = Array[int]([5])
 top_landing_length = 0.0
 step_thickness = 0.1
+metadata/_custom_type_script = "uid://c20bpd5d2f3c5"
+
+[node name="ProceduralStairsCSG" type="CSGPolygon3D" parent="Objects/ProceduralStairsCSG5" unique_id=175996265]
+transform = Transform3D(0.018621637, 0, 0.9998266, 0, 1, 0, -0.9998266, 0, 0.018621637, -31.930143, -5.979541, -1.9974637)
+polygon = PackedVector2Array(0, 0, 0, 0.15, 0.3, 0.15, 0.3, 0.3, 0.6, 0.3, 0.6, 0.45, 0.9, 0.45, 0.9, 0.6, 1.2, 0.6, 1.2, 0.75, 1.5, 0.75, 1.5, 0.9, 1.8, 0.9, 1.8, 1.05, 2.1, 1.05, 2.1, 1.2, 2.4, 1.2, 2.4, 1.35, 2.7, 1.35, 2.7, 1.5, 3, 1.5, 3, 1.65, 13.3, 1.65, 13.3, 1.8, 13.6, 1.8, 13.6, 1.95, 13.9, 1.95, 13.9, 2.1, 14.2, 2.1, 14.2, 2.25, 14.5, 2.25, 14.5, 2.4, 14.8, 2.4, 14.8, 2.55, 15.1, 2.55, 15.1, 2.7, 15.4, 2.7, 15.4, 2.85, 15.7, 2.85, 15.7, 3, 16, 3, 16, 3.15, 16.3, 3.15, 16.3, 3.3, 16.6, 3.3, 16.6, 3.45, 16.9, 3.45, 16.9, 3.6, 17.2, 3.6, 17.2, 3.75, 17.5, 3.75, 17.5, 3.9, 17.8, 3.9, 17.8, 4.05, 18.1, 4.05, 18.1, 4.2, 18.4, 4.2, 18.4, 4.35, 18.7, 4.35, 18.7, 4.5, 19, 4.5, 19, 4.65, 19.3, 4.65, 19.3, 4.8, 19.6, 4.8, 19.6, 4.95, 19.9, 4.95, 19.9, 5.1, 20.2, 5.1, 20.2, 5.25, 20.5, 5.25, 20.5, 5.4, 20.8, 5.4, 20.8, 5.55, 21.1, 5.55, 21.1, 5.7, 21.4, 5.7, 21.4, 5.85, 21.7, 5.85, 21.7, 6, 23.5, 6, 23.5, 0)
+depth = 3.0
+script = ExtResource("45_o4kb0")
+step_count = 40
+total_height = 6.0
+total_length = 12.0
+stair_width = 3.0
+landing_step_indices = Array[int]([10])
+landing_extra_length = 10.0
+metadata/_custom_type_script = "uid://c20bpd5d2f3c5"
+
+[node name="ProceduralStairsCSG2" type="CSGPolygon3D" parent="Objects/ProceduralStairsCSG5" unique_id=857039151]
+transform = Transform3D(-0.9998266, 0, 0.018621594, 0, 1, 0, -0.018621594, 0, -0.9998266, -9.41322, -11.936864, -1.9974608)
+polygon = PackedVector2Array(0, 0, 0, 0.15, 0.3, 0.15, 0.3, 0.3, 0.6, 0.3, 0.6, 0.45, 0.9, 0.45, 0.9, 0.6, 1.2, 0.6, 1.2, 0.75, 1.5, 0.75, 1.5, 0.9, 1.8, 0.9, 1.8, 1.05, 2.1, 1.05, 2.1, 1.2, 2.4, 1.2, 2.4, 1.35, 2.7, 1.35, 2.7, 1.5, 3, 1.5, 3, 1.65, 13.3, 1.65, 13.3, 1.8, 13.6, 1.8, 13.6, 1.95, 13.9, 1.95, 13.9, 2.1, 14.2, 2.1, 14.2, 2.25, 14.5, 2.25, 14.5, 2.4, 14.8, 2.4, 14.8, 2.55, 15.1, 2.55, 15.1, 2.7, 15.4, 2.7, 15.4, 2.85, 15.7, 2.85, 15.7, 3, 16, 3, 16, 3.15, 16.3, 3.15, 16.3, 3.3, 16.6, 3.3, 16.6, 3.45, 16.9, 3.45, 16.9, 3.6, 17.2, 3.6, 17.2, 3.75, 17.5, 3.75, 17.5, 3.9, 17.8, 3.9, 17.8, 4.05, 18.1, 4.05, 18.1, 4.2, 18.4, 4.2, 18.4, 4.35, 18.7, 4.35, 18.7, 4.5, 19, 4.5, 19, 4.65, 19.3, 4.65, 19.3, 4.8, 19.6, 4.8, 19.6, 4.95, 19.9, 4.95, 19.9, 5.1, 20.2, 5.1, 20.2, 5.25, 20.5, 5.25, 20.5, 5.4, 20.8, 5.4, 20.8, 5.55, 21.1, 5.55, 21.1, 5.7, 21.4, 5.7, 21.4, 5.85, 21.7, 5.85, 21.7, 6, 27, 6, 27, 0)
+depth = 3.0
+script = ExtResource("45_o4kb0")
+step_count = 40
+total_height = 6.0
+total_length = 12.0
+stair_width = 3.0
+landing_step_indices = Array[int]([10])
+landing_extra_length = 10.0
+top_landing_length = 5.0
+metadata/_custom_type_script = "uid://c20bpd5d2f3c5"
+
+[node name="ProceduralStairsCSG3" type="CSGPolygon3D" parent="Objects/ProceduralStairsCSG5" unique_id=422662111]
+transform = Transform3D(-0.01862155, 0, -0.9998266, 0, 1, 0, 0.9998266, 0, -0.01862155, -9.413218, -19.886292, -15.154445)
+polygon = PackedVector2Array(0, 0, 0, 0.2, 0.3, 0.2, 0.3, 0.4, 0.6, 0.4, 0.6, 0.6, 0.9, 0.6, 0.9, 0.8, 1.2, 0.8, 1.2, 1, 1.5, 1, 1.5, 1.2, 1.8, 1.2, 1.8, 1.4, 2.1, 1.4, 2.1, 1.6, 2.4, 1.6, 2.4, 1.8, 2.7, 1.8, 2.7, 2, 3, 2, 3, 2.2, 3.3, 2.2, 3.3, 2.4, 3.6, 2.4, 3.6, 2.6, 3.9, 2.6, 3.9, 2.8, 4.2, 2.8, 4.2, 3, 4.5, 3, 4.5, 3.2, 4.8, 3.2, 4.8, 3.4, 5.1, 3.4, 5.1, 3.6, 5.4, 3.6, 5.4, 3.8, 5.7, 3.8, 5.7, 4, 6, 4, 6, 4.2, 6.3, 4.2, 6.3, 4.4, 6.6, 4.4, 6.6, 4.6, 6.9, 4.6, 6.9, 4.8, 7.2, 4.8, 7.2, 5, 7.5, 5, 7.5, 5.2, 7.8, 5.2, 7.8, 5.4, 8.1, 5.4, 8.1, 5.6, 8.4, 5.6, 8.4, 5.8, 8.7, 5.8, 8.7, 6, 9, 6, 9, 6.2, 9.3, 6.2, 9.3, 6.4, 9.6, 6.4, 9.6, 6.6, 9.9, 6.6, 9.9, 6.8, 10.2, 6.8, 10.2, 7, 10.5, 7, 10.5, 7.2, 10.8, 7.2, 10.8, 7.4, 11.1, 7.4, 11.1, 7.6, 11.4, 7.6, 11.4, 7.8, 11.7, 7.8, 11.7, 8, 17, 8, 17, 0)
+depth = 3.0
+script = ExtResource("45_o4kb0")
+step_count = 40
+total_height = 8.0
+total_length = 12.0
+stair_width = 3.0
+landing_extra_length = 10.0
+top_landing_length = 5.0
 metadata/_custom_type_script = "uid://c20bpd5d2f3c5"
 
 [node name="ProceduralStairsCSG3" type="CSGPolygon3D" parent="Objects" unique_id=1336266282]
@@ -5081,11 +5175,73 @@ overcome these 2cm
 One of the coolest LD tricks I found. Hopefully you'll like it, too."
 
 [node name="Label3D41" type="Label3D" parent="Texts" unique_id=1792717569]
-transform = Transform3D(1, 0, -1.7484555e-07, 0, 1, 0, 1.7484555e-07, 0, 1, -11.025884, 4.3534617, 16.988474)
-text = "3D assets are made by 
-Created by Lucas Andres Manzoni  
+transform = Transform3D(1.0629229e-07, 0, 0.9999999, 0, 1, 0, -0.9999999, 0, 1.0629229e-07, -18.528086, -10.922607, 19.08473)
+text = "3D assets are created by Lucas Andres Manzoni  
 https://www.behance.net/lucasandresmanzoni"
-font_size = 64
+font_size = 100
+
+[node name="Label3D47" type="Label3D" parent="Texts" unique_id=1694393689]
+transform = Transform3D(1.06292276e-07, 0, 0.9999999, 0, 1, 0, -0.9999999, 0, 1.06292276e-07, -18.06291, -13.438212, 19.292995)
+text = "Some dude - DannyDeTour"
+font_size = 100
+
+[node name="Label3D58" type="Label3D" parent="Texts" unique_id=1751597505]
+transform = Transform3D(-0.9999999, 0, 6.2580895e-08, 0, 1, 0, -6.2580895e-08, 0, -0.9999999, -9.44713, -8.589185, 39.529137)
+text = "THANKS
+---
+Игорь Демчук (Новая Игра+) - moral support
+AntikranStudio - useful advice and links
+Sergei Grach - improved NOCLIP
+"
+font_size = 100
+
+[node name="Label3D48" type="Label3D" parent="Texts" unique_id=1817944403]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 3.030736, -5.7253857, -10.467089)
+text = "Directed by Hideo Kojima"
+font_size = 100
+
+[node name="Label3D53" type="Label3D" parent="Texts" unique_id=2066931597]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 2.8619013, -8.910817, -10.467089)
+text = "Tested by Phil Fish"
+font_size = 100
+
+[node name="Label3D49" type="Label3D" parent="Texts" unique_id=1855693561]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 3.030736, -7.3676405, -10.467089)
+text = "Written by Neil Druckmann
+"
+font_size = 100
+
+[node name="Label3D50" type="Label3D" parent="Texts" unique_id=589129251]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 14.170308, -9.810974, -10.467089)
+text = "Revolver Ocelot - Revolver Ocelot
+Videogames - were a mistake
+Anime - not real
+Bigot Sandwich - cooking!
+Form - returned to
+Blast - having
+
+"
+font_size = 100
+
+[node name="Label3D51" type="Label3D" parent="Texts" unique_id=881167831]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 3.030736, -10.661871, -10.467089)
+text = "Aditional Photography by Rian Johnson"
+font_size = 100
+
+[node name="Label3D54" type="Label3D" parent="Texts" unique_id=2058625034]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 3.030736, -12.354903, -10.467089)
+text = "Consulted by Sweet Baby Inc"
+font_size = 100
+
+[node name="Label3D52" type="Label3D" parent="Texts" unique_id=566372230]
+transform = Transform3D(0.9999999, 0, -1.5000369e-07, 0, 1, 0, 1.5000369e-07, 0, 0.9999999, 3.030736, -15.643973, -10.467089)
+text = "Producers
+---
+Kathleen Kennedy
+Anita Sarkeesian
+Zoë Quinn
+"
+font_size = 100
 
 [node name="Label3D27" type="Label3D" parent="Texts" unique_id=875234757]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, -11.670322, 3.804318, 29.684008)
@@ -5099,6 +5255,13 @@ F           - flashlight
 Z           -zoom
 Left Mouse Button - SHOOT!!! "
 font_size = 90
+horizontal_alignment = 0
+
+[node name="Label3D46" type="Label3D" parent="Texts" unique_id=212341936]
+transform = Transform3D(1.3113416e-07, 0, 1, 0, 1, 0, -1, 0, 1.3113416e-07, -8.0210495, -9.978577, 4.7749424)
+double_sided = false
+text = "THE VIP LOUNGE"
+font_size = 150
 horizontal_alignment = 0
 
 [node name="Label3D13" type="Label3D" parent="Texts" unique_id=1908273057]
@@ -5183,6 +5346,40 @@ text = "Water Cube test.
 Shoot its sides and then its bottom to see what would happen.
 NEAT!"
 font_size = 50
+
+[node name="Label3D42" type="Label3D" parent="Texts" unique_id=2024698392]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.92126, 12.082165, -17.70582)
+billboard = 1
+text = "Don't teleport just yet! 
+Check out my BASALT! 
+And HEAVY BOX!!"
+font_size = 64
+
+[node name="Label3D43" type="Label3D" parent="Texts" unique_id=1226590181]
+transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 80.44245, 12.082165, -17.043625)
+text = "Use NOCLIP (Q) if you get stuck. 
+It's a testbed of my gameplay mechanics, not an actual level.
+I will be building everything properly next time"
+font_size = 64
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Texts/Label3D43" unique_id=398681101]
+transform = Transform3D(1.9106855e-15, 4.371139e-08, 1, 1, -4.371139e-08, 0, 4.371139e-08, 1, -4.371139e-08, 0, 0, -0.09455109)
+mesh = SubResource("PlaneMesh_8wjit")
+
+[node name="Label3D44" type="Label3D" parent="Texts" unique_id=63804840]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.61742, 13.207347, -36.538677)
+double_sided = false
+text = "Nothing here yet.
+But there will be
+plenty of stuff later!
+I hope..."
+font_size = 64
+
+[node name="Label3D45" type="Label3D" parent="Texts" unique_id=53948653]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.81182, 15.001512, -28.233593)
+billboard = 1
+text = "Heavy box test"
+font_size = 64
 
 [node name="Paintings" type="Node3D" parent="." unique_id=767419484]
 
@@ -5383,29 +5580,29 @@ metadata/_custom_type_script = "uid://c6vsx15ci2q2y"
 [node name="MonkeBars" type="Node3D" parent="." unique_id=316512867]
 
 [node name="CSGBox3D" type="CSGBox3D" parent="MonkeBars" unique_id=285641073]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1774902, 12.848338, -14.553083)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1774902, 13.762387, -14.553083)
 size = Vector3(13.432129, 1, 5.307129)
 
 [node name="MonkeyBarVolume4" type="CSGBox3D" parent="MonkeBars" unique_id=304954735]
-transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.277451, 15.901974, -31.538315)
-size = Vector3(8.633942, 1.2135162, 5.659424)
+transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.2758207, 16.702042, -30.239902)
+size = Vector3(11.136795, 0.3520851, 5.659424)
 material = SubResource("StandardMaterial3D_0wf3h")
 script = ExtResource("46_oipxx")
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
 
 [node name="CSGBox3D4" type="CSGBox3D" parent="MonkeBars" unique_id=608263594]
-transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.2695055, 17.038422, -31.59282)
-size = Vector3(9.015381, 1, 5.307129)
+transform = Transform3D(0.0045312014, 0.016949834, 0.9998461, 0.13609186, 0.99054337, -0.017408889, -0.99068576, 0.13614982, 0.0021816168, -7.281885, 18.15249, -30.338133)
+size = Vector3(11.652222, 1.7558594, 5.307129)
 
 [node name="MonkeyBarVolume5" type="CSGBox3D" parent="MonkeBars" unique_id=377143011]
-transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.25847, 15.977144, -41.64592)
-size = Vector3(12.407837, 0.8311157, 5.659424)
+transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.2502356, 16.466991, -41.559414)
+size = Vector3(12.407837, 1.8027649, 5.659424)
 material = SubResource("StandardMaterial3D_0wf3h")
 script = ExtResource("46_oipxx")
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
 
 [node name="CSGBox3D5" type="CSGBox3D" parent="MonkeBars" unique_id=1599769291]
-transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.2617264, 16.855827, -41.749557)
+transform = Transform3D(-0.004531285, -0.016949812, -0.9998461, 0.17800772, 0.98387384, -0.017485766, 0.98401856, -0.17805964, -0.0014410152, -7.2617264, 18.121895, -41.749557)
 size = Vector3(12.272339, 1.0883789, 5.307129)
 
 [node name="CSGBox3D2" type="CSGBox3D" parent="MonkeBars" unique_id=1248711254]
@@ -5417,8 +5614,8 @@ transform = Transform3D(0.05446225, 0, 0.99851584, -0.24686883, 0.9689552, 0.013
 size = Vector3(8.329346, 1, 5.307129)
 
 [node name="MonkeyBarVolume" type="CSGBox3D" parent="MonkeBars" unique_id=1609404894]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1093025, 12.059666, -14.552036)
-size = Vector3(13.676514, 1, 5.659424)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.1093025, 13.226943, -14.552036)
+size = Vector3(13.676514, 0.28222656, 5.659424)
 material = SubResource("StandardMaterial3D_0wf3h")
 script = ExtResource("46_oipxx")
 metadata/_custom_type_script = "uid://buk422xy2d1pq"
@@ -5604,6 +5801,7 @@ transform = Transform3D(-1, -4.3711385e-08, -4.371139e-08, 4.3711385e-08, 4.3711
 mesh = SubResource("PlaneMesh_llsfp")
 
 [node name="ProperLD" type="Node3D" parent="." unique_id=739812877]
+visible = false
 
 [node name="CSGBox3D" type="CSGBox3D" parent="ProperLD" unique_id=468272618]
 transform = Transform3D(0.9999993, -0.00011289329, 0.0011744526, 0.00011051544, 0.999998, 0.0020193772, -0.0011746787, -0.0020192459, 0.99999726, -136.42384, 0, 23.802502)
@@ -5646,24 +5844,24 @@ operation = 2
 size = Vector3(5.3256226, 1.7250977, 0.32177734)
 
 [node name="CSGBox3D7" type="CSGBox3D" parent="ProperLD/CSGBox3D24" unique_id=2056184558]
-transform = Transform3D(1.0000322, -7.7011464e-10, -1.17579475e-08, -8.067218e-10, 1.000004, -1.3271347e-08, -8.032657e-09, 1.2107193e-07, 1.0000322, 0.16481018, 0.36360836, -0.8621826)
+transform = Transform3D(1.000036, -8.458301e-10, -1.3154931e-08, -8.3218765e-10, 1.000004, -1.46683306e-08, -8.8475645e-09, 1.359731e-07, 1.000036, 0.16481018, 0.21260643, -0.8621826)
 operation = 2
-size = Vector3(5.3256226, 1.7250977, 0.32177734)
+size = Vector3(5.3256226, 2.0270996, 0.32177734)
 
 [node name="CSGBox3D8" type="CSGBox3D" parent="ProperLD/CSGBox3D24" unique_id=957967253]
-transform = Transform3D(1.0000323, -7.7079676e-10, -1.17579475e-08, -8.0626705e-10, 1.000004, -1.3271347e-08, -8.1490725e-09, 1.215376e-07, 1.0000323, 0.16546631, 0.36474657, -1.4257736)
+transform = Transform3D(1.000037, -8.794814e-10, -1.3620593e-08, -8.0785867e-10, 1.000004, -1.6065314e-08, -9.080395e-09, 1.3969839e-07, 1.000037, 0.16545105, 0.28991795, -1.4257736)
 operation = 2
-size = Vector3(5.3256226, 1.7250977, 0.32177734)
+size = Vector3(5.3256226, 1.8747559, 0.32177734)
 
 [node name="CSGBox3D9" type="CSGBox3D" parent="ProperLD/CSGBox3D24" unique_id=126736810]
-transform = Transform3D(1.0000324, -7.712515e-10, -1.17579475e-08, -8.0558493e-10, 1.000004, -1.3271347e-08, -8.1490725e-09, 1.2200326e-07, 1.0000324, 0.16619873, 0.36600065, -2.0465813)
+transform = Transform3D(1.0000346, -8.101324e-10, -1.268927e-08, -8.144525e-10, 1.000004, -1.46683306e-08, -8.614734e-09, 1.3038516e-07, 1.0000346, 0.16618347, 0.26822233, -2.0465813)
 operation = 2
-size = Vector3(5.3256226, 1.7250977, 0.32177734)
+size = Vector3(5.3256226, 1.9206543, 0.32177734)
 
 [node name="CSGBox3D10" type="CSGBox3D" parent="ProperLD/CSGBox3D24" unique_id=1715078405]
-transform = Transform3D(1.0000325, -7.7193363e-10, -1.1874363e-08, -8.0535756e-10, 1.000004, -1.3271347e-08, -8.1490725e-09, 1.2246892e-07, 1.0000325, 0.16679382, 0.36702347, -2.55295)
+transform = Transform3D(1.0000443, -1.0297754e-09, -1.6530976e-08, -1.0697931e-09, 1.000004, -1.8859282e-08, -1.1175871e-08, 1.6856939e-07, 1.0000443, 0.16680908, 0.04158306, -2.55295)
 operation = 2
-size = Vector3(5.3256226, 1.7250977, 0.32177734)
+size = Vector3(5.3256226, 1.4663086, 0.32177734)
 
 [node name="CSGBox3D6" type="CSGBox3D" parent="ProperLD" unique_id=589909429]
 transform = Transform3D(0.9999993, -0.00011289329, 0.0011744526, 0.00011051544, 0.999998, 0.0020193772, -0.0011746787, -0.0020192459, 0.99999726, -133.30649, -4.2363057, 27.08034)
@@ -8354,43 +8552,48 @@ surface_material_override/0 = SubResource("StandardMaterial3D_or4qp")
 [node name="@CollisionShape3D@60741" type="CollisionShape3D" parent="BasaltGenerator/BasaltColumn_249/@StaticBody3D@60742" unique_id=2033321873]
 shape = SubResource("ConvexPolygonShape3D_kecw4")
 
-[node name="Label3D3" type="Label3D" parent="." unique_id=2024698392]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 67.92126, 12.082165, -17.70582)
-billboard = 1
-text = "Don't teleport just yet! 
-Check out my BASALT! 
-And HEAVY BOX!!"
-font_size = 64
+[node name="SpotLight3D2" type="SpotLight3D" parent="." unique_id=1684966814]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, -5.432526, 0)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="Label3D6" type="Label3D" parent="." unique_id=1226590181]
-transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 80.44245, 12.082165, -17.043625)
-text = "Use NOCLIP (Q) if you get stuck. 
-It's a testbed of my gameplay mechanics, not an actual level.
-I will be building everything properly next time"
-font_size = 64
+[node name="SpotLight3D3" type="SpotLight3D" parent="." unique_id=1171202543]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 18.355639, -5.432526, 0)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Label3D6" unique_id=398681101]
-transform = Transform3D(1.9106855e-15, 4.371139e-08, 1, 1, -4.371139e-08, 0, 4.371139e-08, 1, -4.371139e-08, 0, 0, -0.09455109)
-mesh = SubResource("PlaneMesh_8wjit")
+[node name="SpotLight3D4" type="SpotLight3D" parent="." unique_id=1959984390]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 37.888977, -5.432526, 0)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="Label3D5" type="Label3D" parent="." unique_id=63804840]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.61742, 13.207347, -36.538677)
-double_sided = false
-text = "Nothing here yet.
-But there will be
-plenty of stuff later!
-I hope..."
-font_size = 64
+[node name="SpotLight3D5" type="SpotLight3D" parent="." unique_id=1409975934]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, -5.432526, 27.317875)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="Label3D4" type="Label3D" parent="." unique_id=53948653]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.81182, 15.001512, -28.233593)
-billboard = 1
-text = "Heavy box test"
-font_size = 64
+[node name="SpotLight3D6" type="SpotLight3D" parent="." unique_id=869846734]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 18.355639, -5.432526, 27.317875)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="HeavyPickableBox" parent="." unique_id=1886093169 instance=ExtResource("59_8wjit")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 76.63003, 12.558201, -29.297213)
+[node name="SpotLight3D7" type="SpotLight3D" parent="." unique_id=1333672296]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 37.888977, -5.432526, 27.317875)
+light_color = Color(0.8117647, 1, 1, 1)
+light_energy = 15.0
+spot_range = 20.0
+spot_angle = 30.0
 
-[node name="HeavyPickableBox2" parent="." unique_id=167706246 instance=ExtResource("59_8wjit")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.210134, 8.5, -25.19554)
-stand_distance = 1.3
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=1194256117]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.386696, -12.15777, 14.387739)
+omni_range = 50.0

@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://dtm30dwmcgd8n" path="res://utils/WaterMaker3D/WaterMaker3D.gd" id="1_7s6ww"]
 [ext_resource type="Shader" uid="uid://2pyqpr2qew6o" path="res://utils/WaterMaker3D/FogFade.gdshader" id="2_5f01f"]
-[ext_resource type="Shader" uid="uid://1eekslkw52pc" path="res://utils/WaterMaker3D/CameraWaterOverlay.gdshader" id="2_12cox"]
 [ext_resource type="Script" uid="uid://grkqw00wxiwn" path="res://utils/WaterMaker3D/FogVolumeFadeScript.gd" id="3_b5ytn"]
+[ext_resource type="Shader" uid="uid://e5j85108j8s0" path="res://utils/WaterMaker3D/CameraWaterOverlay2.gdshader" id="4_70utq"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_1bimf"]
 resource_local_to_scene = true
@@ -52,7 +52,12 @@ shader_parameter/edge_fade = 0.1
 shader_parameter/fade_plane = Vector4(0, 1, 0, -999)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ccyp1"]
-shader = ExtResource("2_12cox")
+shader = ExtResource("4_70utq")
+shader_parameter/clear_progress = 1.5
+shader_parameter/distortion_strength = 0.03
+shader_parameter/chromatic_aberration = 0.005
+shader_parameter/vignette_intensity = 0.4
+shader_parameter/water_tint = Color(0.1, 0.4, 0.7, 0.2)
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_dcd7l"]
 

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://ca4mn3j02b5bi" path="res://scripts/Player.gd" id="1_34orh"]
 [ext_resource type="PackedScene" uid="uid://cv4syvckbtm2f" path="res://scenes/ui.tscn" id="2_k2mo6"]
 [ext_resource type="Texture2D" uid="uid://dnv1e6gebl5gj" path="res://assets/images/UI/flashlight_pattern.png" id="3_di6f5"]
+[ext_resource type="Shader" uid="uid://e5j85108j8s0" path="res://utils/WaterMaker3D/CameraWaterOverlay2.gdshader" id="5_qu4a1"]
 [ext_resource type="Texture2D" uid="uid://c7cbvlpeqy6d5" path="res://assets/images/Concept/BellaInGameReflection.png" id="7_cw2d6"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_cw2d6"]
@@ -250,6 +251,17 @@ _data = {
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_34orh"]
 height = 1.2
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_mdl7e"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_70d11"]
+shader = ExtResource("5_qu4a1")
+shader_parameter/clear_progress = 1.5
+shader_parameter/ripple_magnitude = 1.0000000475
+shader_parameter/ripple_speed = 2.000000095
+shader_parameter/chromatic_aberration = 0.0010000000475
+shader_parameter/water_tint = Color(0.1, 0.4, 0.7, 0.2)
+shader_parameter/highlight_punch = 0.02000000095
+
 [node name="Player" type="CharacterBody3D" unique_id=1502339238 groups=["player"]]
 process_mode = 3
 script = ExtResource("1_34orh")
@@ -321,6 +333,19 @@ texture = ExtResource("7_cw2d6")
 [node name="WaterDetector" type="Area3D" parent="." unique_id=1554540487]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="WaterDetector" unique_id=1446250573]
+shape = SubResource("SphereShape3D_mdl7e")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=336625951]
+
+[node name="WaterRippleOverlay" type="ColorRect" parent="CanvasLayer" unique_id=1942721923]
+visible = false
+material = SubResource("ShaderMaterial_70d11")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [connection signal="area_entered" from="WaterDetector" to="." method="_on_water_detector_area_entered"]
 [connection signal="area_exited" from="WaterDetector" to="." method="_on_water_detector_area_exited"]

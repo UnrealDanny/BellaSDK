@@ -26,6 +26,11 @@ extends CharacterBody3D
 @onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
 # Note: interact_shapecast is already @onready in your code
 
+@onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
+
+# --------------------------------------
+# @EXPORTS
+# --------------------------------------
 @export var walking_speed: float = 5.0
 @export var sprinting_speed: float = 6.5
 @export var crouching_speed: float = 3.0
@@ -143,6 +148,9 @@ var base_spot_range: float = 10.0
 var is_swimming: bool = false
 var head_in_water: bool = false
 
+var water_clear_tween: Tween
+var was_head_in_water: bool = false
+
 # UPDRAFT VARS
 var in_updraft: bool = false
 var current_updraft_strength: float = 0.0
@@ -174,6 +182,16 @@ var zipline_gravity_pull := 5.0 # How much the slope pulls you down
 
 # MONKE VARS
 var current_monkey_bar_path: Path3D = null
+var available_monkey_bar: Node3D = null
+var monkey_bar_cooldown: float = 0.0
+
+# Add these receiver functions anywhere in your player script
+func set_available_monkey_bar(bar: Node3D) -> void:
+	available_monkey_bar = bar
+
+func clear_available_monkey_bar(bar: Node3D) -> void:
+	if available_monkey_bar == bar:
+		available_monkey_bar = null
 
 # SHOOT VARS
 var damage: int = 100
@@ -427,8 +445,27 @@ func _physics_process(delta: float) -> void:
 		move_and_slide()         
 		_snap_down_to_stairs_check()
 		
-	_slide_camera_smooth_back_to_origin(delta)        
+	_slide_camera_smooth_back_to_origin(delta)  
 	
+	if monkey_bar_cooldown > 0:
+		monkey_bar_cooldown -= delta      
+	
+	if not is_on_floor() and available_monkey_bar != null and monkey_bar_cooldown <= 0:
+		if not on_monkey_bars:
+		# 1. Calculate the exact height the player's body should hang at
+			var hang_height: float = available_monkey_bar.global_position.y - MONKEY_BAR_HANG_OFFSET
+			
+			# 2. Check how physically close the player is to that hang spot
+			var distance_to_hang: float = absf(hang_height - global_position.y)
+			
+			# --- THE UPDATED FIX ---
+			# ONLY grab the bar if we are within 1.5 meters of it (magnet radius)
+			# AND our jump has slowed down below 2.0 m/s (near the peak of our jump)
+			# OR if we are flying fast but have perfectly reached the bar's height (distance < 0.4)
+			if distance_to_hang < 1.5 and (velocity.y < 2.0 or distance_to_hang < 0.4):
+				current_monkey_bar_volume = available_monkey_bar 
+				enter_monkey_bars(available_monkey_bar)
+			
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
 		toggle_pause()
@@ -541,9 +578,9 @@ func exit_ladder() -> void:
 var on_monkey_bars: bool = false
 var MONKEY_BAR_SPEED: float = 2.5 
 var MONKEY_BAR_HANG_OFFSET: float = 2.1 
-var current_monkey_bar_volume: CSGBox3D = null 
+var current_monkey_bar_volume: Node3D = null 
 
-func enter_monkey_bars(volume_node: CSGBox3D) -> void:
+func enter_monkey_bars(volume_node: Node3D) -> void: 
 	if on_monkey_bars and current_monkey_bar_volume == volume_node: 
 		return
 	
@@ -558,7 +595,7 @@ func enter_monkey_bars(volume_node: CSGBox3D) -> void:
 	if not was_already_on_bars:
 		velocity.y = 0
 
-func exit_monkey_bars(volume_node: CSGBox3D = null) -> void:
+func exit_monkey_bars(volume_node: Node3D = null) -> void: 
 	if not on_monkey_bars: return
 	
 	if volume_node != null and volume_node != current_monkey_bar_volume:
@@ -572,6 +609,8 @@ func exit_monkey_bars(volume_node: CSGBox3D = null) -> void:
 		camera_anims.speed_scale = 1.0
 	
 	velocity.y = -2.0
+	
+	monkey_bar_cooldown = 0.5
 
 func _handle_monkey_bars_physics(_delta: float) -> void:
 	sprinting = false
@@ -587,11 +626,9 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
 
 	if current_monkey_bar_volume and is_instance_valid(current_monkey_bar_volume):
-		var local_pos: Vector3 = current_monkey_bar_volume.to_local(global_position)
-		local_pos.y = current_monkey_bar_volume.size.y / 2.0
-		var global_top: Vector3 = current_monkey_bar_volume.to_global(local_pos)
 		
-		var target_y: float = global_top.y - MONKEY_BAR_HANG_OFFSET
+		# THE FIX: Area3Ds don't have a "size", so we just use the Area's center point
+		var target_y: float = current_monkey_bar_volume.global_position.y - MONKEY_BAR_HANG_OFFSET
 		var distance_to_target: float = target_y - global_position.y
 		
 		if absf(distance_to_target) > 4.0:
@@ -614,6 +651,18 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 
 	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
 		exit_monkey_bars()
+
+	if input_dir.length() > 0.1:
+		if camera_anims.current_animation != "MonkeMoves":
+			camera_anims.play("MonkeMoves", 0.3)
+		camera_anims.speed_scale = 1.0 if input_dir.y < 0 else -1.0
+	else:
+		if camera_anims.current_animation == "MonkeMoves":
+			camera_anims.play("RESET", 0.3)
+			camera_anims.speed_scale = 1.0
+
+	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
+		exit_monkey_bars()
 	
 # --------------------------------------
 # ROPES
@@ -621,23 +670,30 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 var on_rope: bool = false
 func _on_rope_grabbed(rope_body: RigidBody3D) -> void:
 	current_rope = rope_body
+	
+	var rope_root: Node3D = current_rope.get_parent() as Node3D
+	var can_swing: bool = rope_root.get("is_swingable") as bool if "is_swingable" in rope_root else false
+	
+	# --- Momentum Transfer ---
+	if can_swing:
+		var entry_momentum := Vector3(velocity.x, velocity.y * 0.2, velocity.z)
+		current_rope.apply_impulse(entry_momentum * 1.5, global_position - current_rope.global_position)
+		
+	# Safely lock the player
 	velocity = Vector3.ZERO
 	add_collision_exception_with(current_rope)
 	on_rope = true
-	
 	rope_lerp_weight = 4.0 
 	
-	# Get vertical offset
+	# Calculate starting vertical offset
 	var local_pos: Vector3 = current_rope.to_local(global_position)
 	rope_offset = local_pos.y
 
-	var rope_root: Node3D = current_rope.get_parent() as Node3D
+	# Clamp the initial grab so you don't grab above or below the rope limits
 	var local_top: float = current_rope.to_local(rope_root.global_position).y
-
 	var max_length: float = rope_root.get("rope_length") as float if "rope_length" in rope_root else 10.0
 	var top_limit: float = local_top - 2.5
 	var bottom_limit: float = local_top - max_length + 0.5
-
 	rope_offset = clampf(rope_offset, bottom_limit, top_limit)
 
 	# Smoothly turn the camera to face the rope exactly when you grab it
@@ -648,8 +704,12 @@ func _on_rope_grabbed(rope_body: RigidBody3D) -> void:
 		tween.tween_property(self, "quaternion", target_transform.basis.get_rotation_quaternion(), 0.3).set_trans(Tween.TRANS_SINE)
 		
 func _on_rope_released(target_forward: Vector3 = Vector3.ZERO) -> void:
-	if current_rope and current_rope.get_parent().has_method("on_player_released"):
-		current_rope.get_parent().call("on_player_released")
+	if current_rope:
+		# Restore collision BEFORE clearing variables
+		remove_collision_exception_with(current_rope)
+		
+		if current_rope.get_parent().has_method("on_player_released"):
+			current_rope.get_parent().call("on_player_released")
 
 	current_rope = null
 	on_rope = false
@@ -663,16 +723,12 @@ func _on_rope_released(target_forward: Vector3 = Vector3.ZERO) -> void:
 	if release_forward.length_squared() < 0.001:
 		release_forward = -global_transform.basis.z
 
-	# Clean target rotation (upright only)
 	var target_basis := Basis.looking_at(release_forward, Vector3.UP)
-	
 	var release_tween := create_tween().set_parallel(true)
 	
-	# Reset Body (Shortest path rotation)
 	release_tween.tween_property(self, "quaternion", target_basis.get_rotation_quaternion(), 0.3)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
-	# Reset Eyes Tilt
 	release_tween.tween_property(eyes, "rotation", Vector3.ZERO, 0.3)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
@@ -684,21 +740,33 @@ func _handle_water_physics(delta: float) -> bool:
 	var in_water: bool = not overlapping_water_areas.is_empty()
 	
 	# 2. Only do the expensive "head in water" check if we are actually in water
+	var chest_in_water: bool = false
+	was_head_in_water = head_in_water 
 	head_in_water = false
+	
 	if in_water:
 		var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 		var query := PhysicsPointQueryParameters3D.new()
-		var chin_offset := Vector3(0.0, 0.2, 0.0)
-		query.position = cam.global_position - chin_offset
 		query.collide_with_areas = true
 		query.collide_with_bodies = false
 		
-		var results: Array[Dictionary] = space_state.intersect_point(query)
-		for result: Dictionary in results:
+		# --- CHECK HEAD ---
+		query.position = cam.global_position - Vector3(0.0, 0.2, 0.0)
+		var head_results: Array[Dictionary] = space_state.intersect_point(query)
+		for result: Dictionary in head_results:
 			var collider: Object = result.get("collider")
-			# Check if the collider is one of our known water areas
 			if collider is Area3D and collider.is_in_group("water_area"):
 				head_in_water = true
+				break
+				
+		# --- CHECK CHEST ---
+		# We check 1 meter below the camera to see if the body is submerged
+		query.position = cam.global_position - Vector3(0.0, 1.0, 0.0) 
+		var chest_results: Array[Dictionary] = space_state.intersect_point(query)
+		for result: Dictionary in chest_results:
+			var collider: Object = result.get("collider")
+			if collider is Area3D and collider.is_in_group("water_area"):
+				chest_in_water = true
 				break
 				
 	var target_energy: float = base_light_energy * 4.0 if head_in_water else base_light_energy
@@ -733,32 +801,42 @@ func _handle_water_physics(delta: float) -> bool:
 	var actively_swimming_vertical: bool = false
 	var just_water_jumped: bool = false
 	
+	# 1. Attempt to climb/vault out of the water
 	if Input.is_action_just_pressed("jump") and not head_in_water:
 		if _try_vault():
-			pass 
-		else:
-			velocity.y = 12.0 
-			
-		actively_swimming_vertical = true
-		just_water_jumped = true
+			actively_swimming_vertical = true
+			just_water_jumped = true
+			# We successfully grabbed a ledge!
 
+	# 2. If we aren't vaulting, handle normal swimming
 	elif Input.is_action_pressed("crouch"): 
 		target_velocity.y -= swim_up_speed
 		actively_swimming_vertical = true
+		
 	elif Input.is_action_pressed("jump") or Input.is_action_pressed("sprint"):
-		if head_in_water:
+		# Allow swimming up if we are underwater or chest-deep to fight the sinking!
+		if head_in_water or chest_in_water:
 			target_velocity.y += swim_up_speed
 			actively_swimming_vertical = true
 
 	if not actively_swimming_vertical:
 		if head_in_water:
-			if input_dir == Vector2.ZERO:
-				target_velocity.y = 3.0 
+			# ZONE 3: UNDERWATER
+			# The horror pull. You must hold Swim Up to survive.
+			target_velocity.y = -1.8 
+			
+		elif chest_in_water:
+			# ZONE 2: THE SURFACE
+			# Your chest is in, but your head is out. Safe zone!
+			target_velocity.y = 0.0 
+			
 		else:
-			if target_velocity.y < 0.0:
-				target_velocity.y = 0.0
-			if velocity.y < 1.0 and velocity.y > -4.0:
-				velocity.y = lerpf(velocity.y, 0.0, 10.0 * delta)
+			# ZONE 1: ENTERING WATER
+			# Shallow water or falling off a ledge.
+			if velocity.y < -1.0:
+				target_velocity.y = velocity.y # Let momentum carry your plunge!
+			else:
+				target_velocity.y = -5.0 # Strong downward pull so you quickly submerge
 
 	var target_xz := Vector2(target_velocity.x, target_velocity.z)
 	var current_xz := Vector2(velocity.x, velocity.z)
@@ -788,8 +866,23 @@ func _handle_water_physics(delta: float) -> bool:
 			
 	if target_anim != "" and camera_anims.current_animation != target_anim:
 		camera_anims.play(target_anim, 2.0)
-
+	
+	# --- SCREEN EFFECT MANAGER ---
+	if head_in_water:
+		# We are underwater: keep the screen blurry and wet!
+		if not was_head_in_water:
+			if water_clear_tween and water_clear_tween.is_valid():
+				water_clear_tween.kill() # Stop any wipe animation if we dive back in
+			screen_water_ui.show()
+			(screen_water_ui.material as ShaderMaterial).set_shader_parameter("clear_progress", 0.0)
+			
+	elif was_head_in_water and not head_in_water:
+		# We JUST surfaced: Trigger the cinematic wipe!
+		_trigger_screen_water_wipe()
+		
 	return true
+	
+	
 	
 func enter_updraft(strength: float) -> void:
 	in_updraft = true
@@ -1083,7 +1176,7 @@ func _handle_rope_physics(delta: float) -> void:
 	var intent_is_climbing: bool = false
 	var climb_direction: float = 0.0
 	
-	# --- 1. CLIMBING LOGIC ---
+	# --- CLIMBING LOGIC ---
 	if not is_sliding:
 		if is_looking_up:
 			if is_pressing_w:
@@ -1111,7 +1204,7 @@ func _handle_rope_physics(delta: float) -> void:
 		rope_offset = clampf(rope_offset, bottom_limit, top_limit)
 		is_climbing_actively = true 
 	else:
-		# --- 2. SWINGING LOGIC ---
+		# --- SWINGING LOGIC ---
 		if can_swing and input_dir.length() > 0.01:
 			current_rope.sleeping = false 
 			var flat_fwd := Vector3(look_dir.x, 0.0, look_dir.z).normalized()
@@ -1120,23 +1213,28 @@ func _handle_rope_physics(delta: float) -> void:
 			
 			if push_dir.length_squared() > 0.01:
 				current_rope.apply_force(push_dir.normalized() * force_amount, center_grab_pos - current_rope.global_position)
-
+	
 	if is_climbing_actively:
-		_handle_headbob(delta, 0.6) 
+		if has_method("_handle_headbob"):
+			_handle_headbob(delta, 0.6) 
 	else:
 		cam.transform.origin = cam.transform.origin.lerp(Vector3.ZERO, delta * 10.0)
-
-	# --- 3. APPLY POSITIONS & COMFORT ---
-	# A. FREE LOOK ORBIT: Use camera's actual vectors to place the player
+	# -------------------------------------------
+				
+	# --- APPLY POSITIONS & COMFORT ---
 	var cam_fwd := -cam.global_transform.basis.z.normalized()
-	var cam_right := -cam.global_transform.basis.x.normalized() # Pull to the side
+	var cam_right := -cam.global_transform.basis.x.normalized()
 	
-	# Flatten them so orbiting doesn't change your height
 	var orbit_fwd := Vector3(cam_fwd.x, 0, cam_fwd.z).normalized()
 	var orbit_right := Vector3(cam_right.x, 0, cam_right.z).normalized()
 	
-	# THE OFFSET FIX: Move backward (0.7) and LEFT (0.5) so the rope is on your RIGHT
-	var target_pos: Vector3 = center_grab_pos - (orbit_fwd * 0.7) + (orbit_right * 0.5)
+	var target_pos: Vector3
+	if can_swing:
+		# Move backward and LEFT so the swingable rope is on your RIGHT
+		target_pos = center_grab_pos - (orbit_fwd * 0.7) + (orbit_right * 0.5)
+	else:
+		# Static rope: strictly locked in the middle
+		target_pos = center_grab_pos - (orbit_fwd * 0.2)
 
 	if rope_lerp_weight < 45.0:
 		rope_lerp_weight += delta * 150.0 
@@ -1144,57 +1242,45 @@ func _handle_rope_physics(delta: float) -> void:
 	else:
 		global_position = target_pos 
 
-	# B. UPRIGHT STABILIZATION: Keep player body vertical (Yaw only)
-	# This allows the mouse script to continue working without being overwritten
 	global_rotation.x = 0.0
 	global_rotation.z = 0.0
 	
-	# C. COMFORT TILT (Applied to EYES so it doesn't fight mouse Pitch)
 	var tilt_quat := Quaternion(Vector3.UP, rope_up)
 	eyes.quaternion = Quaternion.IDENTITY.slerp(tilt_quat, 0.15)
 	
 	velocity = Vector3.ZERO
 
-# --- 4. DISMOUNTS ---
+	# --- DISMOUNTS ---
 	if Input.is_action_just_pressed("jump"):
 		var grab_offset: Vector3 = global_position - current_rope.global_position
 		var rope_momentum: Vector3 = current_rope.angular_velocity.cross(grab_offset)
 		var jump_dir := -cam.global_transform.basis.z.normalized()
 		var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
 		
-		# Define variables to be filled by the branch
 		var vertical_hop: float = 0.0
 		var forward_push: float = 0.0
 		
 		if can_swing and input_dir.length() > 0.1:
-			# --- TARZAN MODE (Swing-able) ---
-			# Apply the physics kickback only to swinging ropes
 			current_rope.apply_impulse(-flat_jump_dir * 12.0, Vector3.ZERO)
 			
-			var total_swing_speed: float = rope_momentum.length()
-			vertical_hop = 10.0 + (maxf(jump_dir.y, 0.0) * 12.0)
-			forward_push = 40.0 + (total_swing_speed * 1.2)
+			var directional_momentum: float = rope_momentum.dot(jump_dir)
+			var swing_boost: float = maxf(0.0, directional_momentum)
+			var camera_lift: float = maxf(jump_dir.y, 0.0) * 2.5
+			
+			vertical_hop = 5.0 + camera_lift + (swing_boost * 0.4) 
+			forward_push = 8.0 + (swing_boost * 2.5)
 		else:
-			# --- STANDARD MODE (Static) ---
-			# A much smaller "hop" off a frozen rope
 			vertical_hop = 4.5 
 			forward_push = 7.0
 	
 		_on_rope_released(jump_dir)
 		
-		# Apply the final calculated velocity
 		velocity = (flat_jump_dir * forward_push) + Vector3(0, vertical_hop, 0)
-		
-		# Sync the ground controller
 		direction = flat_jump_dir
 		current_speed = forward_push
-		
-		# Anti-Ghost Collision teleport
 		global_position += jump_dir * 0.5
 		
 	elif Input.is_action_just_pressed("interact"):
-		# If the lerp weight is still very low, we just got on! 
-		# Don't let the player off yet.
 		if rope_lerp_weight > 10.0: 
 			_on_rope_released(-cam.global_transform.basis.z)
 
@@ -1412,3 +1498,26 @@ func _on_water_detector_area_entered(area: Area3D) -> void:
 
 func _on_water_detector_area_exited(area: Area3D) -> void:
 	overlapping_water_areas.erase(area)
+
+func _trigger_screen_water_wipe() -> void:
+	if not screen_water_ui: return
+	
+	var mat: ShaderMaterial = screen_water_ui.material as ShaderMaterial
+	if not mat: return
+	
+	screen_water_ui.show()
+	mat.set_shader_parameter("clear_progress", 0.0)
+	
+	if water_clear_tween and water_clear_tween.is_valid():
+		water_clear_tween.kill()
+		
+	water_clear_tween = create_tween()
+	
+	# 1. Hold the fully wet screen for 0.5 seconds
+	water_clear_tween.tween_interval(0.5)
+	
+	# 2. Animate the wipe sliding down the screen over 1.5 seconds
+	water_clear_tween.tween_property(mat, "shader_parameter/clear_progress", 1.5, 1.5).set_trans(Tween.TRANS_SINE)
+	
+	# 3. Hide the ColorRect when it's totally dry
+	water_clear_tween.tween_callback(screen_water_ui.hide)
