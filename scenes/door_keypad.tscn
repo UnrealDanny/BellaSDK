@@ -1,0 +1,46 @@
+[gd_scene format=3 uid="uid://drp82vy3f2sny"]
+
+[ext_resource type="PackedScene" uid="uid://c3kkyqotkri5v" path="res://scenes/keypad.tscn" id="1_koi6h"]
+[ext_resource type="Script" uid="uid://6my7yh0731pm" path="res://scripts/door_keypad.gd" id="1_mcbx6"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="2_wk8ac"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="3_tae6v"]
+
+[sub_resource type="ViewportTexture" id="ViewportTexture_mcbx6"]
+viewport_path = NodePath("SubViewport")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2p8yu"]
+resource_local_to_scene = true
+albedo_texture = SubResource("ViewportTexture_mcbx6")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_qkvq5"]
+resource_local_to_scene = true
+material = SubResource("StandardMaterial3D_2p8yu")
+size = Vector2(0.5, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_koi6h"]
+size = Vector3(0.001, 0.5, 0.5)
+
+[node name="DoorKeypad" type="StaticBody3D" unique_id=224452826]
+script = ExtResource("1_mcbx6")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=546308194]
+script = ExtResource("2_wk8ac")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="." unique_id=547704663 node_paths=PackedStringArray("target_meshes")]
+script = ExtResource("3_tae6v")
+target_meshes = [NodePath("../MeshInstance3D")]
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1878620317]
+transform = Transform3D(-4.371139e-08, 1, 0, 4.371139e-08, 1.9106855e-15, -1, -1, -4.371139e-08, -4.371139e-08, 0, 0, 0)
+mesh = SubResource("PlaneMesh_qkvq5")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=999078879]
+shape = SubResource("BoxShape3D_koi6h")
+
+[node name="SubViewport" type="SubViewport" parent="." unique_id=1935440404]
+
+[node name="Keypad" parent="SubViewport" unique_id=1879186767 instance=ExtResource("1_koi6h")]
+
+[connection signal="code_entered" from="SubViewport/Keypad" to="." method="_on_keypad_code_entered"]

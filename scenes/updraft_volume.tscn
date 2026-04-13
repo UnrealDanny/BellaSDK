@@ -7,6 +7,8 @@
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_2vvrv"]
 material = ExtResource("1_a53uw")
+radial_segments = 8
+rings = 0
 
 [sub_resource type="Gradient" id="Gradient_2vvrv"]
 offsets = PackedFloat32Array(0, 0.5203881, 1)

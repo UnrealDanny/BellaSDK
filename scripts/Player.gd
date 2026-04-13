@@ -207,6 +207,10 @@ var can_vault_current_ledge: bool = false
 var current_ledge_point: Vector3 = Vector3.ZERO
 var current_vault_height: float = 0.0
 
+# --- TERMINAL MODE VARS ---
+var is_in_terminal_mode: bool = false
+var active_terminal: Node3D = null
+
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
@@ -281,6 +285,18 @@ func _unhandled_input(event: InputEvent) -> void:
 					# Safe call bypasses compiler errors for missing methods on base Node
 					current_weapon.call("shoot", cam)
 	
+	if is_in_terminal_mode and is_instance_valid(active_terminal):
+		
+		# 1. Block normal camera look around
+		if event is InputEventMouseMotion:
+			shoot_terminal_raycast(false) # False = Just hovering
+			get_viewport().set_input_as_handled() 
+
+		# 2. Handle Left Clicking the buttons
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			shoot_terminal_raycast(true) # True = Clicking
+			get_viewport().set_input_as_handled()
+			
 func _input(event: InputEvent) -> void:
 	if is_menu_open or is_paused: 
 		return
@@ -465,12 +481,20 @@ func _physics_process(delta: float) -> void:
 			if distance_to_hang < 1.5 and (velocity.y < 2.0 or distance_to_hang < 0.4):
 				current_monkey_bar_volume = available_monkey_bar 
 				enter_monkey_bars(available_monkey_bar)
-			
+
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
 		toggle_pause()
 		
 	if is_paused:
+		return
+		
+	if is_in_terminal_mode:
+		# Press Interact again, or Esc, to leave the keypad
+		if Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("ui_cancel"):
+			exit_terminal_mode()
+		
+		# Return early so the rest of your movement/process code doesn't run!
 		return
 		
 	update_flashlight(delta)
@@ -522,6 +546,63 @@ func _process(delta: float) -> void:
 		mouse_sensitivity = mouse_sensitivity_base
 
 	cam.fov = lerpf(cam.fov, target_fov, delta * fov_change_speed)
+	
+#func _process(delta: float) -> void:
+	#if Input.is_action_just_pressed("ui_cancel"):
+		#toggle_pause()
+		#
+	#if is_paused:
+		#return
+		#
+	#update_flashlight(delta)
+	#if Input.is_action_just_pressed("flashlight"):
+		#flashlight.visible = !flashlight.visible
+		#
+	#current_interactable = get_interactable_component_at_shapecast()
+	#if current_interactable:
+		## 1. Get the world position of where the ShapeCast hit the rope
+		## We use index 0 because that's the first thing the cast hit
+		#var hit_point : Vector3 = interact_shapecast.get_collision_point(0)
+	#
+		## 2. Send the player AND the hit point to the rope's component
+		#current_interactable.hover_cursor(self, hit_point)
+	#
+	#if Input.is_action_just_pressed("interact"):
+		#if held_object:
+			#held_object.drop()
+			#held_object = null
+			#if weapon_holder:
+				#weapon_holder.show()
+				#
+		#elif current_interactable:
+			#current_interactable.interact_with(self)
+			#var parent_node: Node = current_interactable.get_parent()
+			#
+			#if parent_node is PickableObject:
+				#held_object = parent_node as PickableObject
+				#held_object.pick_up(hold_position, self)
+				#
+				#if weapon_holder:
+					#weapon_holder.hide()
+#
+	#if Input.is_action_just_pressed("zoom"):
+		#Events.player_zoomed.emit(true)
+		#is_using_zoom = true
+	#elif Input.is_action_just_released("zoom"):
+		#Events.player_zoomed.emit(false)
+		#is_using_zoom = false
+		#
+	#if Input.is_action_pressed("zoom"):
+		#target_fov = zoom_fov
+		#mouse_sensitivity = mouse_sensitivity_zoom
+	#elif sprint_active and input_dir.length() > 0.1 and not is_swimming:
+		#target_fov = sprint_fov
+		#mouse_sensitivity = mouse_sensitivity_base    
+	#else:
+		#target_fov = base_fov
+		#mouse_sensitivity = mouse_sensitivity_base
+#
+	#cam.fov = lerpf(cam.fov, target_fov, delta * fov_change_speed)
 	
 func update_flashlight(delta: float) -> void:
 	var target_pos: Vector3 = default_flashlight_pos 
@@ -1521,3 +1602,43 @@ func _trigger_screen_water_wipe() -> void:
 	
 	# 3. Hide the ColorRect when it's totally dry
 	water_clear_tween.tween_callback(screen_water_ui.hide)
+
+
+# -----------------------------------------------
+# TERMINAL / KEYPAD
+# -----------------------------------------------
+func enter_terminal_mode(terminal: Node3D) -> void:
+	is_in_terminal_mode = true
+	active_terminal = terminal
+	
+	# Show the OS mouse cursor so the player can point at buttons
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	
+	# Optional: Hide your crosshair UI here if you have one!
+
+func exit_terminal_mode() -> void:
+	is_in_terminal_mode = false
+	active_terminal = null
+	
+	# Lock the mouse back to the center of the screen
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func shoot_terminal_raycast(is_click: bool) -> void:
+	# Get where the mouse currently is on your 2D monitor
+	var mouse_pos := get_viewport().get_mouse_position()
+	
+	# Translate that 2D monitor pixel into a 3D laser pointer
+	var ray_origin := cam.project_ray_origin(mouse_pos)
+	var ray_normal := cam.project_ray_normal(mouse_pos)
+	var ray_end := ray_origin + ray_normal * 3.0 # 3 meters of reach
+	
+	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
+	var space_state := get_world_3d().direct_space_state
+	var result := space_state.intersect_ray(query)
+	
+	# If the laser hits the keypad, send the exact 3D point to it!
+	if result and result.collider == active_terminal:
+		if is_click:
+			active_terminal.inject_mouse_click(result.position)
+		else:
+			active_terminal.inject_mouse_motion(result.position)
