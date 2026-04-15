@@ -23,6 +23,8 @@ material = SubResource("StandardMaterial3D_fj5oh")
 
 [node name="PickableBox" unique_id=594279821 instance=ExtResource("1_cfr4d")]
 collision_layer = 4
+mass = 5.0
+float_force = 1.5
 
 [node name="HighlightComponent" parent="." index="1" unique_id=1233358358]
 outline_material = SubResource("ShaderMaterial_wxffa")
@@ -32,3 +34,15 @@ mesh = SubResource("BoxMesh_k01c1")
 
 [node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
 shape = SubResource("BoxShape3D_74l1t")
+
+[node name="Marker3D" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="0" unique_id=1977258969]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.5, 0.5)
+
+[node name="Marker3D2" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="1" unique_id=1466183085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, -0.5)
+
+[node name="Marker3D3" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="2" unique_id=865436627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.5, -0.5)
+
+[node name="Marker3D4" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="3" unique_id=1857240385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0.5)

@@ -7,12 +7,25 @@ class_name PickableObject
 @export var label: Label3D
 @export var outline_material: ShaderMaterial
 
+@export_category("Buoyancy")
+@export var probe_container: Node3D 
+## How strongly the water pushes up. (3.0 is a great value!)
+@export var float_force: float = 3.0
+## Friction. (Because we fixed the math, you may need to increase this to 2.0 or 4.0 to stop bouncing!)
+@export var water_drag: float = 0.5
+@export var water_angular_drag: float = 0.5
+
 var is_held: bool = false
 var hold_target: Marker3D = null
 var holder: Node3D = null
-
-# --- NEW: Anti-Instant-Drop Cooldown ---
 var _grab_time: int = 0 
+
+# --- WATER TRACKING ---
+var is_in_water: bool = false
+var submerged: bool = false
+var current_water_node: Node3D = null 
+
+@onready var gravity: float = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 var is_locked: bool = false:
 	set(value):
@@ -34,26 +47,15 @@ func _ready() -> void:
 
 func pick_up(target: Marker3D, player: Node3D) -> void:
 	if is_locked: return
-		
 	_grab_time = Time.get_ticks_msec()
-		
 	is_held = true
 	hold_target = target
 	holder = player
 	if label: label.hide()
 	
-	# --- THE MASTER TELEPORT FIX ---
-	# Instantly snap the object to the hand BEFORE turning physics back on.
-	# This prevents the physics engine from exploding if the item is inside a wall!
-	PhysicsServer3D.body_set_state(
-		self.get_rid(),
-		PhysicsServer3D.BODY_STATE_TRANSFORM,
-		target.global_transform
-	)
+	PhysicsServer3D.body_set_state(self.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, target.global_transform)
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
-	# -------------------------------
-	
 	freeze = false 
 	gravity_scale = 0.0 
 	if mesh: mesh.transparency = 0.25
@@ -61,16 +63,10 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 	if interact_comp:
 		interact_comp.is_currently_focused = false
 		interact_comp.unfocused.emit()
-		
-	# This is the built-in way to stop the plug from pushing the player
 	add_collision_exception_with(holder)
 	
 func drop() -> void:
-	# --- THE FIX: Ignore drop commands for 100ms after picking up! ---
-	if Time.get_ticks_msec() - _grab_time < 100:
-		return
-	# -----------------------------------------------------------------
-		
+	if Time.get_ticks_msec() - _grab_time < 100: return
 	is_held = false
 	
 	if is_locked:
@@ -85,7 +81,6 @@ func drop() -> void:
 	if holder:
 		if "velocity" in holder:
 			linear_velocity = holder.velocity
-			
 		var push_dir: Vector3 = -holder.cam.global_transform.basis.z.normalized()
 		push_dir.y += 0.5 
 		apply_central_impulse(push_dir * 3.0)
@@ -100,33 +95,14 @@ func drop() -> void:
 	if interact_comp:
 		interact_comp.is_currently_focused = false
 
-func _physics_process(_delta: float) -> void:
-	if is_held and hold_target:
-		var target_pos := hold_target.global_position
-		var current_pos := global_position
-		var distance_vector := target_pos - current_pos
-		linear_velocity = distance_vector * 20.0
-		
-		var target_quat := hold_target.global_basis.get_rotation_quaternion()
-		var current_quat := global_basis.get_rotation_quaternion()
-		var diff_quat := target_quat * current_quat.inverse()
-		var axis := Vector3(diff_quat.x, diff_quat.y, diff_quat.z)
-		var angle := 2.0 * acos(clamp(diff_quat.w, -1.0, 1.0))
-		
-		if angle > PI:
-			angle -= TAU
-			
-		if axis.length_squared() > 0.0001:
-			angular_velocity = axis.normalized() * (angle * 20.0)
-		else:
-			angular_velocity = Vector3.ZERO
+func throw(impulse_vector: Vector3) -> void:
+	drop()
+	if not is_locked:
+		apply_central_impulse(impulse_vector)
 
 func _on_interact_component_focused() -> void:
 	if is_locked: return
-		
-	if mesh and outline_material:
-		mesh.material_overlay = outline_material
-		
+	if mesh and outline_material: mesh.material_overlay = outline_material
 	if !is_held and label:
 		_update_label_text()
 		label.show()
@@ -135,20 +111,58 @@ func _on_interact_component_focused() -> void:
 
 func _update_label_text() -> void:
 	if not label: return
-	
 	var events := InputMap.action_get_events("interact")
 	var key_name := "???"
 	if events.size() > 0:
 		var raw_text := events[0].as_text()
 		key_name = raw_text.replace(" (Physical)", "").replace(" - Physical", "").replace(" (Physics)", "").replace(" - Physics", "").replace("Left Mouse Button", "LMB").replace("Right Mouse Button", "RMB").replace("Middle Mouse Button", "MMB").strip_edges()
-	
 	label.text = "[%s]" % [key_name]
 		
 func _on_interact_component_unfocused() -> void:
 	if mesh: mesh.material_overlay = null
 	if label: label.hide()
+
+func _physics_process(_delta: float) -> void:
+	# 1. HOLDING LOGIC
+	if is_held and hold_target:
+		var distance_vector := hold_target.global_position - global_position
+		linear_velocity = distance_vector * 20.0
+		
+		var diff_quat := hold_target.global_basis.get_rotation_quaternion() * global_basis.get_rotation_quaternion().inverse()
+		var axis := Vector3(diff_quat.x, diff_quat.y, diff_quat.z)
+		var angle := 2.0 * acos(clamp(diff_quat.w, -1.0, 1.0))
+		if angle > PI: angle -= TAU
+			
+		if axis.length_squared() > 0.0001:
+			angular_velocity = axis.normalized() * (angle * 20.0)
+		else:
+			angular_velocity = Vector3.ZERO
+		return
+
+	# 2. MULTI-PROBE BUOYANCY
+	submerged = false
 	
-func throw(impulse_vector: Vector3) -> void:
-	drop()
-	if not is_locked:
-		apply_central_impulse(impulse_vector)
+	if is_in_water and is_instance_valid(current_water_node) and probe_container:
+		var probe_count: int = probe_container.get_child_count()
+		var probe_mass: float = mass / float(probe_count)
+		
+		for p in probe_container.get_children():
+			var wave_height: float = current_water_node.get_wave_height_at_pos(p.global_position)
+			var depth: float = wave_height - p.global_position.y 
+			
+			if depth > 0:
+				submerged = true
+				
+				# --- THE SURFACE & PLUNGE FIX ---
+				# Multiply depth by 4.0: Reaches neutral buoyancy at just 0.25 meters deep!
+				# Clamp at 4.0: If pulled deep, it fights back 4x harder to overpower the drag of 6.0!
+				var depth_multiplier: float = clamp(depth * 4.0, 0.0, 4.0)
+				
+				var force: Vector3 = Vector3.UP * probe_mass * float_force * gravity * depth_multiplier
+				var offset: Vector3 = p.global_position - global_position
+				apply_force(force, offset)
+
+	# 3. DRAG
+	if submerged and not is_held:
+		apply_central_force(-linear_velocity * water_drag * mass)
+		apply_torque(-angular_velocity * water_angular_drag * mass)

@@ -1,39 +1,55 @@
 [gd_scene format=3 uid="uid://ca0wevg1lb4rx"]
 
-[ext_resource type="Script" uid="uid://dtm30dwmcgd8n" path="res://utils/WaterMaker3D/WaterMaker3D.gd" id="1_7s6ww"]
+[ext_resource type="Shader" uid="uid://cwqt2rruv7eum" path="res://utils/WaterMaker3D/WaterMaker3D.gdshader" id="1_70utq"]
 [ext_resource type="Shader" uid="uid://2pyqpr2qew6o" path="res://utils/WaterMaker3D/FogFade.gdshader" id="2_5f01f"]
+[ext_resource type="Script" uid="uid://dtm30dwmcgd8n" path="res://utils/WaterMaker3D/WaterMaker3D.gd" id="2_ejx8y"]
 [ext_resource type="Script" uid="uid://grkqw00wxiwn" path="res://utils/WaterMaker3D/FogVolumeFadeScript.gd" id="3_b5ytn"]
 [ext_resource type="Shader" uid="uid://e5j85108j8s0" path="res://utils/WaterMaker3D/CameraWaterOverlay2.gdshader" id="4_70utq"]
 
-[sub_resource type="FastNoiseLite" id="FastNoiseLite_1bimf"]
-resource_local_to_scene = true
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_70utq"]
+noise_type = 2
+seed = 9874
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mdx3j"]
-resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_1bimf")
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ejx8y"]
+noise = SubResource("FastNoiseLite_70utq")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_xl6ub"]
-resource_local_to_scene = true
-noise = SubResource("FastNoiseLite_1bimf")
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_266v4"]
+noise_type = 2
+seed = 951
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_376on"]
+noise = SubResource("FastNoiseLite_266v4")
 seamless = true
 as_normal_map = true
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gdho2"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ejx8y"]
 resource_local_to_scene = true
-transparency = 1
-cull_mode = 2
-depth_draw_mode = 1
-albedo_color = Color(0.30980393, 0.5411765, 0.8666667, 0.3882353)
-roughness = 0.0
-normal_enabled = true
-normal_texture = SubResource("NoiseTexture2D_mdx3j")
-refraction_enabled = true
-refraction_texture = SubResource("NoiseTexture2D_xl6ub")
-uv1_scale = Vector3(0.04, 0.04, 0.04)
-uv1_triplanar = true
-uv1_world_triplanar = true
+render_priority = 0
+shader = ExtResource("1_70utq")
+shader_parameter/shallow_color = Color(0.3, 0.54, 0.86, 0.6)
+shader_parameter/deep_color = Color(0, 0.04, 0.16, 1)
+shader_parameter/depth_distance = 2.50000011549012
+shader_parameter/beers_law = 2.0
+shader_parameter/refraction_strength = 0.02
+shader_parameter/foam_color = Color(0.9, 0.95, 1, 1)
+shader_parameter/foam_distance = 0.3
+shader_parameter/normal_map_1 = SubResource("NoiseTexture2D_ejx8y")
+shader_parameter/normal_map_2 = SubResource("NoiseTexture2D_376on")
+shader_parameter/uv_scale = Vector2(2, 2)
+shader_parameter/normal_bump_strength = 2.0
+shader_parameter/pan_speed_1 = Vector2(0.02, 0.01)
+shader_parameter/pan_speed_2 = Vector2(-0.015, 0.025)
+shader_parameter/wave_amplitude = 0.0
+shader_parameter/wave_frequency = 0.0
+shader_parameter/wave_speed = 0.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_aaijj"]
+resource_local_to_scene = true
+material = SubResource("ShaderMaterial_ejx8y")
+subdivide_width = 20
+subdivide_depth = 20
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_om5f8"]
 resource_local_to_scene = true
@@ -45,8 +61,8 @@ size = Vector3(0.1, 0.1, 0.1)
 resource_local_to_scene = true
 shader = ExtResource("2_5f01f")
 shader_parameter/density = 1.0
-shader_parameter/albedo = Color(0, 0.043137256, 0.15686275, 1)
-shader_parameter/emission = Color(0, 0.043137256, 0.15686275, 1)
+shader_parameter/albedo = Color(0, 0.04, 0.16, 1)
+shader_parameter/emission = Color(0, 0.04, 0.16, 1)
 shader_parameter/height_falloff = 0.0
 shader_parameter/edge_fade = 0.1
 shader_parameter/fade_plane = Vector4(0, 1, 0, -999)
@@ -54,17 +70,21 @@ shader_parameter/fade_plane = Vector4(0, 1, 0, -999)
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ccyp1"]
 shader = ExtResource("4_70utq")
 shader_parameter/clear_progress = 1.5
-shader_parameter/distortion_strength = 0.03
+shader_parameter/ripple_magnitude = 0.3
+shader_parameter/ripple_speed = 2.0
 shader_parameter/chromatic_aberration = 0.005
-shader_parameter/vignette_intensity = 0.4
 shader_parameter/water_tint = Color(0.1, 0.4, 0.7, 0.2)
+shader_parameter/highlight_punch = 0.02
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_dcd7l"]
 
-[node name="WaterMaker3D" type="CSGBox3D" unique_id=998023243]
+[node name="WaterMaker3D" type="MeshInstance3D" unique_id=1898604217]
 process_priority = 999
-material = SubResource("StandardMaterial3D_gdho2")
-script = ExtResource("1_7s6ww")
+mesh = SubResource("BoxMesh_aaijj")
+script = ExtResource("2_ejx8y")
+wave_amplitude = 0.0
+wave_frequency = 0.0
+wave_speed = 0.0
 
 [node name="SwimmableArea3D" type="Area3D" parent="." unique_id=1515298068 groups=["water_area"]]
 unique_name_in_owner = true
