@@ -256,6 +256,15 @@ func _ready() -> void:
 		base_light_energy = flashlight.light_energy
 		base_spot_range = flashlight.spot_range
 	
+	var config := ConfigFile.new()
+	var err := config.load("user://controls.cfg")
+	
+	if err == OK and config.has_section_key("Settings", "mouse_sensitivity"):
+		var saved_sens: float = config.get_value("Settings", "mouse_sensitivity")
+		mouse_sensitivity_base = saved_sens
+		mouse_sensitivity = saved_sens
+		mouse_sensitivity_zoom = saved_sens / 10.0
+		
 func _unhandled_input(event: InputEvent) -> void:
 	if is_paused: 
 		return 
@@ -547,63 +556,6 @@ func _process(delta: float) -> void:
 
 	cam.fov = lerpf(cam.fov, target_fov, delta * fov_change_speed)
 	
-#func _process(delta: float) -> void:
-	#if Input.is_action_just_pressed("ui_cancel"):
-		#toggle_pause()
-		#
-	#if is_paused:
-		#return
-		#
-	#update_flashlight(delta)
-	#if Input.is_action_just_pressed("flashlight"):
-		#flashlight.visible = !flashlight.visible
-		#
-	#current_interactable = get_interactable_component_at_shapecast()
-	#if current_interactable:
-		## 1. Get the world position of where the ShapeCast hit the rope
-		## We use index 0 because that's the first thing the cast hit
-		#var hit_point : Vector3 = interact_shapecast.get_collision_point(0)
-	#
-		## 2. Send the player AND the hit point to the rope's component
-		#current_interactable.hover_cursor(self, hit_point)
-	#
-	#if Input.is_action_just_pressed("interact"):
-		#if held_object:
-			#held_object.drop()
-			#held_object = null
-			#if weapon_holder:
-				#weapon_holder.show()
-				#
-		#elif current_interactable:
-			#current_interactable.interact_with(self)
-			#var parent_node: Node = current_interactable.get_parent()
-			#
-			#if parent_node is PickableObject:
-				#held_object = parent_node as PickableObject
-				#held_object.pick_up(hold_position, self)
-				#
-				#if weapon_holder:
-					#weapon_holder.hide()
-#
-	#if Input.is_action_just_pressed("zoom"):
-		#Events.player_zoomed.emit(true)
-		#is_using_zoom = true
-	#elif Input.is_action_just_released("zoom"):
-		#Events.player_zoomed.emit(false)
-		#is_using_zoom = false
-		#
-	#if Input.is_action_pressed("zoom"):
-		#target_fov = zoom_fov
-		#mouse_sensitivity = mouse_sensitivity_zoom
-	#elif sprint_active and input_dir.length() > 0.1 and not is_swimming:
-		#target_fov = sprint_fov
-		#mouse_sensitivity = mouse_sensitivity_base    
-	#else:
-		#target_fov = base_fov
-		#mouse_sensitivity = mouse_sensitivity_base
-#
-	#cam.fov = lerpf(cam.fov, target_fov, delta * fov_change_speed)
-	
 func update_flashlight(delta: float) -> void:
 	var target_pos: Vector3 = default_flashlight_pos 
 	var light_intensity: float = head_bobbing_current_intensity * 0.15
@@ -817,6 +769,14 @@ func _on_rope_released(target_forward: Vector3 = Vector3.ZERO) -> void:
 # WATER MECHANICS
 # -----------------------------
 func _handle_water_physics(delta: float) -> bool:
+	if flying:
+		if head_in_water:
+			head_in_water = false
+			# This will play your cinematic wipe animation as if you just surfaced
+			screen_water_ui.hide()
+			
+		return false
+		
 	# 1. Faster check: only true if the detector is inside a water area
 	var in_water: bool = not overlapping_water_areas.is_empty()
 	
@@ -963,8 +923,6 @@ func _handle_water_physics(delta: float) -> bool:
 		
 	return true
 	
-	
-	
 func enter_updraft(strength: float) -> void:
 	in_updraft = true
 	current_updraft_strength = strength
@@ -979,7 +937,7 @@ func toggle_noclip() -> void:
 	crouching = false
 	
 	flying = !flying
-	noclip_speed_multiplier = 8.0
+	noclip_speed_multiplier = 12.0
 	
 	if flying:
 		standing_collision_shape.disabled = true

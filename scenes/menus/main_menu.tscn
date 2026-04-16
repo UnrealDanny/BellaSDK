@@ -37,14 +37,23 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -157.0
-offset_top = -10.0
+offset_top = -112.0
 offset_right = 157.0
-offset_bottom = 214.0
+offset_bottom = 112.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 12
 
+[node name="Continue" type="Button" parent="MainButtons" unique_id=1604496560]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 42
+text = "Continue"
+
 [node name="StartGame" type="Button" parent="MainButtons" unique_id=1877365184]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
@@ -94,6 +103,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Options" type="Panel" parent="." unique_id=1979166347]
+visible = false
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -138,24 +148,6 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
 text = "Back
 "
 
-[node name="FullscreenControl" type="CheckButton" parent="Options" unique_id=129794192]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -249.75
-offset_top = -89.0
-offset_right = 249.75
-offset_bottom = 89.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_fonts/font = ExtResource("2_2o76q")
-theme_override_font_sizes/font_size = 32
-text = "Fullscreen"
-script = ExtResource("4_6bivr")
-
 [node name="MarginContainer" type="MarginContainer" parent="Options" unique_id=75243293]
 layout_mode = 1
 anchors_preset = 10
@@ -171,6 +163,55 @@ layout_mode = 2
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 32
 text = "Controls"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Options" unique_id=426590616]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -219.0
+offset_top = -39.0
+offset_right = 219.0
+offset_bottom = 39.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FullscreenControl" type="CheckButton" parent="Options/VBoxContainer" unique_id=129794192]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Fullscreen"
+script = ExtResource("4_6bivr")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Options/VBoxContainer" unique_id=239103484]
+layout_mode = 2
+
+[node name="MouseSensitivityLabel" type="Label" parent="Options/VBoxContainer/HBoxContainer" unique_id=995227736]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Mouse Sensitivity"
+
+[node name="MouseSensitivityLine" type="LineEdit" parent="Options/VBoxContainer/HBoxContainer" unique_id=1418971371]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+placeholder_text = "0.5"
+alignment = 1
+
+[node name="MouseSensitivitySlider" type="HSlider" parent="Options/VBoxContainer/HBoxContainer" unique_id=1157526147]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.1
+max_value = 2.0
+step = 0.1
+value = 0.5
 
 [node name="ControlsPanel" type="Panel" parent="." unique_id=653725202]
 anchors_preset = 8
@@ -225,7 +266,6 @@ offset_bottom = 70.0
 theme_override_constants/separation = 10
 
 [node name="RemapButtonTemplate" type="Button" parent="ControlsPanel/VBoxContainer" unique_id=1766891879]
-visible = false
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_2o76q")
@@ -233,7 +273,6 @@ toggle_mode = true
 
 [node name="ConflictPanel" type="PanelContainer" parent="ControlsPanel" unique_id=1975698769]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -252,7 +291,7 @@ theme_override_fonts/font = ExtResource("2_2o76q")
 [connection signal="pressed" from="MainButtons/Options" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="MainButtons/Exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="Options/Back" to="." method="_on_back_pressed"]
-[connection signal="toggled" from="Options/FullscreenControl" to="Options/FullscreenControl" method="_on_toggled"]
 [connection signal="pressed" from="Options/MarginContainer/OptionsButtons/Contols" to="." method="_on_contols_pressed"]
+[connection signal="toggled" from="Options/VBoxContainer/FullscreenControl" to="Options/VBoxContainer/FullscreenControl" method="_on_toggled"]
 [connection signal="pressed" from="ControlsPanel/BackControls" to="." method="_on_back_controls_pressed"]
 [connection signal="pressed" from="ControlsPanel/ResetButton" to="." method="_on_reset_button_pressed"]

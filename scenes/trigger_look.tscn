@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://b3nwdm8dlk16p"]
+
+[ext_resource type="Script" uid="uid://dlf2ts15n8j76" path="res://scripts/trigger_look.gd" id="1_k1ejm"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hal7d"]
+
+[node name="TriggerLook" type="Area3D" unique_id=1996274554]
+script = ExtResource("1_k1ejm")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1535163580]
+shape = SubResource("BoxShape3D_hal7d")

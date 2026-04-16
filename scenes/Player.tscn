@@ -338,7 +338,6 @@ shape = SubResource("SphereShape3D_mdl7e")
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=336625951]
 
 [node name="WaterRippleOverlay" type="ColorRect" parent="CanvasLayer" unique_id=1942721923]
-visible = false
 material = SubResource("ShaderMaterial_70d11")
 anchors_preset = 15
 anchor_right = 1.0

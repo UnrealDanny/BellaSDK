@@ -4,6 +4,16 @@ extends CanvasLayer
 @onready var options: Panel = $Options
 @onready var controls_panel: Panel = $ControlsPanel
 
+@onready var continue_button: Button = %Continue
+@onready var start_button: Button = %StartGame
+
+# --- EXPLICIT UI REFERENCES ---
+# If the game crashes here on boot, it means you need to right-click your 
+# slider and label in the Scene Tree and click "Access as Unique Name"!
+@onready var sens_slider: HSlider = %MouseSensitivitySlider
+@onready var sens_label: Label = %MouseSensitivityLabel
+@onready var sens_input: LineEdit = %MouseSensitivityLine
+
 # --- AUTOMATED REMAPPING ---
 var is_remapping: bool = false
 var action_to_remap: String = ""
@@ -20,11 +30,31 @@ var my_actions := [
 	"zoom", "noclip", "console"
 ]
 
+const SAVE_PATH = "user://controls.cfg"
+
 func _ready() -> void:
-	# 1. Load from file first!
-	load_controls() 
+	# 1. Connect signals FIRST
+	sens_slider.value_changed.connect(_on_sensitivity_changed)
+	if has_node("%MouseSensitivityLine"): # (Updated to match your new unique name)
+		sens_input.text_submitted.connect(_on_sensitivity_input_submitted)
+		
+	# --- ADD THIS LINE TO CONNECT THE CONTINUE BUTTON ---
+	continue_button.pressed.connect(_on_resume_pressed)
+
+	# 2. Load from file
+	load_controls()
 	
-	# 2. Then set up the UI
+	# 3. CONTEXT CHECK: Are we at the Title Screen or in the Game?
+	if get_parent().has_method("toggle_pause"):
+		# We are IN-GAME (Attached to the Player)
+		continue_button.show()
+		start_button.text = "Restart Level" # Changes the text so it makes sense!
+	else:
+		# We are at the MAIN MENU (First time launch)
+		continue_button.hide()
+		start_button.text = "Start Game"
+	
+	# 4. Set up the UI visibility
 	main_buttons.visible = true
 	options.visible = false
 	controls_panel.visible = false
@@ -35,18 +65,11 @@ func create_control_list() -> void:
 	var template := $ControlsPanel/VBoxContainer/RemapButtonTemplate
 	
 	for action: String in my_actions:
-		# 1. Duplicate the template button
 		var new_button := template.duplicate()
 		new_button.show()
 		container.add_child(new_button)
-		
-		# 2. Store the action name inside the button itself using metadata
 		new_button.set_meta("action", action)
-		
-		# 3. Label the button (e.g., "Jump: Space")
 		update_button_text(new_button, action)
-		
-		# 4. Connect the signal to one shared function
 		new_button.toggled.connect(_on_any_remap_button_toggled.bind(new_button))
 
 func _on_any_remap_button_toggled(toggled_on: bool, button: Button) -> void:
@@ -57,7 +80,7 @@ func _on_any_remap_button_toggled(toggled_on: bool, button: Button) -> void:
 		button.text = "Press any key..."
 	else:
 		is_remapping = false
-		pending_swap_event = null # Clear any pending swaps!
+		pending_swap_event = null 
 		update_button_text(button, button.get_meta("action"))
 
 func update_button_text(button: Button, action: String) -> void:
@@ -66,8 +89,6 @@ func update_button_text(button: Button, action: String) -> void:
 	
 	if events.size() > 0:
 		var raw_text := events[0].as_text()
-		
-		# Chain together .replace() to hunt down and destroy any weird formatting Godot tries to use
 		key_name = raw_text.replace(" (Physical)", "") \
 						   .replace(" - Physical", "") \
 						   .replace(" (Physics)", "") \
@@ -78,7 +99,7 @@ func update_button_text(button: Button, action: String) -> void:
 
 func _on_start_game_pressed() -> void:
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/testbed.tscn")
+	get_tree().change_scene_to_file("res://scenes/levels/testbed.scn")
 	
 func _on_exit_pressed() -> void:
 	get_tree().quit()
@@ -115,7 +136,6 @@ func _input(event: InputEvent) -> void:
 				var conflicting_action := get_action_with_event(event)
 				
 				if conflicting_action != "" and conflicting_action != action_to_remap:
-					# Save the state so we know what to swap if they press it again
 					pending_swap_event = event
 					pending_conflict_action = conflicting_action
 					
@@ -134,7 +154,7 @@ func _input(event: InputEvent) -> void:
 				save_controls() 
 				
 				is_remapping = false
-				pending_swap_event = null # Clear memory
+				pending_swap_event = null 
 				remapping_button.button_pressed = false
 				update_button_text(remapping_button, action_to_remap)
 				
@@ -144,32 +164,28 @@ func _input(event: InputEvent) -> void:
 func _on_reset_button_pressed() -> void:
 	InputMap.load_from_project_settings()
 	
-	# Delete the save file so it doesn't reload old custom keys next boot
 	var dir := DirAccess.open("user://")
 	if dir.file_exists("controls.cfg"):
 		dir.remove("controls.cfg")
 		
+	# Reset sensitivity back to default as well!
+	sens_slider.value = 0.5 
 	refresh_all_button_labels()
 
 func refresh_all_button_labels() -> void:
 	var container := $ControlsPanel/VBoxContainer
-	
-	# Loop through every child in the container
 	for child in container.get_children():
-		# Make sure we only talk to the buttons we generated, not the template!
 		if child is Button and child.has_meta("action"):
 			var action_name: String = child.get_meta("action")
 			update_button_text(child, action_name)
 
-const SAVE_PATH = "user://controls.cfg"
-
 func save_controls() -> void:
 	var config := ConfigFile.new()
+	config.load(SAVE_PATH) 
 	
 	for action: String in my_actions:
 		var events := InputMap.action_get_events(action)
 		if events.size() > 0:
-			# We save the first event assigned to this action
 			config.set_value("Controls", action, events[0])
 	
 	config.save(SAVE_PATH)
@@ -179,58 +195,86 @@ func load_controls() -> void:
 	var config := ConfigFile.new()
 	var err := config.load(SAVE_PATH)
 	
-	# If the file doesn't exist yet (first time playing), just stop
 	if err != OK: 
+		sens_slider.value = 0.5
 		return 
 
+	# --- Load Controls ---
 	for action: String in my_actions:
 		if config.has_section_key("Controls", action):
 			var event := config.get_value("Controls", action) as InputEvent
 			InputMap.action_erase_events(action)
 			InputMap.action_add_event(action, event)
 			
+	# --- Load Sensitivity ---
+	if config.has_section_key("Settings", "mouse_sensitivity"):
+		var saved_sens: float = config.get_value("Settings", "mouse_sensitivity")
+		sens_slider.value = saved_sens 
+			
 func get_action_with_event(new_event: InputEvent) -> String:
 	for action: String in my_actions:
-		# We check if the existing action already has this exact key/button
 		if InputMap.action_has_event(action, new_event):
 			return action
 	return ""
 
 func execute_swap(new_event: InputEvent) -> void:
-	# 1. Grab the old key from the button we are currently remapping
 	var old_events := InputMap.action_get_events(action_to_remap)
 	var old_event := old_events[0] if old_events.size() > 0 else null
 	
-	# 2. Clear both actions in Godot's Input Map
 	InputMap.action_erase_events(action_to_remap)
 	InputMap.action_erase_events(pending_conflict_action)
-	
-	# 3. Give the new key to our current action
 	InputMap.action_add_event(action_to_remap, new_event)
 	
-	# 4. Give the old key to the action we stole from
 	if old_event:
 		InputMap.action_add_event(pending_conflict_action, old_event)
 		
 	save_controls()
 	
-	# 5. Cleanup UI and State
 	is_remapping = false
 	pending_swap_event = null
 	pending_conflict_action = ""
 	remapping_button.button_pressed = false
 	
-	# Use the refresh function we made for the Reset button, since TWO buttons just changed!
 	refresh_all_button_labels() 
 	
-	# 6. Show a nice success message
 	%ConflictLabel.text = "Keys swapped successfully!"
 	%ConflictPanel.show()
 	get_tree().create_timer(2.0).timeout.connect(func() -> void: %ConflictPanel.hide())
-	
 	get_viewport().set_input_as_handled()
 
 func _on_resume_pressed() -> void:
-	# Since the player is the parent of this menu instance:
 	if get_parent().has_method("toggle_pause"):
 		get_parent().toggle_pause()
+
+func _on_sensitivity_changed(value: float) -> void:
+	sens_label.text = "Mouse Sensitivity: "
+	
+	# Sync the text box with the slider, but ONLY if the player isn't currently 
+	# typing inside it. (This prevents the slider from fighting their cursor).
+	if not sens_input.has_focus():
+		sens_input.text = "%.2f" % value
+
+	var config := ConfigFile.new()
+	config.load(SAVE_PATH) 
+	config.set_value("Settings", "mouse_sensitivity", value)
+	config.save(SAVE_PATH)
+
+	var player := get_parent()
+	if player and "mouse_sensitivity_base" in player:
+		player.mouse_sensitivity_base = value
+		player.mouse_sensitivity = value
+		player.mouse_sensitivity_zoom = value / 10.0
+
+func _on_sensitivity_input_submitted(new_text: String) -> void:
+	# 1. Convert whatever the player typed into a decimal number
+	var new_val: float = new_text.to_float()
+	
+	# 2. SAFETY CLAMP: Prevent players from typing "9999" and breaking the game camera
+	# (Adjust these limits to match your slider's min and max)
+	new_val = clamp(new_val, 0.1, 5.0) 
+	
+	# 3. Update the slider (This automatically triggers the save/player update!)
+	sens_slider.value = new_val
+	
+	# 4. Deselect the text box so the player can go back to using keyboard menus
+	sens_input.release_focus()

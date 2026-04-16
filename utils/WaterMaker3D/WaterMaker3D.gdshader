@@ -1,5 +1,4 @@
 shader_type spatial;
-// Removed depth_prepass_alpha to stop the engine from getting confused
 render_mode blend_mix, cull_disabled, specular_schlick_ggx;
 
 // --- COLOR & DEPTH ---
@@ -7,6 +6,11 @@ uniform vec4 shallow_color : source_color = vec4(0.25, 0.45, 0.65, 1.0);
 uniform vec4 deep_color : source_color = vec4(0.0, 0.05, 0.15, 1.0);
 uniform float depth_distance : hint_range(0.1, 50.0) = 4.0;
 uniform float beers_law : hint_range(0.1, 20.0) = 2.5;
+
+// --- UNDERWATER CONTROLS ---
+uniform vec4 underwater_ceiling_color : source_color = vec4(0.0, 0.1, 0.2, 1.0);
+uniform float underwater_ripple_strength : hint_range(0.0, 10.0) = 3.0;
+uniform bool impenetrable = false; // Check this to completely block the sky
 
 // --- REFRACTION & REFLECTION ---
 uniform float refraction_strength : hint_range(0.0, 0.2) = 0.03;
@@ -47,7 +51,6 @@ void vertex() {
 }
 
 void fragment() {
-    // 1. EXTRACT NORMALS (Safe method)
     vec2 uv_1 = UV * uv_scale + TIME * pan_speed_1;
     vec2 uv_2 = UV * uv_scale + TIME * pan_speed_2;
     
@@ -72,22 +75,26 @@ void fragment() {
         float view_angle = abs(dot(NORMAL, VIEW));
         float snells_window = smoothstep(0.05, 0.5, view_angle - (final_normal_dir.x * 0.15));
 
-        // HL2 CHROMATIC REFRACTION
-        // We multiply the strength heavily and sample R, G, and B separately to create rainbow-fringed ripples
-        vec2 ref_ofs = final_normal_dir.xy * refraction_strength * 4.0 * snells_window;
-        
-        float r = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs * 1.15, 0.001, 0.999)).r;
-        float g = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs, 0.001, 0.999)).g;
-        float b = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs * 0.85, 0.001, 0.999)).b;
-        vec3 heavily_warped_sky = vec3(r, g, b);
+        if (impenetrable) {
+            // IMPENETRABLE MODE: Skip all screen reading. Just draw a solid, rippling ceiling.
+            ALBEDO = underwater_ceiling_color.rgb;
+            
+            // Apply bright caustic peaks using the new ripple strength slider
+            ALBEDO += max(vec3(0.0), (final_normal_dir - 0.5) * underwater_ripple_strength * 0.2);
+            
+        } else {
+            // HL2 MODE: Warp the sky and mix it with the ceiling color
+            vec2 ref_ofs = final_normal_dir.xy * refraction_strength * underwater_ripple_strength * snells_window;
+            
+            float r = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs * 1.15, 0.001, 0.999)).r;
+            float g = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs, 0.001, 0.999)).g;
+            float b = texture(SCREEN_TEXTURE, clamp(SCREEN_UV + ref_ofs * 0.85, 0.001, 0.999)).b;
+            vec3 heavily_warped_sky = vec3(r, g, b);
 
-        // Mix dark water at the edges with the aggressively wavy sky directly above
-        ALBEDO = mix(deep_color.rgb, heavily_warped_sky, snells_window);
+            ALBEDO = mix(underwater_ceiling_color.rgb, heavily_warped_sky, snells_window);
+            ALBEDO += max(vec3(0.0), (final_normal_dir - 0.5) * underwater_ripple_strength * 0.2) * snells_window;
+        }
 
-        // Add bright caustic peaks to the waves so the ripples catch the eye
-        ALBEDO += max(vec3(0.0), (final_normal_dir - 0.5) * 0.6) * snells_window;
-
-        // Force opaque and kill standard reflections so our painted sky isn't overwritten
         ALPHA = 1.0; 
         SPECULAR = 0.0;
         ROUGHNESS = 0.5;
