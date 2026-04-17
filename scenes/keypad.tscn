@@ -17,6 +17,7 @@ offset_right = 512.0
 offset_bottom = 512.0
 
 [node name="LineEdit" type="LineEdit" parent="VBoxContainer" unique_id=341916876]
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 placeholder_text = "Enter Code"
 alignment = 1

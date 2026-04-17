@@ -14,14 +14,16 @@ _data = {
 point_count = 2
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_nr4xa"]
+resource_local_to_scene = true
 top_radius = 0.05
 bottom_radius = 0.05
-height = 11.301482
+height = 35.238163
 radial_segments = 16
 rings = 0
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_1tsh7"]
-height = 11.301482
+resource_local_to_scene = true
+height = 35.238163
 radius = 0.05
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6k1gw"]
@@ -57,3 +59,8 @@ script = ExtResource("3_v6pup")
 outline_material = SubResource("ShaderMaterial_6k1gw")
 target_meshes = [NodePath("../../WireMesh")]
 metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="Label3D" type="Label3D" parent="InteractArea" unique_id=219650774]
+billboard = 1
+double_sided = false
+no_depth_test = true

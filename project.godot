@@ -22,6 +22,7 @@ config/icon="uid://cijw0jse7sfs8"
 Events="*uid://duejfvfifyd20"
 DebugManager="*uid://psgaa5vua8a3"
 SaveSystem="*uid://c3xdhyb03qflr"
+CsgToolkitAutoload="*uid://w8ad8q4lneis"
 
 [debug]
 
@@ -31,6 +32,7 @@ gdscript/warnings/untyped_declaration=2
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [dotnet]
@@ -39,7 +41,7 @@ project/assembly_name="FPS_Test"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/KGB_Agent/plugin.cfg")
+enabled=PackedStringArray("res://addons/KGB_Agent/plugin.cfg", "res://addons/csg_toolkit/plugin.cfg")
 
 [filesystem]
 

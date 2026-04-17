@@ -23,3 +23,6 @@ signal player_zoomed(is_zooming: bool)
 
 @warning_ignore("unused_signal")
 signal player_crouch_changed(is_crouching: bool)
+
+@warning_ignore("unused_signal")
+signal terminal_mode_toggled(is_active: bool)

@@ -262,9 +262,10 @@ shader_parameter/chromatic_aberration = 0.0010000000475
 shader_parameter/water_tint = Color(0.1, 0.4, 0.7, 0.2)
 shader_parameter/highlight_punch = 0.02000000095
 
-[node name="Player" type="CharacterBody3D" unique_id=1502339238 groups=["player"]]
+[node name="Player" type="CharacterBody3D" unique_id=1502339238 node_paths=PackedStringArray("player_ui") groups=["player"]]
 process_mode = 3
 script = ExtResource("1_34orh")
+player_ui = NodePath("UI")
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)

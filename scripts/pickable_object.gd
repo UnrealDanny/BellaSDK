@@ -5,7 +5,7 @@ class_name PickableObject
 @export var interact_comp: Interact_Component
 @export var mesh: MeshInstance3D
 @export var label: Label3D
-@export var outline_material: ShaderMaterial
+#@export var outline_material: ShaderMaterial
 
 @export_category("Buoyancy")
 @export var probe_container: Node3D 
@@ -63,11 +63,18 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 	if interact_comp:
 		interact_comp.is_currently_focused = false
 		interact_comp.unfocused.emit()
+		# --- NEW: Disable interaction while holding ---
+		interact_comp.process_mode = Node.PROCESS_MODE_DISABLED 
+		
 	add_collision_exception_with(holder)
 	
 func drop() -> void:
 	if Time.get_ticks_msec() - _grab_time < 100: return
 	is_held = false
+	
+	if interact_comp: 
+		# --- NEW: Re-enable interaction ---
+		interact_comp.process_mode = Node.PROCESS_MODE_INHERIT
 	
 	if is_locked:
 		holder = null
@@ -81,19 +88,38 @@ func drop() -> void:
 	if holder:
 		if "velocity" in holder:
 			linear_velocity = holder.velocity
-		var push_dir: Vector3 = -holder.cam.global_transform.basis.z.normalized()
-		push_dir.y += 0.5 
+
+		# FIX 1: Flatten the camera vector to the XZ plane. 
+		# This guarantees the box pushes horizontally outward, even if you look straight down.
+		var cam_forward: Vector3 = -holder.cam.global_transform.basis.z
+		var push_dir := Vector3(cam_forward.x, 0.0, cam_forward.z).normalized()
+		push_dir.y = 0.5 # Give it a slight upward toss
 		apply_central_impulse(push_dir * 3.0)
 
+		# FIX 2: Safely check for distance instead of using a blind 0.2s timer.
 		var previous_holder := holder
-		get_tree().create_timer(0.2).timeout.connect(func() -> void:
-			if is_instance_valid(self) and is_instance_valid(previous_holder):
-				remove_collision_exception_with(previous_holder)
-		)
-
+		_attempt_enable_collision(previous_holder)
+	
 	holder = null
 	if interact_comp:
 		interact_comp.is_currently_focused = false
+
+
+# --- NEW FUNCTION ---
+func _attempt_enable_collision(player: Node3D) -> void:
+	if not is_instance_valid(self) or not is_instance_valid(player): 
+		return
+
+	# Check the distance between the box and the player
+	var distance := global_position.distance_to(player.global_position)
+
+	# 1.5 meters is usually safe, but you can increase this if your player has a wide collision shape
+	if distance > 1.5:
+		remove_collision_exception_with(player)
+	else:
+		# If they are still overlapping, wait 0.1s and recursively check again. 
+		# This allows you to walk away from the box without getting teleported!
+		get_tree().create_timer(0.1).timeout.connect(_attempt_enable_collision.bind(player))
 
 func throw(impulse_vector: Vector3) -> void:
 	drop()
@@ -102,12 +128,20 @@ func throw(impulse_vector: Vector3) -> void:
 
 func _on_interact_component_focused() -> void:
 	if is_locked: return
-	if mesh and outline_material: mesh.material_overlay = outline_material
-	if !is_held and label:
+	
+	# 1. If we are holding it, NO highlight and NO label. Bail out!
+	if is_held:
+		if mesh: mesh.material_overlay = null
+		return
+		
+	# 2. Only apply highlight if NOT held.
+	#if mesh and outline_material: 
+		#mesh.material_overlay = outline_material
+		
+	# 3. Show the label
+	if label:
 		_update_label_text()
 		label.show()
-	elif is_held and mesh:
-		mesh.material_overlay = null
 
 func _update_label_text() -> void:
 	if not label: return
@@ -119,7 +153,7 @@ func _update_label_text() -> void:
 	label.text = "[%s]" % [key_name]
 		
 func _on_interact_component_unfocused() -> void:
-	if mesh: mesh.material_overlay = null
+	#if mesh: mesh.material_overlay = null
 	if label: label.hide()
 
 func _physics_process(_delta: float) -> void:

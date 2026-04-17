@@ -25,6 +25,9 @@ var zoom_tween: Tween
 var is_player_crouching: bool = false
 var ui_lerp_speed: float = 15.0
 
+var crosshair_tween: Tween
+var default_crosshair_size: Vector2
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().paused = false
@@ -53,6 +56,13 @@ func _ready() -> void:
 	ui_circle_zoom_inner.scale = Vector2.ZERO
 	ui_circle_zoom_inner.modulate.a = 0.0
 	ui_circle_zoom_inner.hide()
+	
+	Events.terminal_mode_toggled.connect(_on_terminal_mode_toggled)
+	
+	# Save the original size of your crosshair so we can return to it later
+	default_crosshair_size = center_dot.custom_minimum_size
+	if default_crosshair_size == Vector2.ZERO:
+		default_crosshair_size = center_dot.size # Fallback just in case
 
 func _process(delta: float) -> void:
 	# 0.8 is usually the 'sweet spot' for a heavy vignette. 
@@ -171,3 +181,26 @@ func _on_wireframe_button_pressed() -> void:
 func _on_metrics_button_pressed() -> void:
 	if metrics_panel:
 		metrics_panel.toggle_window()
+
+# --- NEW CROSSHAIR ANIMATION ---
+func _on_terminal_mode_toggled(is_active: bool) -> void:
+	if crosshair_tween and crosshair_tween.is_valid():
+		crosshair_tween.kill()
+		
+	crosshair_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	
+	if is_active:
+		# Animate down to 8x8 pixels
+		var target_size := Vector2(16, 16)
+		crosshair_tween.tween_property(center_dot, "custom_minimum_size", target_size, 0.3)
+		crosshair_tween.tween_property(center_dot, "size", target_size, 0.3)
+		
+		# Optional: Make it slightly transparent when aiming at the keypad
+		# crosshair_tween.tween_property(center_dot, "modulate:a", 0.7, 0.3)
+	else:
+		# Animate back to the default size
+		crosshair_tween.tween_property(center_dot, "custom_minimum_size", default_crosshair_size, 0.3)
+		crosshair_tween.tween_property(center_dot, "size", default_crosshair_size, 0.3)
+		
+		# Optional: Restore full opacity
+		# crosshair_tween.tween_property(center_dot, "modulate:a", 1.0, 0.3)

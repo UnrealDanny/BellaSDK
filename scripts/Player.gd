@@ -24,7 +24,6 @@ extends CharacterBody3D
 @onready var weapon_holder: Node3D = %WeaponHolder
 @onready var stairs_below_cast: RayCast3D = %StairsBelowCast
 @onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
-# Note: interact_shapecast is already @onready in your code
 
 @onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
 
@@ -206,10 +205,15 @@ var vault_indicator: MeshInstance3D
 var can_vault_current_ledge: bool = false
 var current_ledge_point: Vector3 = Vector3.ZERO
 var current_vault_height: float = 0.0
+var current_vault_requires_crouch: bool = false
 
 # --- TERMINAL MODE VARS ---
 var is_in_terminal_mode: bool = false
 var active_terminal: Node3D = null
+var terminal_start_pos: Vector3
+
+# UI & Sensitivity Variables (Assign player_ui in the Inspector!)
+@export var player_ui: CanvasLayer 
 
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
@@ -275,7 +279,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			noclip_speed_multiplier = max(0.1, noclip_speed_multiplier * 0.9)
 			
-	# --- COMBAT & THROW INPUTS ---
+	# --- 1. TERMINAL MODE CLICKING OVERRIDE ---
+	if is_in_terminal_mode and is_instance_valid(active_terminal):
+		# Handle left-clicking the keypad buttons
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			shoot_terminal_raycast(true)
+			get_viewport().set_input_as_handled()
+			return # IMPORTANT: Stop running this function so we don't shoot the gun!
+			
+	# --- 2. COMBAT & THROW INPUTS ---
 	if event.is_action_pressed("shoot"): 
 		if held_object:
 			var throw_force: float = 12.0
@@ -291,21 +303,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			if weapon_holder and weapon_holder.get_child_count() > 0:
 				var current_weapon: Node = weapon_holder.get_child(0)
 				if current_weapon.has_method("shoot"):
-					# Safe call bypasses compiler errors for missing methods on base Node
 					current_weapon.call("shoot", cam)
-	
-	if is_in_terminal_mode and is_instance_valid(active_terminal):
-		
-		# 1. Block normal camera look around
-		if event is InputEventMouseMotion:
-			shoot_terminal_raycast(false) # False = Just hovering
-			get_viewport().set_input_as_handled() 
-
-		# 2. Handle Left Clicking the buttons
-		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			shoot_terminal_raycast(true) # True = Clicking
-			get_viewport().set_input_as_handled()
-			
+				
 func _input(event: InputEvent) -> void:
 	if is_menu_open or is_paused: 
 		return
@@ -314,26 +313,28 @@ func _input(event: InputEvent) -> void:
 
 	# MOUSE LOOKING LOGIC
 	if event is InputEventMouseMotion:
+		# --- THE FIX ---
+		# 1. Grab whatever sensitivity _process wants us to use
+		var active_sens: float = mouse_sensitivity
+		
+		# 2. If using the keypad, crush the sensitivity down to 10%!
+		if is_in_terminal_mode:
+			active_sens = mouse_sensitivity * 0.5 
+
+		# 3. Apply the 'active_sens' to your movement logic
 		if is_heavy_lifting:
 			# --- THE NECK CLAMP ---
-			# Calculate the new rotation, but clamp it so you can only look 45 degrees left or right!
-			var new_yaw: float = rotation.y - deg_to_rad(event.relative.x * mouse_sensitivity)
+			var new_yaw: float = rotation.y - deg_to_rad(event.relative.x * active_sens)
 			var diff: float = angle_difference(heavy_lift_yaw_base, new_yaw)
 			var clamped_diff: float = clampf(diff, deg_to_rad(-15.0), deg_to_rad(15.0))
 			rotation.y = heavy_lift_yaw_base + clamped_diff
 		else:
 			# Normal turning
-			rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
+			rotate_y(deg_to_rad(-event.relative.x * active_sens))
 			
-		head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
+		head.rotate_x(deg_to_rad(-event.relative.y * active_sens))
 		head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
 		sway_target += event.relative
-	## MOUSE LOOKING LOGIC
-	#if event is InputEventMouseMotion:
-		#rotate_y(deg_to_rad(-event.relative.x * mouse_sensitivity))
-		#head.rotate_x(deg_to_rad(-event.relative.y * mouse_sensitivity))
-		#head.rotation.x = clampf(head.rotation.x, deg_to_rad(-89), deg_to_rad(89))
-		#sway_target += event.relative
 
 # --------------------------------------
 # SMOOTH STAIRS AND OTHER DIFFICULT TERRAIN
@@ -469,7 +470,13 @@ func _physics_process(delta: float) -> void:
 	if not _snap_up_stairs_check(delta):
 		move_and_slide()         
 		_snap_down_to_stairs_check()
-		
+	
+	# --- THE ZIPLINE CHECK ---
+	# We only check if we are actually crouching, and NOT already on the zipline or vaulting
+	if not on_zipline and not is_vaulting:
+		_check_zipline_collisions()
+	# -------------------------------------------
+	
 	_slide_camera_smooth_back_to_origin(delta)  
 	
 	if monkey_bar_cooldown > 0:
@@ -499,12 +506,38 @@ func _process(delta: float) -> void:
 		return
 		
 	if is_in_terminal_mode:
+		# --- NEW: Exit if the player starts moving with WASD ---
+		# Replace these strings with your actual movement Input Map names!
+		if Input.is_action_pressed("forward") or Input.is_action_pressed("backward") or \
+		   Input.is_action_pressed("left") or Input.is_action_pressed("right"):
+			exit_terminal_mode()
+			return
+
+		# Exit if the player jumps or crouches
+		if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
+			exit_terminal_mode()
+			return
+			
+		# Exit if the player drifts/walks more than 1 meter away
+		if global_position.distance_to(terminal_start_pos) > 1.0:
+			exit_terminal_mode()
+			return
+			
+		# Exit if the player looks more than 45 degrees away from the terminal
+		if active_terminal:
+			var dir_to_terminal := cam.global_position.direction_to(active_terminal.global_position)
+			var camera_forward := -cam.global_transform.basis.z 
+			
+			if rad_to_deg(camera_forward.angle_to(dir_to_terminal)) > 45.0:
+				exit_terminal_mode()
+				return
+
 		# Press Interact again, or Esc, to leave the keypad
 		if Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("ui_cancel"):
 			exit_terminal_mode()
+			return 
 		
-		# Return early so the rest of your movement/process code doesn't run!
-		return
+		return # Block the rest of _process while in terminal mode
 		
 	update_flashlight(delta)
 	if Input.is_action_just_pressed("flashlight"):
@@ -583,21 +616,29 @@ func update_flashlight(delta: float) -> void:
 	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
 
 func get_interactable_component_at_shapecast() -> Interact_Component:
+	var closest_comp: Interact_Component = null
+	var closest_dist: float = INF
+	var cast_origin: Vector3 = interact_shapecast.global_position
+
 	for i: int in interact_shapecast.get_collision_count():
 		var collider: Object = interact_shapecast.get_collider(i)
 		
-		if not is_instance_valid(collider):
-			continue
-		
-		if collider == self:
+		if not is_instance_valid(collider) or collider == self:
 			continue
 			
 		if collider is Node:
 			var comp: Node = collider.get_node_or_null("Interact_Component")
 			if comp is Interact_Component:
-				return comp as Interact_Component
-			
-	return null
+				# Calculate how far away THIS specific hit point is
+				var hit_point: Vector3 = interact_shapecast.get_collision_point(i)
+				var dist: float = cast_origin.distance_squared_to(hit_point)
+				
+				# Only keep it if it's the closest one we've found so far
+				if dist < closest_dist:
+					closest_dist = dist
+					closest_comp = comp
+					
+	return closest_comp
 	
 func enter_ladder() -> void:
 	on_ladder = true
@@ -937,7 +978,7 @@ func toggle_noclip() -> void:
 	crouching = false
 	
 	flying = !flying
-	noclip_speed_multiplier = 12.0
+	noclip_speed_multiplier = 8.0
 	
 	if flying:
 		standing_collision_shape.disabled = true
@@ -1355,27 +1396,6 @@ func _handle_noclip_physics(delta: float) -> void:
 		else:
 			eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
-
-#func _handle_noclip_physics(delta: float) -> void:
-	#var fly_dir: Vector3 = (cam.global_transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
-	#current_speed = sprinting_speed * noclip_speed_multiplier
-#
-	#Events.noclip_speed_changed.emit(noclip_speed_multiplier)
-				#
-	#if fly_dir.length() > 0:
-		#velocity = fly_dir * current_speed
-	#else:
-		#velocity = Vector3.ZERO
-		#direction = Vector3.ZERO
-	#
-	#if not swimming:
-		#if Input.is_action_pressed("left"):
-			#eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
-		#elif Input.is_action_pressed("right"):
-			#eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
-		#else:
-			#eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
-
 func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
 	var is_climbing_rope: bool = (current_rope != null)
 	var is_zipline_moving: bool = (on_zipline and not is_auto_sliding and absf(input_dir.y) > 0.1)
@@ -1479,12 +1499,24 @@ func _scan_for_ledges() -> void:
 				var clearance_query := PhysicsRayQueryParameters3D.create(clearance_start, clearance_end)
 				clearance_query.exclude = [self.get_rid()]
 				
-				if space_state.intersect_ray(clearance_query):
-					return 
+				var requires_crouch: bool = false
+				var clearance_result := space_state.intersect_ray(clearance_query)
+				
+				if clearance_result:
+					# We hit something (like a window frame). How high is the gap?
+					var hit_height: float = clearance_result.get("position").y - ledge_point.y
+					
+					if hit_height < 0.9:
+						# Gap is smaller than 0.9m. Not enough room even to crouch, abort vault.
+						return
+					else:
+						# Gap is between 0.9m and 1.8m. We can fit, but we must crouch!
+						requires_crouch = true
 				
 				can_vault_current_ledge = true
 				current_ledge_point = ledge_point
 				current_vault_height = vault_height
+				current_vault_requires_crouch = requires_crouch # Save this to use when jumping
 				
 				if vault_height > 1.6 and vault_indicator:
 					var exact_edge: Vector3 = forward_result.get("position") as Vector3
@@ -1503,17 +1535,26 @@ func _try_vault() -> bool:
 		forward_dir = forward_dir.normalized()
 		
 		vault_indicator.hide() 
-		_perform_vault(current_ledge_point, forward_dir, current_vault_height)
+		# PASS THE NEW CROUCH FLAG HERE:
+		_perform_vault(current_ledge_point, forward_dir, current_vault_height, current_vault_requires_crouch)
 		return true
 		
 	return false
 
-func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: float) -> void:
+func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: float, force_crouch: bool = false) -> void:
 	is_vaulting = true
 	velocity = Vector3.ZERO
 	
-	var vault_time: float = clampf(vault_height * 0.75, 0.4, 1.5)
+	# We still instantly change the collision shapes so the physics engine 
+	# lets you through the window, but we removed the instant head snap!
+	if force_crouch:
+		if not crouching: 
+			Events.player_crouch_changed.emit(true)
+		crouching = true 
+		standing_collision_shape.disabled = true
+		crouching_collision_shape.disabled = false
 	
+	var vault_time: float = clampf(vault_height * 0.75, 0.4, 1.5)
 	var final_pos: Vector3 = target_point + (forward_dir * 0.2)
 	
 	var vault_tween: Tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS)
@@ -1521,6 +1562,10 @@ func _perform_vault(target_point: Vector3, forward_dir: Vector3, vault_height: f
 	
 	vault_tween.tween_property(self, "global_position:y", final_pos.y + 0.1, vault_time * 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	vault_tween.tween_property(self, "global_position", final_pos, vault_time * 0.3).set_trans(Tween.TRANS_LINEAR).set_delay(vault_time * 0.7)
+	
+	# --- NEW: Smoothly animate the camera down into the crouch ---
+	if force_crouch:
+		vault_tween.tween_property(head, "position:y", crouching_depth, vault_time * 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	var tilt_amount: float = deg_to_rad(5.0) 
 	vault_tween.tween_property(eyes, "rotation:z", tilt_amount, vault_time * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
@@ -1568,26 +1613,26 @@ func _trigger_screen_water_wipe() -> void:
 func enter_terminal_mode(terminal: Node3D) -> void:
 	is_in_terminal_mode = true
 	active_terminal = terminal
+	terminal_start_pos = global_position 
 	
-	# Show the OS mouse cursor so the player can point at buttons
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	
-	# Optional: Hide your crosshair UI here if you have one!
+	# Just tell the UI to shrink the crosshair!
+	Events.terminal_mode_toggled.emit(true)
 
 func exit_terminal_mode() -> void:
 	is_in_terminal_mode = false
 	active_terminal = null
 	
-	# Lock the mouse back to the center of the screen
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	# Just tell the UI to restore the crosshair!
+	Events.terminal_mode_toggled.emit(false)
 
 func shoot_terminal_raycast(is_click: bool) -> void:
-	# Get where the mouse currently is on your 2D monitor
-	var mouse_pos := get_viewport().get_mouse_position()
+	# Get the exact center of the player's screen (where your 8x8 dot is!)
+	var viewport_size := get_viewport().get_visible_rect().size
+	var screen_center := viewport_size / 2.0
 	
-	# Translate that 2D monitor pixel into a 3D laser pointer
-	var ray_origin := cam.project_ray_origin(mouse_pos)
-	var ray_normal := cam.project_ray_normal(mouse_pos)
+	# Translate that center point into a 3D laser pointer
+	var ray_origin := cam.project_ray_origin(screen_center)
+	var ray_normal := cam.project_ray_normal(screen_center)
 	var ray_end := ray_origin + ray_normal * 3.0 # 3 meters of reach
 	
 	var query := PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
@@ -1600,3 +1645,27 @@ func shoot_terminal_raycast(is_click: bool) -> void:
 			active_terminal.inject_mouse_click(result.position)
 		else:
 			active_terminal.inject_mouse_motion(result.position)
+
+func _check_zipline_collisions() -> void:
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		
+		var zipline_node := collider
+		if not zipline_node.has_method("force_grab_zipline"):
+			zipline_node = collider.get_parent()
+			
+		if zipline_node and zipline_node.has_method("force_grab_zipline"):
+			
+			# 1. Did we hit the TOP of the zipline? 
+			# A normal.y > 0.5 means we landed on the upper half of the cable.
+			var hit_top: bool = collision.get_normal().y > 0.5
+			
+			# 2. Were we falling before this collision happened?
+			# We use last_velocity because move_and_slide might have just set velocity.y to 0
+			var was_falling: bool = last_velocity.y <= 0.0
+			
+			# ONLY grab if we landed on top of it while falling
+			if hit_top and was_falling:
+				zipline_node.force_grab_zipline(self)
+				return

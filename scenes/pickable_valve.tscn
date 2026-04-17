@@ -3,15 +3,15 @@
 [ext_resource type="PackedScene" uid="uid://mqae3mth7tfx" path="res://scenes/pickable_object.tscn" id="1_a558m"]
 [ext_resource type="Script" uid="uid://b5nnqdx26hrl8" path="res://scripts/pickable_valve.gd" id="2_hwiju"]
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="3_5yorj"]
-[ext_resource type="PackedScene" uid="uid://djch67ud4o5fw" path="res://assets/props/valve_wheel/valve_wheel.fbx" id="4_m7mha"]
+[ext_resource type="PackedScene" uid="uid://djch67ud4o5fw" path="res://assets/props/valve/valve_wheel.fbx" id="4_m7mha"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ppa8g"]
 render_priority = 0
 shader = ExtResource("3_5yorj")
-shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/highlight_color = Color(0.6666667, 0.76862746, 0.9882353, 1)
 shader_parameter/blink_speed = 8.0
 shader_parameter/min_intensity = 0.0
-shader_parameter/max_intensity = 0.030000001425
+shader_parameter/max_intensity = 1.0
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5yorj"]
 size = Vector3(0.6, 0.15, 0.6)
@@ -27,7 +27,7 @@ outline_material = SubResource("ShaderMaterial_ppa8g")
 transform = Transform3D(1.9106855e-15, 4.371139e-08, 1, 1, -4.371139e-08, 0, 4.371139e-08, 1, -4.371139e-08, 0, 0, 0)
 
 [node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
-transform = Transform3D(1.9106855e-15, 4.371139e-08, 1, 1, -4.371139e-08, 0, 4.371139e-08, 1, -4.371139e-08, -1.6707653e-09, 1.6707653e-09, -0.038222656)
+transform = Transform3D(1.9106855e-15, 4.371139e-08, 1, 1, -4.371139e-08, 0, 4.371139e-08, 1, -4.371139e-08, 0, 0, -0.03)
 shape = SubResource("BoxShape3D_5yorj")
 
 [node name="Wheel" parent="." index="5" unique_id=1857946508 instance=ExtResource("4_m7mha")]
