@@ -16,9 +16,13 @@ extends CanvasLayer
 
 @onready var fullbright_button: Button = $DebugPanel/VBoxContainer/FullbrightButton
 @onready var wireframe_button: Button = $DebugPanel/VBoxContainer/WireframeButton
+@onready var wireframe_overlay_button: Button = $DebugPanel/VBoxContainer/WireframeOverlayButton
 
 var is_fullbright: bool = false
 var is_wireframe: bool = false
+var is_wireframe_overlay: bool = false
+
+var green_wireframe_material: ShaderMaterial
 
 # NEW UI VARS
 var zoom_tween: Tween
@@ -44,8 +48,9 @@ func _ready() -> void:
 	debug_panel.hide()
 	fullbright_button.pressed.connect(_on_fullbright_button_pressed)
 
-	# Setup Zoom Circles (Uncommented so they actually hide on startup!)
-
+	#if wireframe_overlay_button:
+		#wireframe_overlay_button.pressed.connect(_on_wireframe_overlay_button_pressed)
+		
 	# We use custom_minimum_size / 2.0 to guarantee the pivot is dead center!
 	ui_circle_zoom.pivot_offset = ui_circle_zoom.custom_minimum_size / 2.0
 	ui_circle_zoom.scale = Vector2.ZERO
@@ -63,7 +68,20 @@ func _ready() -> void:
 	default_crosshair_size = center_dot.custom_minimum_size
 	if default_crosshair_size == Vector2.ZERO:
 		default_crosshair_size = center_dot.size # Fallback just in case
-
+	
+	# BUILD THE HL2 GREEN WIREFRAME SHADER
+	green_wireframe_material = ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = """
+    shader_type spatial;
+    render_mode wireframe, unshaded, cull_disabled;
+    
+    void fragment() {
+        ALBEDO = vec3(0.0, 1.0, 0.0); // Bright Green!
+    }
+	"""
+	green_wireframe_material.shader = shader
+	
 func _process(delta: float) -> void:
 	# 0.8 is usually the 'sweet spot' for a heavy vignette. 
 	# 10.0 might be making the whole screen black or breaking the math!
@@ -178,6 +196,33 @@ func _on_wireframe_button_pressed() -> void:
 		
 	Events.wireframe_toggled.emit(is_wireframe)
 
+func _on_wireframe_overlay_button_pressed() -> void:
+	is_wireframe_overlay = !is_wireframe_overlay
+	
+	if is_wireframe_overlay:
+		wireframe_overlay_button.text = "Wireframe Overlay ON"
+	else:
+		wireframe_overlay_button.text = "Wireframe Overlay OFF"
+		
+	Events.wireframe_overlay_toggled.emit(is_wireframe_overlay)
+	
+	# NEW: Reach into the 3D scene and apply the shader
+	var root_node := get_tree().current_scene
+	if root_node:
+		_apply_wireframe_to_node(root_node, is_wireframe_overlay)
+
+func _apply_wireframe_to_node(node: Node, is_overlay: bool) -> void:
+	# Check for both standard meshes AND CSG geometry
+	if node is MeshInstance3D or node is CSGShape3D:
+		if is_overlay:
+			node.material_overlay = green_wireframe_material
+		else:
+			node.material_overlay = null
+			
+	# Keep digging through all the children
+	for child in node.get_children():
+		_apply_wireframe_to_node(child, is_overlay)
+	
 func _on_metrics_button_pressed() -> void:
 	if metrics_panel:
 		metrics_panel.toggle_window()

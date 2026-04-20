@@ -145,6 +145,12 @@ size_flags_vertical = 3
 text = "Wireframe Off"
 alignment = 0
 
+[node name="WireframeOverlayButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=496048571]
+layout_mode = 2
+size_flags_vertical = 3
+text = "Wireframe Overlay Off"
+alignment = 0
+
 [node name="NoclipButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=720158026]
 layout_mode = 2
 size_flags_vertical = 3
@@ -179,4 +185,5 @@ color = Color(0, 0, 0, 0.53333336)
 script = ExtResource("8_ktti3")
 
 [connection signal="pressed" from="DebugPanel/VBoxContainer/WireframeButton" to="." method="_on_wireframe_button_pressed"]
+[connection signal="pressed" from="DebugPanel/VBoxContainer/WireframeOverlayButton" to="." method="_on_wireframe_overlay_button_pressed"]
 [connection signal="pressed" from="DebugPanel/VBoxContainer/NoclipButton" to="." method="_on_noclip_button_pressed"]

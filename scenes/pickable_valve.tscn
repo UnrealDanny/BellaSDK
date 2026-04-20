@@ -10,8 +10,8 @@ render_priority = 0
 shader = ExtResource("3_5yorj")
 shader_parameter/highlight_color = Color(0.6666667, 0.76862746, 0.9882353, 1)
 shader_parameter/blink_speed = 8.0
-shader_parameter/min_intensity = 0.0
-shader_parameter/max_intensity = 1.0
+shader_parameter/min_intensity = 0.01
+shader_parameter/max_intensity = 0.050000002375
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_5yorj"]
 size = Vector3(0.6, 0.15, 0.6)

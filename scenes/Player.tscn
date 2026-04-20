@@ -277,7 +277,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 [node name="InteractShapeCast" type="ShapeCast3D" parent="Head/Eyes/Camera3D" unique_id=1917702885]
 unique_name_in_owner = true
 shape = SubResource("SphereShape3D_cw2d6")
-target_position = Vector3(0, 0, -2)
+target_position = Vector3(0, 0, -1.5)
 max_results = 2
 collision_mask = 5
 
@@ -288,11 +288,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -1)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.8, 0)
 
 [node name="Flashlight" type="SpotLight3D" parent="Head/Eyes/Camera3D/FlashLightNode" unique_id=2067377290]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, -0.25)
 light_energy = 3.0
+light_indirect_energy = 2.0
 light_projector = ExtResource("3_di6f5")
 shadow_enabled = true
-spot_range = 15.0
+spot_range = 10.0
 spot_angle = 25.0
 
 [node name="WeaponHolder" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=22330715]

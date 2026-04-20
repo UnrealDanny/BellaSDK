@@ -16,6 +16,9 @@ signal fullbright_toggled(is_fullbright: bool)
 signal wireframe_toggled(is_on: bool)
 
 @warning_ignore("unused_signal")
+signal wireframe_overlay_toggled(is_overlay: bool)
+
+@warning_ignore("unused_signal")
 signal debug_menu_toggled(is_open: bool)
 
 @warning_ignore("unused_signal")

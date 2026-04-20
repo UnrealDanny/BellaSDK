@@ -21,6 +21,7 @@ material = SubResource("ShaderMaterial_nswgq")
 top_radius = 0.0
 bottom_radius = 1.5
 height = 0.1
+rings = 0
 
 [node name="TeleportDestination" type="Area3D" unique_id=621859534]
 

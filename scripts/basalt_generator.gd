@@ -23,9 +23,16 @@ extends Node3D
 		_queue_generation()
 
 @export_group("Basalt Properties")
-@export var sides: int = 6 :
+@export var sides: int = 6 : 
 	set(value):
 		sides = value
+		_queue_generation()
+
+# Ensure you have ": int = 0" right here!
+@export var rings: int = 0 : 
+	set(value):
+		# We also enforce it here just in case the editor passes a weird value on load
+		rings = int(value) if value != null else 0
 		_queue_generation()
 @export var column_radius: float = 1.0 :
 	set(value):
@@ -69,7 +76,8 @@ func _queue_generation() -> void:
 func _generate() -> void:
 	# 1. Clear previous generation
 	for child: Node in get_children():
-		if child.is_in_group(generated_group_name):
+		# Check the group, AND check the name just in case the group was lost
+		if child.is_in_group(generated_group_name) or child.name.begins_with("BasaltColumn_"):
 			child.queue_free()
 			
 	# Wait a frame for cleanup (important in tool scripts)
@@ -104,6 +112,16 @@ func _generate() -> void:
 			x_pos += randf_range(-chaos, chaos)
 			z_pos += randf_range(-chaos, chaos)
 			
+			# --- STRICT BOUNDARY CLAMPING ---
+			# Calculate the maximum allowed distance from the center, 
+			# subtracting the radius so the geometry doesn't bleed over the edge.
+			var max_x: float = max(0.0, (field_width / 2.0) - column_radius)
+			var max_z: float = max(0.0, (field_depth / 2.0) - column_radius)
+			
+			# Force the positions back inside the box if chaos pushed them out
+			x_pos = clampf(x_pos, -max_x, max_x)
+			z_pos = clampf(z_pos, -max_z, max_z)
+			
 			var test_pos: Vector2 = Vector2(x_pos, z_pos)
 			var is_far_enough: bool = true
 			
@@ -127,7 +145,11 @@ func _generate() -> void:
 		var mesh: CylinderMesh = CylinderMesh.new()
 		
 		# Define sides and shape
-		mesh.radial_segments = sides
+		mesh.radial_segments = max(4, sides) 
+		
+		# Force it to be an integer to prevent the 'Nil' error on startup
+		mesh.rings = int(rings) 
+		
 		mesh.bottom_radius = column_radius
 		mesh.top_radius = column_radius
 		
@@ -163,7 +185,7 @@ func _generate() -> void:
 		column.set_surface_override_material(0, material)
 		
 		# 7. Add to scene and allow individual editing
-		column.add_to_group(generated_group_name)
+		column.add_to_group(generated_group_name, true)
 		column.name = "BasaltColumn_" + str(i)
 		add_child(column)
 		

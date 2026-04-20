@@ -9,6 +9,8 @@
 albedo_texture = ExtResource("1_nxobc")
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_nxobc"]
+radial_segments = 32
+rings = 4
 
 [node name="enemy_TEST" type="RigidBody3D" unique_id=767490549 groups=["enemy"]]
 script = ExtResource("1_u0qif")

@@ -72,8 +72,8 @@ var is_vaulting: bool = false
 
 # INPUT VARS
 
-var mouse_sensitivity: float = 0.5
-var mouse_sensitivity_base: float = 0.5
+var mouse_sensitivity: float = 0.05
+var mouse_sensitivity_base: float = 0.05
 var mouse_sensitivity_zoom: float = mouse_sensitivity / 10.0
 var direction: Vector3 = Vector3.ZERO
 
@@ -114,6 +114,10 @@ var flashlight_position_smoothness: float = 10.0
 
 var default_flashlight_pos: Vector3 = Vector3.ZERO
 var sway_target: Vector2 = Vector2.ZERO
+
+# HL2-like flashlight
+var default_spot_angle: float = 45.0
+var flashlight_maintain_distance: float = 1.5 # Starts compensating when closer than 1.5 meters
 
 # SPRINT FOV VARS
 var zoom_fov: float = 10.0
@@ -215,6 +219,10 @@ var terminal_start_pos: Vector3
 # UI & Sensitivity Variables (Assign player_ui in the Inspector!)
 @export var player_ui: CanvasLayer 
 
+# SHAPECAST REACH VARS
+var base_reach: float = 0.5
+var floor_reach: float = 2.2 # 2m height + 0.2m margin
+
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
@@ -256,18 +264,24 @@ func _ready() -> void:
 	
 	default_flashlight_pos = flash_light_node.position
 	flashlight.visible = false
+	#flashlight_decal.top_level = true 
+	#flashlight_decal.hide()
 	if flashlight:
 		base_light_energy = flashlight.light_energy
 		base_spot_range = flashlight.spot_range
+		default_spot_angle = flashlight.spot_angle
 	
 	var config := ConfigFile.new()
-	var err := config.load("user://controls.cfg")
-	
+	var err := config.load("user://settings.cfg")
+
 	if err == OK and config.has_section_key("Settings", "mouse_sensitivity"):
+		# The player has played before and saved a preference. Load it.
 		var saved_sens: float = config.get_value("Settings", "mouse_sensitivity")
-		mouse_sensitivity_base = saved_sens
-		mouse_sensitivity = saved_sens
-		mouse_sensitivity_zoom = saved_sens / 10.0
+		_apply_sensitivity(saved_sens)
+	else:
+		# First time playing! Or the file was deleted/corrupted.
+		# Apply your newly tested, comfortable default.
+		_apply_sensitivity(mouse_sensitivity_base)
 		
 func _unhandled_input(event: InputEvent) -> void:
 	if is_paused: 
@@ -543,11 +557,23 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("flashlight"):
 		flashlight.visible = !flashlight.visible
 		
+	# --- 1. DYNAMIC REACH FIX ---
+	# Get the up/down look angle (pitch). 
+	# Looking forward is 0, looking straight down is roughly -PI/2 (-1.57 radians).
+	var look_pitch: float = interact_shapecast.global_rotation.x
+	# Calculate how far down we are looking (0.0 = forward, 1.0 = straight down)
+	var down_weight: float = clamp(-look_pitch / (PI / 2.0), 0.0, 1.0)
+	# Extend the Z length of the target_position based on our look angle
+	var current_reach: float = lerp(base_reach, floor_reach, down_weight)
+	interact_shapecast.target_position = Vector3(0, 0, -current_reach)
+	# Optional: Force update if you need the cast to reflect the new length immediately
+	# interact_shapecast.force_shapecast_update()
+	
+	# --- 2. INTERACTION LOGIC ---
 	current_interactable = get_interactable_component_at_shapecast()
 	if current_interactable:
-		# 1. Get the world position of where the ShapeCast hit the rope
-		# We use index 0 because that's the first thing the cast hit
-		var hit_point : Vector3 = interact_shapecast.get_collision_point(0)
+		# Get the hit point. (See the note below on why index 0 might be tricky!)
+		var hit_point: Vector3 = interact_shapecast.get_collision_point(0)
 	
 		# 2. Send the player AND the hit point to the rope's component
 		current_interactable.hover_cursor(self, hit_point)
@@ -614,6 +640,40 @@ func update_flashlight(delta: float) -> void:
 	
 	# Dampen the sway target back to zero
 	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
+
+# ---------------------------------------------------------
+	# --- THE TRUE AAA FLASHLIGHT (PUSH-BACK TRICK) ---
+	# ---------------------------------------------------------
+	if flashlight.visible:
+		var space_state := get_world_3d().direct_space_state
+		var forward_dir := -cam.global_transform.basis.z
+		
+		# Raycast forward 1.5 meters
+		var ray_start := cam.global_position
+		var ray_end := ray_start + (forward_dir * flashlight_maintain_distance)
+		
+		var query := PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+		query.exclude = [self.get_rid()]
+		query.hit_from_inside = false
+		var result := space_state.intersect_ray(query)
+		
+		if result:
+			var distance_to_wall: float = ray_start.distance_to(result.position)
+			
+			# 1. Base Push-Back: Slide it backward to keep it at exactly 1.5m virtual distance
+			var base_push_back: float = flashlight_maintain_distance - distance_to_wall
+			
+			# 2. The 25% Growth: Push it back slightly further as you get closer!
+			var proximity: float = clampf(1.0 - (distance_to_wall / flashlight_maintain_distance), 0.0, 1.0)
+			var extra_growth_push: float = (flashlight_maintain_distance * 0.25) * proximity
+			
+			var final_push_back: float = base_push_back + extra_growth_push
+			
+			# 3. Apply the movement (+Z is backward in Godot local space)
+			flashlight.position.z = lerpf(flashlight.position.z, final_push_back, delta * 15.0)
+		else:
+			# No wall nearby, smoothly return the flashlight to the camera
+			flashlight.position.z = lerpf(flashlight.position.z, 0.0, delta * 15.0)
 
 func get_interactable_component_at_shapecast() -> Interact_Component:
 	var closest_comp: Interact_Component = null
@@ -1669,3 +1729,8 @@ func _check_zipline_collisions() -> void:
 			if hit_top and was_falling:
 				zipline_node.force_grab_zipline(self)
 				return
+
+func _apply_sensitivity(value: float) -> void:
+	mouse_sensitivity_base = value
+	mouse_sensitivity = value
+	mouse_sensitivity_zoom = value / 10.0

@@ -8,8 +8,6 @@ extends CanvasLayer
 @onready var start_button: Button = %StartGame
 
 # --- EXPLICIT UI REFERENCES ---
-# If the game crashes here on boot, it means you need to right-click your 
-# slider and label in the Scene Tree and click "Access as Unique Name"!
 @onready var sens_slider: HSlider = %MouseSensitivitySlider
 @onready var sens_label: Label = %MouseSensitivityLabel
 @onready var sens_input: LineEdit = %MouseSensitivityLine
@@ -30,15 +28,21 @@ var my_actions := [
 	"zoom", "noclip", "console"
 ]
 
-const SAVE_PATH = "user://controls.cfg"
+const SAVE_PATH = "user://settings.cfg"
+# Tweak this to find the perfect "First Time Playing" speed!
+const DEFAULT_SENSITIVITY: float = 0.05 
+# --- AUTO-CALIBRATION VARIABLES ---
+var max_mouse_speed: float = 0.0
+var has_calibrated: bool = false # Prevents overwriting if they already saved a preference
 
 func _ready() -> void:
 	# 1. Connect signals FIRST
 	sens_slider.value_changed.connect(_on_sensitivity_changed)
-	if has_node("%MouseSensitivityLine"): # (Updated to match your new unique name)
+	sens_slider.drag_ended.connect(_on_sensitivity_drag_ended) # FIX: Handles saving to disk
+	
+	if has_node("%MouseSensitivityLine"):
 		sens_input.text_submitted.connect(_on_sensitivity_input_submitted)
 		
-	# --- ADD THIS LINE TO CONNECT THE CONTINUE BUTTON ---
 	continue_button.pressed.connect(_on_resume_pressed)
 
 	# 2. Load from file
@@ -48,7 +52,7 @@ func _ready() -> void:
 	if get_parent().has_method("toggle_pause"):
 		# We are IN-GAME (Attached to the Player)
 		continue_button.show()
-		start_button.text = "Restart Level" # Changes the text so it makes sense!
+		start_button.text = "Restart Level" 
 	else:
 		# We are at the MAIN MENU (First time launch)
 		continue_button.hide()
@@ -98,8 +102,38 @@ func update_button_text(button: Button, action: String) -> void:
 	button.text = action.capitalize() + ": " + key_name
 
 func _on_start_game_pressed() -> void:
+	if not has_calibrated:
+		_apply_bucket_calibration()
+		
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/levels/testbed.scn")
+
+func _apply_bucket_calibration() -> void:
+	has_calibrated = true
+	var auto_sens: float = DEFAULT_SENSITIVITY
+	
+	# BUCKET 1: Twitchy / Wrist Aimers / High Speed
+	# They like their cursor fast in the menu, so give them a fast 3D camera!
+	if max_mouse_speed > 4000.0:
+		auto_sens = 0.5 # Your preferred speed!
+		print("Calibrated: FAST Bucket (Top Menu Speed: ", max_mouse_speed, ")")
+		
+	# BUCKET 2: Medium / Average Users
+	elif max_mouse_speed > 1500.0:
+		auto_sens = 0.1
+		print("Calibrated: MEDIUM Bucket (Top Menu Speed: ", max_mouse_speed, ")")
+		
+	# BUCKET 3: Arm Aimers / Precise Users
+	# Their menu cursor is slow, so they want precise, low 3D aiming.
+	else:
+		auto_sens = 0.05
+		print("Calibrated: PRECISE Bucket (Top Menu Speed: ", max_mouse_speed, ")")
+
+	# Update the slider (which automatically applies it to the player)
+	sens_slider.value = auto_sens
+	
+	# Save it to disk so they don't get auto-calibrated again next time
+	_save_sensitivity_to_disk(auto_sens)
 	
 func _on_exit_pressed() -> void:
 	get_tree().quit()
@@ -160,16 +194,29 @@ func _input(event: InputEvent) -> void:
 				
 				%ConflictPanel.hide()
 				get_viewport().set_input_as_handled()
-
+	
+	# --- NEW: PASSIVE MOUSE TRACKING ---
+	# Only track if it's a mouse movement and we haven't calibrated yet
+	if not has_calibrated and event is InputEventMouseMotion:
+		var current_speed: float = event.velocity.length()
+		
+		# Keep a record of the absolute fastest flick they do in the menu
+		if current_speed > max_mouse_speed:
+			max_mouse_speed = current_speed
+			
 func _on_reset_button_pressed() -> void:
 	InputMap.load_from_project_settings()
 	
 	var dir := DirAccess.open("user://")
-	if dir.file_exists("controls.cfg"):
-		dir.remove("controls.cfg")
+	if dir.file_exists("settings.cfg"):
+		dir.remove("settings.cfg")
 		
-	# Reset sensitivity back to default as well!
-	sens_slider.value = 0.5 
+	sens_slider.value = DEFAULT_SENSITIVITY 
+	
+	# --- ADD THESE TWO LINES ---
+	has_calibrated = false  # Unlock the auto-calibration
+	max_mouse_speed = 0.0   # Reset the speed tracker
+	
 	refresh_all_button_labels()
 
 func refresh_all_button_labels() -> void:
@@ -196,7 +243,8 @@ func load_controls() -> void:
 	var err := config.load(SAVE_PATH)
 	
 	if err != OK: 
-		sens_slider.value = 0.5
+		# FIX: Ensure it falls back to the new default, not 0.5
+		sens_slider.value = DEFAULT_SENSITIVITY
 		return 
 
 	# --- Load Controls ---
@@ -210,6 +258,7 @@ func load_controls() -> void:
 	if config.has_section_key("Settings", "mouse_sensitivity"):
 		var saved_sens: float = config.get_value("Settings", "mouse_sensitivity")
 		sens_slider.value = saved_sens 
+		has_calibrated = true # <--- NEW: They already have a save file, disable auto-calibration!
 			
 func get_action_with_event(new_event: InputEvent) -> String:
 	for action: String in my_actions:
@@ -246,35 +295,48 @@ func _on_resume_pressed() -> void:
 	if get_parent().has_method("toggle_pause"):
 		get_parent().toggle_pause()
 
+
+# ==========================================
+# SENSITIVITY SYSTEM & DISK I/O FIXES
+# ==========================================
+
+# 1. Real-time Player Updates (Fires constantly while dragging)
 func _on_sensitivity_changed(value: float) -> void:
 	sens_label.text = "Mouse Sensitivity: "
 	
-	# Sync the text box with the slider, but ONLY if the player isn't currently 
-	# typing inside it. (This prevents the slider from fighting their cursor).
+	# Sync the text box
 	if not sens_input.has_focus():
 		sens_input.text = "%.2f" % value
 
-	var config := ConfigFile.new()
-	config.load(SAVE_PATH) 
-	config.set_value("Settings", "mouse_sensitivity", value)
-	config.save(SAVE_PATH)
-
+	# Update the player immediately so they feel the change
 	var player := get_parent()
 	if player and "mouse_sensitivity_base" in player:
 		player.mouse_sensitivity_base = value
 		player.mouse_sensitivity = value
 		player.mouse_sensitivity_zoom = value / 10.0
 
+# 2. Disk Saving for Slider (Fires ONCE when the player lets go of the mouse click)
+func _on_sensitivity_drag_ended(value_changed: bool) -> void:
+	if value_changed:
+		_save_sensitivity_to_disk(sens_slider.value)
+
+# 3. Disk Saving for Text Input (Fires ONCE when they hit Enter)
 func _on_sensitivity_input_submitted(new_text: String) -> void:
-	# 1. Convert whatever the player typed into a decimal number
 	var new_val: float = new_text.to_float()
 	
-	# 2. SAFETY CLAMP: Prevent players from typing "9999" and breaking the game camera
-	# (Adjust these limits to match your slider's min and max)
-	new_val = clamp(new_val, 0.1, 5.0) 
+	# Prevent players from typing 9999 and breaking the camera
+	new_val = clamp(new_val, 0.01, 1.0) 
 	
-	# 3. Update the slider (This automatically triggers the save/player update!)
-	sens_slider.value = new_val
-	
-	# 4. Deselect the text box so the player can go back to using keyboard menus
+	# This automatically triggers _on_sensitivity_changed to update the player
+	sens_slider.value = new_val 
 	sens_input.release_focus()
+	
+	# Save to disk!
+	_save_sensitivity_to_disk(new_val)
+
+# 4. Helper function to keep disk operations clean
+func _save_sensitivity_to_disk(value: float) -> void:
+	var config := ConfigFile.new()
+	config.load(SAVE_PATH) 
+	config.set_value("Settings", "mouse_sensitivity", value)
+	config.save(SAVE_PATH)
