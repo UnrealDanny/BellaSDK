@@ -21,8 +21,10 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	if history.is_empty(): return
-
+	# Don't try to draw a shape if we don't have enough points
+	if history.size() < 2: 
+		return
+		
 	var w := size.x
 	var h := size.y
 
@@ -38,7 +40,8 @@ func _draw() -> void:
 		points.append(Vector2(x, y))
 
 	points.append(Vector2((history.size() - 1) * step, h)) 
-	draw_colored_polygon(points, Color(0.2, 0.8, 0.2, 0.6))
+	if points.size() >= 3:
+		draw_colored_polygon(points, Color(0.2, 0.8, 0.2, 0.6))
 
 	# 2. DRAW THE YELLOW 60 FPS LINE ON TOP
 	var target_y := h - (target_ms / ceiling_ms) * h

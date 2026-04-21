@@ -27,7 +27,7 @@ extends CharacterBody3D
 
 @onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
 
-#@onready var ocean := $DynamicOcean # Path to your instanced ocean scene
+
 # --------------------------------------
 # @EXPORTS
 # --------------------------------------
@@ -230,9 +230,6 @@ var _frames_since_grounded: int = 0
 var is_using_zoom: bool = false
 var overlapping_water_areas: Array[Area3D] = []
 
-var clipmap_tile_size := 4.0 # Or 1.0 for high quality
-var previous_tile := Vector3i.MAX
-
 # --------------------------------------
 # MAIN SCRIPT
 # --------------------------------------
@@ -434,13 +431,7 @@ func _slide_camera_smooth_back_to_origin(delta: float) -> void:
 	var move_amount: float = maxf(self.velocity.length() * delta, walking_speed / 2.0 * delta)
 	stair_offset = move_toward(stair_offset, 0.0, move_amount)
 
-func _physics_process(delta: float) -> void:
-	## Snap the ocean mesh perfectly underneath the player's camera
-	#var tile := (Vector3(global_position.x, 0.0, global_position.z) / clipmap_tile_size).ceil()
-	#if not tile.is_equal_approx(previous_tile):
-		#ocean.global_position = tile * clipmap_tile_size
-		#previous_tile = tile
-		
+func _physics_process(delta: float) -> void:		
 	if is_paused or is_stunned:
 		velocity = Vector3.ZERO
 		move_and_slide()
@@ -521,7 +512,7 @@ func _physics_process(delta: float) -> void:
 			if distance_to_hang < 1.5 and (velocity.y < 2.0 or distance_to_hang < 0.4):
 				current_monkey_bar_volume = available_monkey_bar 
 				enter_monkey_bars(available_monkey_bar)
-
+	
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_cancel"):
 		toggle_pause()
