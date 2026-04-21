@@ -760,7 +760,15 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 	velocity.x = bar_vel.x * MONKEY_BAR_SPEED
 	velocity.z = bar_vel.z * MONKEY_BAR_SPEED
 
+	# <-- SYNC VARIABLES HERE
+	current_speed = MONKEY_BAR_SPEED
+	var flat_vel: Vector3 = Vector3(velocity.x, 0, velocity.z)
+	if flat_vel.length() > 0:
+		direction = flat_vel.normalized()
+
+	# (The rest of your monkey bar volume pulling/animation code stays the same)
 	if current_monkey_bar_volume and is_instance_valid(current_monkey_bar_volume):
+		# ...
 		
 		# THE FIX: Area3Ds don't have a "size", so we just use the Area's center point
 		var target_y: float = current_monkey_bar_volume.global_position.y - MONKEY_BAR_HANG_OFFSET
@@ -1215,18 +1223,35 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 
 func _handle_ladder_physics(_delta: float) -> void:
 	sprinting = false
-	crouching = false
+	crouching = Input.is_action_pressed("crouch") 
 
 	var look_dir: Vector3 = -cam.global_transform.basis.z 
 	var right_dir: Vector3 = cam.global_transform.basis.x 
 
-	var ladder_vel: Vector3 = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-	velocity = ladder_vel.normalized() * LADDER_SPEED
+	if Input.is_action_pressed("crouch"):
+		velocity = Vector3.DOWN * sprinting_speed 
+		current_speed = sprinting_speed # <-- SYNC
+	else:
+		var ladder_vel: Vector3 = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
+		velocity = ladder_vel.normalized() * LADDER_SPEED
+		current_speed = LADDER_SPEED # <-- SYNC
 
+	# <-- SYNC DIRECTION SO GROUND PHYSICS DOESN'T DEAD-STOP YOU
+	var flat_vel: Vector3 = Vector3(velocity.x, 0, velocity.z)
+	if flat_vel.length() > 0:
+		direction = flat_vel.normalized()
+
+	# (Your jump logic remains exactly the same below)
 	if Input.is_action_just_pressed("jump"):
 		on_ladder = false
-		velocity = -look_dir * 5.0 
+		var jump_back_dir: Vector3 = cam.global_transform.basis.z
+		jump_back_dir.y = 0
+		velocity = jump_back_dir.normalized() * 5.0
 		velocity.y = 5.0 
+		
+		# Optional: Sync jump off too just to be pristine
+		direction = Vector3(velocity.x, 0, velocity.z).normalized()
+		current_speed = 5.0
 			
 func _handle_zipline_physics(delta: float) -> void:
 	if not on_zipline or is_zipline_transitioning:

@@ -11,8 +11,16 @@ var global_grab_offset: Vector3 = Vector3.ZERO
 @export var drop_distance: float = 3.5 
 @export var stand_distance: float = 1.3 ## How far from the center of the box the player should stand
 
+@export_category("Box Dimensions")
+@export var box_half_height: float = 1.5 ## Distance from center to bottom
+@export var box_half_width: float = 1.5  ## Distance from center to the side edges
+
 func pick_up(target: Marker3D, player: Node3D) -> void:
 	if is_locked or _is_animating: return
+	
+	# Unlock axes so the "Snap to Player" animation can rotate it correctly
+	axis_lock_angular_x = false
+	axis_lock_angular_z = false
 		
 	_is_animating = true
 	holder = player
@@ -117,28 +125,75 @@ func throw(_impulse_vector: Vector3) -> void:
 
 func _physics_process(_delta: float) -> void:
 	if is_heavy_held and holder:
+		# 1. STOP: Don't check stability while we are still snapping/animating!
+		if _is_animating: return 
+
 		var target_pos := holder.global_position + global_grab_offset
 		
-		# --- THE FIX: The "Carrot on a Stick" ---
-		# Nudge the target position slightly in the direction you are walking.
-		# This smoothly breaks the gridlock without using violent surges of force!
 		if "direction" in holder and holder.direction.length() > 0.1:
 			target_pos += holder.direction * 0.35
 		
 		var current_pos := global_position
 		
-		# Auto-drop if the box gets snagged on geometry and falls behind
+		# Auto-drop if the box gets snagged
 		if current_pos.distance_to(target_pos) > drop_distance:
 			drop()
 			return
 			
-		var distance_vector := Vector3(target_pos.x - current_pos.x, 0.0, target_pos.z - current_pos.z)
+		# ---------------------------------------------------------
+		# THE BALANCE CHECK (With Stability Buffer)
+		# ---------------------------------------------------------
+		var grounded_points: int = 0
+		var space_state := get_world_3d().direct_space_state
 		
-		# 1. Spring force to smoothly pull the box toward the target
+		if probe_container:
+			for probe in probe_container.get_children():
+				var p := probe as Node3D
+				var ray_start: Vector3 = p.global_position + Vector3.UP * 0.2
+				# Slightly longer ray (0.6) to handle small bumps in the floor
+				var ray_end: Vector3 = p.global_position + Vector3.DOWN * 0.6
+				
+				var query := PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+				query.exclude = [self.get_rid(), holder.get_rid()]
+				query.collide_with_areas = false
+				
+				var result := space_state.intersect_ray(query)
+				if not result.is_empty():
+					var angle := rad_to_deg(Vector3.UP.angle_to(result.normal))
+					if angle < 30.0: # Loosened angle slightly for stairs
+						grounded_points += 1
+
+		# ---------------------------------------------------------
+		# THE BALANCE CHECK (Sled-Slide Mode)
+		# ---------------------------------------------------------
+		if grounded_points < 2:
+			var lurch_dir: Vector3 = Vector3.ZERO
+			if is_instance_valid(holder):
+				lurch_dir = (holder.global_basis * Vector3.FORWARD).normalized()
+			
+			drop()
+			
+			# --- THE "SLED" FIX ---
+			# Lock X and Z rotation so it cannot tip or roll.
+			# It can still rotate around Y (yaw) if it bumps into a wall.
+			axis_lock_angular_x = true
+			axis_lock_angular_z = true
+			
+			var final_push := (lurch_dir if lurch_dir != Vector3.ZERO else Vector3.FORWARD)
+			
+			# Pure downward and forward force. NO torque impulse!
+			apply_central_impulse(final_push * mass * 0.5 + Vector3.DOWN * mass * 2.0)
+			return
+		# MOVEMENT PHYSICS (Applying the forces)
+		# ---------------------------------------------------------
+		var distance_vector := Vector3(target_pos.x - current_pos.x, 0.0, target_pos.z - current_pos.z)
 		var pull_strength: float = drag_speed * mass * 15.0
 		apply_central_force(distance_vector * pull_strength)
 		
-		# 2. Apply artificial XZ friction so it feels heavy and doesn't bounce
+		# Heavy downward force to keep it from bouncing
+		apply_central_force(Vector3.DOWN * mass * 30.0)
+		
+		# XZ Friction
 		var friction: float = 12.0 * mass
 		apply_central_force(Vector3(-linear_velocity.x, 0.0, -linear_velocity.z) * friction)
 		

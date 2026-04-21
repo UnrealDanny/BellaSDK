@@ -5,6 +5,14 @@ var max_points: int = 100 # How many frames to draw across the screen
 var target_ms: float = 16.67 # 60 FPS target
 var ceiling_ms: float = 33.33 # 30 FPS ceiling (the top of the graph)
 
+# Explicitly typed class variables
+var spectrum_seed := Vector2i.ZERO
+var should_generate_spectrum: bool = true
+
+var time: float = 0.0
+var foam_grow_rate: float = 0.0
+var foam_decay_rate: float = 0.0
+
 func _process(delta: float) -> void:
 	# PERFORMANCE: Don't do math if the debug menu is closed
 	if not is_visible_in_tree(): 
@@ -40,8 +48,8 @@ func _draw() -> void:
 		points.append(Vector2(x, y))
 
 	points.append(Vector2((history.size() - 1) * step, h)) 
-	if points.size() >= 3:
-		draw_colored_polygon(points, Color(0.2, 0.8, 0.2, 0.6))
+	if points.size() >= 2: # Polylines only need 2 points to draw a line
+		draw_polyline(points, Color(0.2, 0.8, 0.2, 0.6), 2.0, true) # 2.0 is line width, true is anti-aliased
 
 	# 2. DRAW THE YELLOW 60 FPS LINE ON TOP
 	var target_y := h - (target_ms / ceiling_ms) * h

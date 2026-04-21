@@ -16,17 +16,28 @@ size = Vector3(3, 3, 3)
 size = Vector3(3, 3, 3)
 
 [node name="HeavyPickableBox" unique_id=594279821 instance=ExtResource("1_h1kgl")]
-axis_lock_angular_x = true
-axis_lock_angular_y = true
-axis_lock_angular_z = true
 mass = 20.0
 script = ExtResource("2_4o347")
 drag_speed = 20.0
 drop_distance = 1.0
 stand_distance = 1.5
+box_half_height = null
+box_half_width = null
 
 [node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
 mesh = SubResource("BoxMesh_3773a")
 
 [node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
 shape = SubResource("BoxShape3D_4o347")
+
+[node name="Marker3D" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="0" unique_id=1977258969]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -1.5, 1.4)
+
+[node name="Marker3D2" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="1" unique_id=1466183085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -1.5, -1.4)
+
+[node name="Marker3D3" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="2" unique_id=865436627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -1.5, -1.4)
+
+[node name="Marker3D4" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="3" unique_id=1857240385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -1.5, 1.4)
