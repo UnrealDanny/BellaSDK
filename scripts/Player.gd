@@ -27,6 +27,7 @@ extends CharacterBody3D
 
 @onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
 
+#@onready var ocean := $DynamicOcean # Path to your instanced ocean scene
 # --------------------------------------
 # @EXPORTS
 # --------------------------------------
@@ -228,6 +229,9 @@ var input_dir: Vector2 = Vector2.ZERO
 var _frames_since_grounded: int = 0
 var is_using_zoom: bool = false
 var overlapping_water_areas: Array[Area3D] = []
+
+var clipmap_tile_size := 4.0 # Or 1.0 for high quality
+var previous_tile := Vector3i.MAX
 
 # --------------------------------------
 # MAIN SCRIPT
@@ -431,6 +435,12 @@ func _slide_camera_smooth_back_to_origin(delta: float) -> void:
 	stair_offset = move_toward(stair_offset, 0.0, move_amount)
 
 func _physics_process(delta: float) -> void:
+	## Snap the ocean mesh perfectly underneath the player's camera
+	#var tile := (Vector3(global_position.x, 0.0, global_position.z) / clipmap_tile_size).ceil()
+	#if not tile.is_equal_approx(previous_tile):
+		#ocean.global_position = tile * clipmap_tile_size
+		#previous_tile = tile
+		
 	if is_paused or is_stunned:
 		velocity = Vector3.ZERO
 		move_and_slide()

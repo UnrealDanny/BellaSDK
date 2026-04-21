@@ -19,3 +19,5 @@ addons/csg_toolkit/
 .vscode/
 
 assets/
+
+addons/imgui-godot/
