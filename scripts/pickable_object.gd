@@ -15,6 +15,11 @@ class_name PickableObject
 @export var water_drag: float = 0.5
 @export var water_angular_drag: float = 0.5
 
+# --- HOLDING CONFIG ---
+## How much closer to the player this object should be held.
+## Set to 0.0 for boxes, set to 0.8 for small valves or cables.
+@export var hold_distance_offset: float = 0.0
+
 var is_held: bool = false
 var hold_target: Marker3D = null
 var holder: Node3D = null
@@ -53,7 +58,7 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 	holder = player
 	if label: label.hide()
 	
-	PhysicsServer3D.body_set_state(self.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, target.global_transform)
+	#PhysicsServer3D.body_set_state(self.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, target.global_transform)
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	freeze = false 
@@ -73,7 +78,6 @@ func drop() -> void:
 	is_held = false
 	
 	if interact_comp: 
-		# --- NEW: Re-enable interaction ---
 		interact_comp.process_mode = Node.PROCESS_MODE_INHERIT
 	
 	if is_locked:
@@ -89,16 +93,20 @@ func drop() -> void:
 		if "velocity" in holder:
 			linear_velocity = holder.velocity
 
-		# FIX 1: Flatten the camera vector to the XZ plane. 
-		# This guarantees the box pushes horizontally outward, even if you look straight down.
 		var cam_forward: Vector3 = -holder.cam.global_transform.basis.z
 		var push_dir := Vector3(cam_forward.x, 0.0, cam_forward.z).normalized()
-		push_dir.y = 0.5 # Give it a slight upward toss
-		apply_central_impulse(push_dir * 3.0)
+		push_dir.y = 0.5 
+		apply_central_impulse(push_dir * 5.0)
+		
+		# IMPORTANT: Change "held_object" to whatever variable name your Player.gd actually uses!
+		if "held_object" in holder:
+			holder.held_object = null
+		elif "grabbed_object" in holder: # Just in case it's named this instead
+			holder.grabbed_object = null
 
-		# FIX 2: Safely check for distance instead of using a blind 0.2s timer.
+		# ✅ NEW: Turn collisions with the player back on, but push it away first
 		var previous_holder := holder
-		_attempt_enable_collision(previous_holder)
+		_wait_to_enable_collision(previous_holder)
 	
 	holder = null
 	if interact_comp:
@@ -157,12 +165,45 @@ func _on_interact_component_unfocused() -> void:
 	if label: label.hide()
 
 func _physics_process(_delta: float) -> void:
-	# 1. HOLDING LOGIC
-	if is_held and hold_target:
-		var distance_vector := hold_target.global_position - global_position
-		linear_velocity = distance_vector * 20.0
+	if is_held and hold_target and holder:
+		var player_pos: Vector3 = holder.global_position
+		var target_pos: Vector3 = hold_target.global_position
 		
-		var diff_quat := hold_target.global_basis.get_rotation_quaternion() * global_basis.get_rotation_quaternion().inverse()
+		# 1. APPLY OFFSETS FIRST
+		# Pull closer to face
+		var cam_forward: Vector3 = -holder.cam.global_transform.basis.z
+		target_pos -= cam_forward * hold_distance_offset
+		
+		# Lower on screen
+		target_pos.y -= 0.5 
+		
+		# 2. APPLY CONSTRAINTS (Hula Hoop & Floor)
+		var flat_offset := Vector2(target_pos.x - player_pos.x, target_pos.z - player_pos.z)
+		if flat_offset.length() < 0.8:
+			flat_offset = flat_offset.normalized() * 0.8
+			target_pos.x = player_pos.x + flat_offset.x
+			target_pos.z = player_pos.z + flat_offset.y
+			
+		var min_height: float = player_pos.y + 1.0 
+		if target_pos.y < min_height:
+			target_pos.y = min_height
+
+		# 3. NOW DO THE SNAG CHECK
+		# We check distance to our modified target_pos, NOT the Marker3D
+		var distance_to_target := global_position.distance_to(target_pos)
+		
+		if distance_to_target > 1.5 and holder.get("flying") != true: 
+			drop()
+			return 
+			
+		# 4. APPLY PHYSICS MOVE
+		var distance_vector := target_pos - global_position
+		linear_velocity = distance_vector * 15.0
+		
+		# --- KEEP YOUR ROTATION LOGIC THE SAME ---
+		var target_basis: Basis = holder.global_basis
+		
+		var diff_quat := target_basis.get_rotation_quaternion() * global_basis.get_rotation_quaternion().inverse()
 		var axis := Vector3(diff_quat.x, diff_quat.y, diff_quat.z)
 		var angle := 2.0 * acos(clamp(diff_quat.w, -1.0, 1.0))
 		if angle > PI: angle -= TAU
@@ -200,3 +241,14 @@ func _physics_process(_delta: float) -> void:
 	if submerged and not is_held:
 		apply_central_force(-linear_velocity * water_drag * mass)
 		apply_torque(-angular_velocity * water_angular_drag * mass)
+
+func _wait_to_enable_collision(player: Node3D) -> void:
+	if not is_instance_valid(self) or not is_instance_valid(player): 
+		return
+		
+	# Check if the box is far enough away to safely turn collision back on (1.2 meters)
+	if global_position.distance_to(player.global_position) > 2.0:
+		remove_collision_exception_with(player)
+	else:
+		# If it's still too close, wait a tiny fraction of a second and check again
+		get_tree().create_timer(0.1).timeout.connect(_wait_to_enable_collision.bind(player))

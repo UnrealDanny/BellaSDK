@@ -18,7 +18,7 @@ extends CharacterBody3D
 @onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
 
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
-@onready var hold_position: Marker3D = $Head/Eyes/Camera3D/HoldPosition
+@onready var hold_position: Marker3D = $Head/Eyes/Camera3D/SpringArm3D/HoldPosition
 
 # --- ADD TO THE TOP OF Player.gd (Node Caching) ---
 @onready var weapon_holder: Node3D = %WeaponHolder

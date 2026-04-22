@@ -9,6 +9,9 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_cw2d6"]
 radius = 0.1
 
+[sub_resource type="SphereShape3D" id="SphereShape3D_qu4a1"]
+radius = 0.1
+
 [sub_resource type="Animation" id="Animation_bruh7"]
 resource_name = "MonkeMoves"
 length = 2.0
@@ -264,6 +267,7 @@ shader_parameter/highlight_punch = 0.02000000095
 
 [node name="Player" type="CharacterBody3D" unique_id=1502339238 node_paths=PackedStringArray("player_ui") groups=["player"]]
 process_mode = 3
+collision_mask = 7
 script = ExtResource("1_34orh")
 player_ui = NodePath("UI")
 
@@ -281,8 +285,14 @@ target_position = Vector3(0, 0, -1.5)
 max_results = 2
 collision_mask = 5
 
-[node name="HoldPosition" type="Marker3D" parent="Head/Eyes/Camera3D" unique_id=988079669]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -1)
+[node name="SpringArm3D" type="SpringArm3D" parent="Head/Eyes/Camera3D" unique_id=340404888]
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 0, 0, 0)
+collision_mask = 2
+shape = SubResource("SphereShape3D_qu4a1")
+margin = 0.1
+
+[node name="HoldPosition" type="Marker3D" parent="Head/Eyes/Camera3D/SpringArm3D" unique_id=988079669]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
 
 [node name="FlashLightNode" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=120381391]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.8, 0)

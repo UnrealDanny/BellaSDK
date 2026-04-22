@@ -78,14 +78,27 @@ func shoot(player_camera: Camera3D) -> void:
 		query.exclude = [player_camera.owner.get_rid()] 
 		
 		# 5. Ask the physics engine what we hit
+		# 5. Ask the physics engine what we hit
 		var result := space_state.intersect_ray(query)
 
 		if result:
 			var collider: Object = result.collider
+			
+			# --- THE DAMAGE & PHYSICS CHECK ---
 			if collider.has_method("take_damage"):
-		# We pass the damage AND the direction the pellet was flying!
+				# We pass the damage AND the direction the pellet was flying!
 				collider.take_damage(damage_per_pellet, pellet_dir)
 				
+			elif collider is RigidBody3D:
+				# NEW: If it doesn't take damage, but IS a physics object (like your box), push it!
+				# We calculate exactly where the pellet hit relative to the center of the box
+				var hit_offset: Vector3 = result.position - collider.global_position
+				
+				# Apply the force. (Multiply pellet_dir by a number to make it hit harder/softer)
+				# Note: Because a shotgun fires 8 pellets, this will hit the box 8 times simultaneously!
+				collider.apply_impulse(pellet_dir * 2.0, hit_offset)
+
+			# --- VISUAL EFFECTS ---
 			if collider.has_method("leak_at"):
 				collider.leak_at(result.position)
 				
@@ -94,7 +107,6 @@ func shoot(player_camera: Camera3D) -> void:
 			dot.global_position = result.position
 			# TODO: Spawn bullet holes at result.position here!
 			print("Pellet hit: ", collider.name, " at ", result.position)
-
 
 func _on_interact_component_interacted(_player: CharacterBody3D = null) -> void:
 	print("picking up shotgun")

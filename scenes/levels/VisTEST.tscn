@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://sqbdusfk5glf"]
+
+[ext_resource type="PackedScene" uid="uid://ytedk3pdl0u0" path="res://assets/VisTEST/3. Final_Scene/Enviroment_v1.0.glb" id="1_lhvce"]
+[ext_resource type="PackedScene" uid="uid://2db87kewe2f2" path="res://scenes/Player.tscn" id="2_3gr12"]
+
+[node name="Node3D" type="Node3D" unique_id=1632548925]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1268728074]
+
+[node name="Enviroment_v1_0" parent="MeshInstance3D" unique_id=116225491 instance=ExtResource("1_lhvce")]
+
+[node name="Player" parent="MeshInstance3D" unique_id=1502339238 instance=ExtResource("2_3gr12")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.2355456, 0, -14.445295)
