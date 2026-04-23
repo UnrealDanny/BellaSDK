@@ -4,37 +4,36 @@
 [ext_resource type="Script" uid="uid://c3pb1k0kh7v3u" path="res://scripts/heavy_pickable_box.gd" id="2_4o347"]
 [ext_resource type="Texture2D" uid="uid://6jbvqeu8qf1j" path="res://assets/images/dev_textures/standard_5_orange_512.png" id="3_4o347"]
 
-[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_4o347"]
-friction = 0.8
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj5oh"]
 albedo_texture = ExtResource("3_4o347")
 uv1_triplanar = true
 
 [sub_resource type="BoxMesh" id="BoxMesh_3773a"]
 material = SubResource("StandardMaterial3D_fj5oh")
-size = Vector3(3, 3, 3)
+size = Vector3(3, 1.5, 3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4o347"]
-size = Vector3(3, 3, 3)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_3773a"]
-size = Vector3(3, 3, 3)
+size = Vector3(3, 1.5, 3)
 
 [node name="HeavyPickableBox" unique_id=594279821 instance=ExtResource("1_h1kgl")]
 mass = 100.0
-physics_material_override = SubResource("PhysicsMaterial_4o347")
 center_of_mass_mode = 1
 center_of_mass = Vector3(0, 0.2, 0)
 script = ExtResource("2_4o347")
-drag_speed = 20.0
-drop_distance = 1.0
-stand_distance = 1.5
-box_half_height = 1.5
-box_half_width = 1.5
-player_radius = 0.4
-player_height = 1.8
-environment_collision_mask = 1
+drag_speed = null
+drop_distance = null
+snap_duration = 0.3
+box_half_width = 0.75
+player_radius = null
+player_height = null
+environment_collision_mask = null
+float_force = null
+water_drag = null
+water_angular_drag = null
+hold_distance_offset = null
+
+[node name="HighlightComponent" parent="." index="1" unique_id=1233358358 node_paths=PackedStringArray("target_meshes")]
+target_meshes = [NodePath("../MeshInstance3D")]
 
 [node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
 mesh = SubResource("BoxMesh_3773a")
@@ -53,6 +52,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -1.5, -1.4)
 
 [node name="Marker3D4" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="3" unique_id=1857240385]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -1.5, 1.4)
-
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="." index="6" unique_id=1724865743]
-shape = SubResource("BoxShape3D_3773a")

@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://c05myhbm4uq47"]
+
+[ext_resource type="Script" uid="uid://b3p6yrsyvihh5" path="res://scenes/TESTS(delete later)/double_sliding_doors.gd" id="1_kd02f"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://scripts/Interact_Component.gd" id="1_vlp63"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://scripts/highlight_component.gd" id="2_kd02f"]
+[ext_resource type="Texture2D" uid="uid://dufts68n1gn2p" path="res://assets/images/dev_textures/standard_7_green_512.png" id="2_udaya"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="5_vsomv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vsomv"]
+albedo_texture = ExtResource("2_udaya")
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_udaya"]
+material = SubResource("StandardMaterial3D_vsomv")
+size = Vector3(2, 3, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_f50cn"]
+size = Vector3(2, 3, 0.1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ayun4"]
+render_priority = 0
+shader = ExtResource("5_vsomv")
+shader_parameter/highlight_color = Color(0.6666667, 0.76862746, 0.9882353, 1)
+shader_parameter/blink_speed = 8.00000038
+shader_parameter/min_intensity = 0.01
+shader_parameter/max_intensity = 0.050000002375
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ayun4"]
+albedo_texture = ExtResource("2_udaya")
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_ayun4"]
+material = SubResource("StandardMaterial3D_ayun4")
+size = Vector3(2, 3, 0.1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vsomv"]
+size = Vector3(2, 3, 0.1)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_f50cn"]
+render_priority = 0
+shader = ExtResource("5_vsomv")
+shader_parameter/highlight_color = Color(0.6666667, 0.76862746, 0.9882353, 1)
+shader_parameter/blink_speed = 8.00000038
+shader_parameter/min_intensity = 0.01
+shader_parameter/max_intensity = 0.050000002375
+
+[node name="DoubleSlidingDoors" type="Node3D" unique_id=369066608]
+script = ExtResource("1_kd02f")
+
+[node name="DoorLeft" type="AnimatableBody3D" parent="." unique_id=2065203433]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DoorLeft" unique_id=301306638]
+mesh = SubResource("BoxMesh_udaya")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="DoorLeft" unique_id=392464859]
+shape = SubResource("BoxShape3D_f50cn")
+
+[node name="Interact_Component" type="Node" parent="DoorLeft" unique_id=1420559404]
+script = ExtResource("1_vlp63")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="DoorLeft" unique_id=427431611 node_paths=PackedStringArray("target_meshes")]
+script = ExtResource("2_kd02f")
+outline_material = SubResource("ShaderMaterial_ayun4")
+target_meshes = [NodePath("../MeshInstance3D")]
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="Label3D" type="Label3D" parent="DoorLeft" unique_id=1835234058]
+billboard = 1
+double_sided = false
+no_depth_test = true
+font_size = 12
+outline_size = 6
+
+[node name="DoorRight" type="AnimatableBody3D" parent="." unique_id=1623088737]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="DoorRight" unique_id=376743055]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -0.1)
+mesh = SubResource("BoxMesh_ayun4")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="DoorRight" unique_id=343433529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -0.1)
+shape = SubResource("BoxShape3D_vsomv")
+
+[node name="Interact_Component" type="Node" parent="DoorRight" unique_id=1254268336]
+script = ExtResource("1_vlp63")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="DoorRight" unique_id=1519677558 node_paths=PackedStringArray("target_meshes")]
+script = ExtResource("2_kd02f")
+outline_material = SubResource("ShaderMaterial_f50cn")
+target_meshes = [NodePath("../MeshInstance3D")]
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="Label3D2" type="Label3D" parent="DoorRight" unique_id=1088058012]
+billboard = 1
+double_sided = false
+no_depth_test = true
+font_size = 12
+outline_size = 6
