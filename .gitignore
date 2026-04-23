@@ -18,6 +18,15 @@ addons/csg_toolkit/
 
 .vscode/
 
-assets/
+assets/decals
+assets/dev_meshes
+assets/fonts
+assets/HDR
+assets/images
+assets/props
+assets/sounds
+assets/textures
+assets/VisTEST
+assets/weapons
 
 addons/imgui-godot/
