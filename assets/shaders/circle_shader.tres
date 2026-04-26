@@ -1,0 +1,47 @@
+[gd_resource type="VisualShader" format=3 uid="uid://urdfn0l44h32"]
+
+[sub_resource type="Gradient" id="Gradient_ooamo"]
+offsets = PackedFloat32Array(0.55374986, 0.6349999, 0.6849998, 0.7599999, 0.8224999, 0.9037498)
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8224999, 0.8224999, 0.8224999, 1, 0, 0, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_h31uw"]
+gradient = SubResource("Gradient_ooamo")
+fill_from = Vector2(1, 1)
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_r7sjb"]
+expanded_output_ports = [0]
+texture = SubResource("GradientTexture2D_h31uw")
+texture_type = 1
+
+[sub_resource type="VisualShaderNodeUVFunc" id="VisualShaderNodeUVFunc_afg6i"]
+
+[sub_resource type="VisualShaderNodeInput" id="VisualShaderNodeInput_t36ui"]
+input_name = "time"
+
+[sub_resource type="VisualShaderNodeVectorOp" id="VisualShaderNodeVectorOp_nx5kq"]
+default_input_values = [0, Vector2(0, 0), 1, Vector2(0, 0)]
+op_type = 0
+operator = 2
+
+[sub_resource type="VisualShaderNodeVec2Parameter" id="VisualShaderNodeVec2Parameter_sv63k"]
+parameter_name = "Speed"
+
+[sub_resource type="VisualShaderNodeColorParameter" id="VisualShaderNodeColorParameter_ooamo"]
+parameter_name = "CircleColor"
+
+[resource]
+flags/unshaded = true
+nodes/vertex/0/position = Vector2(422.22223, 155.55556)
+nodes/fragment/2/node = SubResource("VisualShaderNodeTexture_r7sjb")
+nodes/fragment/2/position = Vector2(-124.55556, 226.88889)
+nodes/fragment/3/node = SubResource("VisualShaderNodeUVFunc_afg6i")
+nodes/fragment/3/position = Vector2(-466.6667, 333.33334)
+nodes/fragment/4/node = SubResource("VisualShaderNodeInput_t36ui")
+nodes/fragment/4/position = Vector2(-1066.6667, 400)
+nodes/fragment/5/node = SubResource("VisualShaderNodeVectorOp_nx5kq")
+nodes/fragment/5/position = Vector2(-678.2222, 465.22226)
+nodes/fragment/6/node = SubResource("VisualShaderNodeVec2Parameter_sv63k")
+nodes/fragment/6/position = Vector2(-1066.6667, 622.2222)
+nodes/fragment/7/node = SubResource("VisualShaderNodeColorParameter_ooamo")
+nodes/fragment/7/position = Vector2(-177.77779, -88.88889)
+nodes/fragment/connections = PackedInt32Array(3, 0, 2, 0, 4, 0, 5, 0, 5, 0, 3, 2, 6, 0, 5, 1, 7, 0, 0, 0, 2, 1, 0, 1)
