@@ -43,14 +43,12 @@ extends CharacterBody3D
 @export var sprint_fov: float = 85.0
 
 # SPEED VARS
-
 var current_speed: float = 0.0
 const jump_velocity: float = 4.5
 const crouch_jump_velocity: float = 3.5
 const sprint_jump_velocity: float = 5.0
 
 # SPEED STATES
-
 var walking: bool = false
 var sprinting: bool = false
 var crouching: bool = false
@@ -89,7 +87,6 @@ const head_bobbing_walking_intensity: float = 0.1
 const head_bobbing_crouching_intensity: float = 0.08
 const head_bobbing_idle_intensity: float = 0.02
 
-var head_bobbing_vector: Vector2 = Vector2.ZERO
 var head_bobbing_index: float = 0.0
 var head_bobbing_current_intensity: float = 0.0
 
@@ -188,6 +185,10 @@ var zipline_gravity_pull := 5.0 # How much the slope pulls you down
 var current_monkey_bar_path: Path3D = null
 var available_monkey_bar: Node3D = null
 var monkey_bar_cooldown: float = 0.0
+var on_monkey_bars: bool = false
+var MONKEY_BAR_SPEED: float = 2.5 
+var MONKEY_BAR_HANG_OFFSET: float = 2.1 
+var current_monkey_bar_volume: Node3D = null 
 
 # Add these receiver functions anywhere in your player script
 func set_available_monkey_bar(bar: Node3D) -> void:
@@ -551,10 +552,14 @@ func _process(delta: float) -> void:
 		if Input.is_action_just_pressed("interact") or Input.is_action_just_pressed("ui_cancel"):
 			exit_terminal_mode()
 			return 
-		
-		return # Block the rest of _process while in terminal mode
-		
+			
+	# Move the flashlight update ABOVE the terminal return block
+	# so it keeps rendering and swaying while looking at the keypad!
 	update_flashlight(delta)
+	
+	if is_in_terminal_mode:
+		return # Now it safely blocks zooming/interacting without breaking the flashlight
+		
 	if Input.is_action_just_pressed("flashlight"):
 		flashlight.visible = !flashlight.visible
 		
@@ -618,7 +623,7 @@ func _process(delta: float) -> void:
 	
 func update_flashlight(delta: float) -> void:
 	var target_pos: Vector3 = default_flashlight_pos 
-	var light_intensity: float = head_bobbing_current_intensity * 0.15
+	var light_intensity: float = head_bobbing_current_intensity
 
 	# Flashlight bobs exactly like the head (synced)
 	target_pos.x += sin(head_bobbing_index / 2.0) * (light_intensity * 1.5)
@@ -632,15 +637,18 @@ func update_flashlight(delta: float) -> void:
 	sway_target.x = clampf(sway_target.x, -max_sway, max_sway)
 	sway_target.y = clampf(sway_target.y, -max_sway, max_sway)
 	
+	# Adjusted the multiplier to make the sway noticeable
 	var target_rot := Vector3(
-		-sway_target.y * (sway_amount * -0.002), 
-		-sway_target.x * (sway_amount * -0.002), 
+		sway_target.y * (sway_amount * 0.0015), 
+		sway_target.x * (sway_amount * 0.0015), 
 		0.0
 	)
+	# Move the flashlight towards the target
 	flash_light_node.rotation = flash_light_node.rotation.lerp(target_rot, delta * flashlight_rotation_smoothness)
 	
-	# Dampen the sway target back to zero
-	sway_target = sway_target.lerp(Vector2.ZERO, delta * smooth_speed)
+	# Recover the target back to zero much slower than the node rotates.
+	# This creates that natural heavy "lag and catch-up" feeling.
+	sway_target = sway_target.lerp(Vector2.ZERO, delta * (smooth_speed * 0.5))
 
 # ---------------------------------------------------------
 	# --- THE TRUE AAA FLASHLIGHT (PUSH-BACK TRICK) ---
@@ -706,15 +714,10 @@ func enter_ladder() -> void:
 
 func exit_ladder() -> void:
 	on_ladder = false
-	
+
 # --------------------------------------
 # MONKE BARS
 # --------------------------------------
-var on_monkey_bars: bool = false
-var MONKEY_BAR_SPEED: float = 2.5 
-var MONKEY_BAR_HANG_OFFSET: float = 2.1 
-var current_monkey_bar_volume: Node3D = null 
-
 func enter_monkey_bars(volume_node: Node3D) -> void: 
 	if on_monkey_bars and current_monkey_bar_volume == volume_node: 
 		return
@@ -781,18 +784,6 @@ func _handle_monkey_bars_physics(_delta: float) -> void:
 		var pull_speed: float = distance_to_target * 12.0
 		velocity.y = clampf(pull_speed, -6.0, 6.0)
 	else:
-		exit_monkey_bars()
-
-	if input_dir.length() > 0.1:
-		if camera_anims.current_animation != "MonkeMoves":
-			camera_anims.play("MonkeMoves", 0.3)
-		camera_anims.speed_scale = 1.0 if input_dir.y < 0 else -1.0
-	else:
-		if camera_anims.current_animation == "MonkeMoves":
-			camera_anims.play("RESET", 0.3)
-			camera_anims.speed_scale = 1.0
-
-	if Input.is_action_just_pressed("jump") or Input.is_action_just_pressed("crouch"):
 		exit_monkey_bars()
 
 	if input_dir.length() > 0.1:
@@ -1522,6 +1513,8 @@ func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
 	eyes.position.y = headbob_offset.y + stair_offset
 	eyes.position.x = headbob_offset.x
 
+var _stun_tween: Tween
+
 func teleport_to(new_position: Vector3, stun_time: float = 0.1) -> void:
 	global_position = new_position
 	
@@ -1530,9 +1523,20 @@ func teleport_to(new_position: Vector3, stun_time: float = 0.1) -> void:
 	direction = Vector3.ZERO
 	input_dir = Vector2.ZERO
 	
+	# 1. Cancel any existing stun timers immediately
+	if _stun_tween and _stun_tween.is_valid():
+		_stun_tween.kill()
+		
+	# 2. Handle zero stun time instantly
+	if stun_time <= 0.0:
+		is_stunned = false
+		return
+		
+	# 3. Apply stun and create a safe, trackable delay
 	is_stunned = true
-	
-	get_tree().create_timer(stun_time).timeout.connect(func() -> void: is_stunned = false)
+	_stun_tween = create_tween()
+	_stun_tween.tween_interval(stun_time)
+	_stun_tween.tween_callback(func() -> void: is_stunned = false)
 	
 func toggle_pause() -> void:
 	is_paused = !is_paused

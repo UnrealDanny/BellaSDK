@@ -1,14 +1,16 @@
 [gd_scene format=3 uid="uid://bairuv4i4gc64"]
 
-[ext_resource type="Texture2D" uid="uid://bvr2d4k2sm73r" path="res://assets/images/dev_textures/standard_4_red_512.png" id="1_nxobc"]
 [ext_resource type="Script" uid="uid://bx5x61wsep5vy" path="res://scripts/enemy_TEST.gd" id="1_u0qif"]
+[ext_resource type="Texture2D" uid="uid://dh00yxaaufnxh" path="res://assets/textures/evil_goon.png" id="2_u0qif"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_m0v7c"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_u0qif"]
-albedo_texture = ExtResource("1_nxobc")
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_kjjkj"]
+albedo_texture = ExtResource("2_u0qif")
+uv1_world_triplanar = true
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_nxobc"]
+material = SubResource("StandardMaterial3D_kjjkj")
 radial_segments = 32
 rings = 4
 
@@ -19,5 +21,4 @@ script = ExtResource("1_u0qif")
 shape = SubResource("CapsuleShape3D_m0v7c")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1544492037]
-material_override = SubResource("StandardMaterial3D_u0qif")
 mesh = SubResource("CapsuleMesh_nxobc")
