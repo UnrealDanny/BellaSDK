@@ -42,6 +42,13 @@ extends CharacterBody3D
 @export var base_fov: float = 75.0
 @export var sprint_fov: float = 85.0
 
+@export var jump_buffer_duration : float = 0.15
+@export var coyote_time_duration : float = 0.15
+@export var fall_gravity_multiplier : float = 1.5 # For snappier falling
+
+var jump_buffer_timer : float = 0.0
+var coyote_timer : float = 0.0
+
 # SPEED VARS
 var current_speed: float = 0.0
 const jump_velocity: float = 4.5
@@ -141,6 +148,9 @@ var rope_offset: float = 0.0
 const ROPE_CLIMB_SPEED: float = 1.0
 var rope_local_grab_dir := Vector3.ZERO
 var rope_lerp_weight: float = 0.0
+
+# FAST ROPE VARS
+var on_fast_rope: bool = false
 
 # SWIM VARS
 var swim_up_speed: float = 5.0
@@ -478,6 +488,9 @@ func _physics_process(delta: float) -> void:
 	elif current_rope != null:
 		_handle_rope_physics(delta)
 		return
+	elif on_fast_rope:
+		_handle_fast_rope_physics(delta)
+		return # Crucial! Skips move_and_slide and stair checks
 	else:
 		_handle_ground_physics(delta, is_truly_grounded)
 
@@ -1164,10 +1177,6 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 		# ----------------------------------------------------
 		walking = true	
 		sprinting = false
-	#elif is_moving and crouching_collision_shape.disabled == true:
-		#current_speed = lerpf(current_speed, walking_speed, delta * lerp_speed)
-		#walking = true    
-		#sprinting = false    
 
 	_handle_headbob(delta) 
 
@@ -1186,7 +1195,40 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 			else:
 				velocity.y = jump_velocity
 			camera_anims.play("jump")
+	
+	if is_on_floor():
+		coyote_timer = coyote_time_duration
+	else:
+		coyote_timer -= delta
 
+	if Input.is_action_just_pressed("jump"):
+		jump_buffer_timer = jump_buffer_duration
+	else:
+		jump_buffer_timer -= delta
+	# -----------------------------------------------
+
+	# --- REFACTORED: Buffered & Coyote Jump Logic ---
+	if jump_buffer_timer > 0.0:
+		if is_heavy_lifting and held_object:
+			held_object.drop()
+			jump_buffer_timer = 0.0 # Consume input
+		elif _try_vault():
+			camera_anims.play("jump")
+			jump_buffer_timer = 0.0 # Consume input
+			coyote_timer = 0.0      # Consume floor state
+		elif coyote_timer > 0.0:
+			if sprinting:
+				velocity.y = sprint_jump_velocity
+			elif crouching:
+				velocity.y = crouch_jump_velocity
+			else:
+				velocity.y = jump_velocity
+			camera_anims.play("jump")
+			
+			# Consume both timers to prevent double-jumping
+			jump_buffer_timer = 0.0 
+			coyote_timer = 0.0
+			
 	if is_on_floor() and not _snapped_to_stairs_last_frame:
 		if last_velocity.y < -2.0: 
 			if sprinting: 
@@ -1210,7 +1252,12 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	if in_updraft:
 		velocity.y = lerpf(velocity.y, current_updraft_strength, delta * 4.0)
 	elif not is_on_floor():
-		velocity.y -= gravity * delta
+		if velocity.y < 0.0:
+			# Falling: Apply heavier gravity
+			velocity.y -= gravity * fall_gravity_multiplier * delta
+		else:
+			# Rising: Apply standard gravity
+			velocity.y -= gravity * delta
 
 func _handle_ladder_physics(_delta: float) -> void:
 	sprinting = false
@@ -1764,3 +1811,28 @@ func _apply_sensitivity(value: float) -> void:
 	mouse_sensitivity_base = value
 	mouse_sensitivity = value
 	mouse_sensitivity_zoom = value / 10.0
+
+# --------------------------------------
+# FAST ROPE
+# --------------------------------------
+func enter_fast_rope() -> void:
+	on_fast_rope = true
+	velocity = Vector3.ZERO
+	
+	# Drop anything heavy we are holding so it doesn't look weird
+	if is_heavy_lifting and held_object:
+		held_object.drop()
+
+func exit_fast_rope() -> void:
+	on_fast_rope = false
+
+func _handle_fast_rope_physics(delta: float) -> void:
+	sprinting = false
+	crouching = false
+	walking = false
+	
+	# Add an aggressive camera shake (headbob) to sell the high-speed ascension!
+	_handle_headbob(delta, 1.8)
+	
+	# Notice we do NOT apply gravity or call move_and_slide() here.
+	# The FastRope Node is taking complete control of our global_position.

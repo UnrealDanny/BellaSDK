@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var noclip_label_message: Label = $MarginContainer3/NoclipMessageContainer/NoclipLabelMessage
 @onready var noclip_button: Button = $DebugPanel/VBoxContainer/NoclipButton
 @onready var metrics_button: Button = $DebugPanel/VBoxContainer/MetricsButton
+@onready var collision_button: Button = $DebugPanel/VBoxContainer/CollisionButton
 
 @onready var debug_panel: Panel = $DebugPanel
 @onready var metrics_panel: PanelContainer = $MetricsPanel
@@ -18,9 +19,13 @@ extends CanvasLayer
 @onready var wireframe_button: Button = $DebugPanel/VBoxContainer/WireframeButton
 @onready var wireframe_overlay_button: Button = $DebugPanel/VBoxContainer/WireframeOverlayButton
 
+@onready var hide_ui_button: Button = $DebugPanel/VBoxContainer/HideUIButton
+
 var is_fullbright: bool = false
 var is_wireframe: bool = false
 var is_wireframe_overlay: bool = false
+var is_collision_visible: bool = false
+var is_ui_hidden: bool = false
 
 var green_wireframe_material: ShaderMaterial
 
@@ -48,8 +53,8 @@ func _ready() -> void:
 	debug_panel.hide()
 	fullbright_button.pressed.connect(_on_fullbright_button_pressed)
 
-	#if wireframe_overlay_button:
-		#wireframe_overlay_button.pressed.connect(_on_wireframe_overlay_button_pressed)
+	collision_button.pressed.connect(_on_collision_button_pressed)
+	hide_ui_button.pressed.connect(_on_hide_ui_button_pressed)
 		
 	# We use custom_minimum_size / 2.0 to guarantee the pivot is dead center!
 	ui_circle_zoom.pivot_offset = ui_circle_zoom.custom_minimum_size / 2.0
@@ -161,7 +166,7 @@ func _input(event: InputEvent) -> void:
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 			
 		Events.debug_menu_toggled.emit(is_open)
-
+		
 func _on_noclip_button_pressed() -> void:
 	Events.noclip_ui_button_pressed.emit()
 
@@ -249,3 +254,69 @@ func _on_terminal_mode_toggled(is_active: bool) -> void:
 		
 		# Optional: Restore full opacity
 		# crosshair_tween.tween_property(center_dot, "modulate:a", 1.0, 0.3)
+
+# --- COLLISION DEBUG LOGIC ---
+
+func _on_collision_button_pressed() -> void:
+	is_collision_visible = !is_collision_visible
+	
+	# This is the global flag that tells Godot to draw collision shapes
+	get_tree().debug_collisions_hint = is_collision_visible
+	
+	# Update button text for clarity
+	collision_button.text = "Collisions ON" if is_collision_visible else "Collisions OFF"
+	
+	# We "nudge" the scene tree to make sure the debug meshes update immediately
+	var root_node := get_tree().current_scene
+	if root_node:
+		_force_collision_redraw(root_node)
+
+func _force_collision_redraw(node: Node) -> void:
+	# 1. Handle Shapes (CollisionShape3D & ShapeCast3D)
+	# We cast 'node' to the specific class so Godot knows it HAS a .shape property
+	if node is CollisionShape3D:
+		var col_node := node as CollisionShape3D
+		if col_node.shape:
+			var temp_shape: Shape3D = col_node.shape
+			col_node.shape = null
+			col_node.shape = temp_shape 
+
+	elif node is ShapeCast3D:
+		var cast_node := node as ShapeCast3D
+		if cast_node.shape:
+			var temp_shape: Shape3D = cast_node.shape
+			cast_node.shape = null
+			cast_node.shape = temp_shape
+
+	# 2. Handle RayCasts
+	elif node is RayCast3D:
+		var ray_node := node as RayCast3D
+		var temp_target: Vector3 = ray_node.target_position
+		ray_node.target_position = Vector3.ZERO
+		ray_node.target_position = temp_target
+
+	# 3. Toggle visibility for the debug mesh
+	if node is CollisionShape3D or node is RayCast3D or node is ShapeCast3D:
+		node.visible = false
+		node.visible = true
+
+	for child in node.get_children():
+		_force_collision_redraw(child)
+
+func _on_hide_ui_button_pressed() -> void:
+	_toggle_ui_elements(!is_ui_hidden)
+
+func _toggle_ui_elements(should_hide: bool) -> void:
+	is_ui_hidden = should_hide
+	
+	var visibility: bool = !is_ui_hidden
+	
+	# Use '=' for assignment, NOT ':='
+	#margin_container.visible = visibility
+	#noclip_container.visible = visibility
+	vignette.visible = visibility
+	fisheye_zoom.visible = visibility
+	
+	hide_ui_button.text = "Show UI" if is_ui_hidden else "Hide UI"
+	
+	print("UI Visibility: ", visibility)
