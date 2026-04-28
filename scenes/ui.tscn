@@ -163,6 +163,16 @@ size_flags_vertical = 3
 text = "Metrics Off"
 alignment = 0
 
+[node name="CollisionButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=1630206710]
+layout_mode = 2
+text = "Collisions OFF"
+alignment = 0
+
+[node name="HideUIButton" type="Button" parent="DebugPanel/VBoxContainer" unique_id=1558548453]
+layout_mode = 2
+text = "Hide UI"
+alignment = 0
+
 [node name="MetricsPanel" type="PanelContainer" parent="." unique_id=1400618986]
 anchors_preset = 11
 anchor_left = 1.0

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://mttmftrx6fam"]
 
-[ext_resource type="PackedScene" uid="uid://ngftnu23fsfi" path="res://scenes/world_environment.tscn" id="1_ecfbh"]
+[ext_resource type="PackedScene" path="res://scenes/world_environment.tscn" id="1_ecfbh"]
 [ext_resource type="Texture2D" uid="uid://dufts68n1gn2p" path="res://assets/images/dev_textures/standard_7_green_512.png" id="2_uvnoq"]
 [ext_resource type="PackedScene" uid="uid://bwkd1g0rbfurr" path="res://scenes/object_interact.tscn" id="3_cmbf5"]
 [ext_resource type="PackedScene" uid="uid://d1cr6vua8ilv3" path="res://scenes/teleport.tscn" id="4_k74e2"]
@@ -40,7 +40,7 @@
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://assets/shaders/UnlitOutlineMaterial.gdshader" id="39_nqxml"]
 [ext_resource type="PackedScene" uid="uid://fxl0fqjgla74" path="res://scenes/socket.tscn" id="40_llsfp"]
 [ext_resource type="Script" uid="uid://bohybfp2i35ly" path="res://scripts/trigger_scripts/spotlight_seq_trigger.gd" id="44_gp0ty"]
-[ext_resource type="Script" uid="uid://c20bpd5d2f3c5" path="res://scripts/procedural_stairs_csg.gd" id="45_o4kb0"]
+[ext_resource type="Script" uid="uid://c20bpd5d2f3c5" path="res://scripts/ProceduralStairsCSG.gd" id="45_o4kb0"]
 [ext_resource type="PackedScene" uid="uid://cojcb8srg0tkn" path="res://scenes/TESTS(delete later)/hide_building_test.tscn" id="45_oipxx"]
 [ext_resource type="Script" uid="uid://v535r6a86e4x" path="res://scripts/trigger_scripts/lvl_instance_hide_building.gd" id="46_0wf3h"]
 [ext_resource type="PackedScene" uid="uid://d2dtso8yjpyem" path="res://scenes/ground_button.tscn" id="46_j34x5"]

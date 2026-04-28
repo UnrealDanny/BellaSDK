@@ -20,17 +20,16 @@ mass = 100.0
 center_of_mass_mode = 1
 center_of_mass = Vector3(0, 0.2, 0)
 script = ExtResource("2_4o347")
-drag_speed = null
-drop_distance = null
+drag_speed = 12.0
+drop_distance = 1.0
 snap_duration = 0.3
 box_half_width = 0.75
-player_radius = null
-player_height = null
-environment_collision_mask = null
-float_force = null
-water_drag = null
-water_angular_drag = null
-hold_distance_offset = null
+player_radius = 0.5
+player_height = 1.8
+environment_collision_mask = 1
+float_force = 3.0
+water_drag = 0.5
+water_angular_drag = 0.5
 
 [node name="HighlightComponent" parent="." index="1" unique_id=1233358358 node_paths=PackedStringArray("target_meshes")]
 target_meshes = [NodePath("../MeshInstance3D")]
@@ -42,13 +41,13 @@ mesh = SubResource("BoxMesh_3773a")
 shape = SubResource("BoxShape3D_4o347")
 
 [node name="Marker3D" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="0" unique_id=1977258969]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -1.5, 1.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -0.75, 1.4)
 
 [node name="Marker3D2" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="1" unique_id=1466183085]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -1.5, -1.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -0.75, -1.4)
 
 [node name="Marker3D3" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="2" unique_id=865436627]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -1.5, -1.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, -0.75, -1.4)
 
 [node name="Marker3D4" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="3" unique_id=1857240385]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -1.5, 1.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.4, -0.75, 1.4)

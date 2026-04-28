@@ -20,6 +20,8 @@ extends CanvasLayer
 @onready var wireframe_overlay_button: Button = $DebugPanel/VBoxContainer/WireframeOverlayButton
 
 @onready var hide_ui_button: Button = $DebugPanel/VBoxContainer/HideUIButton
+@onready var margin_container: CenterContainer = $MarginContainer
+@onready var margin_container3: MarginContainer = $MarginContainer3
 
 var is_fullbright: bool = false
 var is_wireframe: bool = false
@@ -269,39 +271,31 @@ func _on_collision_button_pressed() -> void:
 	# We "nudge" the scene tree to make sure the debug meshes update immediately
 	var root_node := get_tree().current_scene
 	if root_node:
-		_force_collision_redraw(root_node)
+		_force_collision_redraw(root_node, is_collision_visible)
 
-func _force_collision_redraw(node: Node) -> void:
-	# 1. Handle Shapes (CollisionShape3D & ShapeCast3D)
-	# We cast 'node' to the specific class so Godot knows it HAS a .shape property
-	if node is CollisionShape3D:
-		var col_node := node as CollisionShape3D
-		if col_node.shape:
-			var temp_shape: Shape3D = col_node.shape
-			col_node.shape = null
-			col_node.shape = temp_shape 
-
-	elif node is ShapeCast3D:
-		var cast_node := node as ShapeCast3D
-		if cast_node.shape:
-			var temp_shape: Shape3D = cast_node.shape
-			cast_node.shape = null
-			cast_node.shape = temp_shape
-
-	# 2. Handle RayCasts
+func _force_collision_redraw(node: Node, show_collisions: bool) -> void:
+	# 1. Force Godot to rebuild the shapes. We must do this for BOTH ON and OFF.
+	# Rebuilding the shape while debug_collisions_hint is false is what destroys the lingering debug mesh.
+	if node is CollisionShape3D and node.shape:
+		var temp_shape: Shape3D = node.shape
+		node.shape = null
+		node.shape = temp_shape 
+	elif node is ShapeCast3D and node.shape:
+		var temp_shape: Shape3D = node.shape
+		node.shape = null
+		node.shape = temp_shape
 	elif node is RayCast3D:
-		var ray_node := node as RayCast3D
-		var temp_target: Vector3 = ray_node.target_position
-		ray_node.target_position = Vector3.ZERO
-		ray_node.target_position = temp_target
+		var temp_target: Vector3 = node.target_position
+		node.target_position = Vector3.ZERO
+		node.target_position = temp_target
 
-	# 3. Toggle visibility for the debug mesh
+	# 2. Update the actual visibility property to fix things like the RayCast blue circles
 	if node is CollisionShape3D or node is RayCast3D or node is ShapeCast3D:
-		node.visible = false
-		node.visible = true
+		node.visible = show_collisions
 
+	# 3. Recursively check children
 	for child in node.get_children():
-		_force_collision_redraw(child)
+		_force_collision_redraw(child, show_collisions)
 
 func _on_hide_ui_button_pressed() -> void:
 	_toggle_ui_elements(!is_ui_hidden)
@@ -311,9 +305,11 @@ func _toggle_ui_elements(should_hide: bool) -> void:
 	
 	var visibility: bool = !is_ui_hidden
 	
-	# Use '=' for assignment, NOT ':='
-	#margin_container.visible = visibility
-	#noclip_container.visible = visibility
+	# Toggle the main UI containers
+	margin_container.visible = visibility
+	margin_container3.visible = visibility
+	
+	# Toggle the screen effects
 	vignette.visible = visibility
 	fisheye_zoom.visible = visibility
 	

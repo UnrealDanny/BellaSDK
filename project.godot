@@ -19,6 +19,7 @@ config/icon="uid://cijw0jse7sfs8"
 
 [autoload]
 
+Console="*uid://bwtvwv1xx6x2"
 Events="*uid://duejfvfifyd20"
 DebugManager="*uid://psgaa5vua8a3"
 SaveSystem="*uid://c3xdhyb03qflr"
