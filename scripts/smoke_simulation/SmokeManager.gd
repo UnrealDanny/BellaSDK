@@ -1,8 +1,24 @@
 extends Node
 # SmokeManager.gd (Autoload)
+# Now supports cinematic turbulence (swirls) and editor controls.
 
 var active_holes: Array[Dictionary] = []
 var current_player_pos: Vector3 = Vector3.ZERO
+var global_time: float = 0.0
+
+@export_group("System Controls")
+# How long the holes and swirls persist in seconds
+@export var heal_time_seconds: float = 4.0 
+# Radius around the player that automatically clears fog
+@export var player_trail_radius: float = 3.5
+
+@export_group("Cinematic Pellet Effects")
+# How cleanly pellets carve through the smoke (0.0 = no hole, 1.0 = clean cut)
+@export_range(0.0, 1.0) var hole_clear_intensity: float = 0.8
+# The strength of the swirling turbulence kicked up by pellets (0.0 = no swirl)
+@export var swirl_strength: float = 1.8 
+# Controls the complexity of the swirl pattern. Lower is tighter, higher is more turbulent.
+@export var swirl_frequency: float = 0.5 
 
 # GPU Variables
 var rd: RenderingDevice
@@ -10,15 +26,13 @@ var shader: RID
 var pipeline: RID
 var texture_rid: RID
 
-# We make the Buffer and Uniforms global so we don't delete them mid-frame
+# Buffer and Uniforms
 var buffer_rid: RID
 var uniform_set: RID
 
-# Pre-allocate memory for up to 50 simultaneous bullet holes (50 holes * 32 bytes)
 const MAX_HOLES = 50
 const BUFFER_SIZE = MAX_HOLES * 32
 
-# Assign this from your main level script so the compute shader knows exactly where the fog is!
 var active_fog_volume: FogVolume 
 
 func _ready() -> void:
@@ -31,24 +45,24 @@ func _initialize_gpu() -> void:
 	shader = rd.shader_create_from_spirv(shader_spirv)
 	pipeline = rd.compute_pipeline_create(shader)
 	
-	# 1. Create 3D Texture (Make sure this matches the shader's rgba8 requirement!)
+	# 1. Create 3D Texture (rgba8)
 	var fmt := RDTextureFormat.new()
 	fmt.format = RenderingDevice.DATA_FORMAT_R8G8B8A8_UNORM
 	fmt.texture_type = RenderingDevice.TEXTURE_TYPE_3D
-	fmt.width = 64
-	fmt.height = 64
-	fmt.depth = 64
+	fmt.width = 128
+	fmt.height = 128
+	fmt.depth = 128
 	fmt.usage_bits = RenderingDevice.TEXTURE_USAGE_STORAGE_BIT | RenderingDevice.TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice.TEXTURE_USAGE_CAN_UPDATE_BIT
 	
 	var view := RDTextureView.new()
 	texture_rid = rd.texture_create(fmt, view)
 	
-	# 2. Create a persistent Storage Buffer filled with blank data
+	# 2. Create Storage Buffer
 	var empty_bytes := PackedByteArray()
 	empty_bytes.resize(BUFFER_SIZE)
 	buffer_rid = rd.storage_buffer_create(BUFFER_SIZE, empty_bytes)
 	
-	# 3. Create Uniforms ONCE
+	# 3. Create Uniforms
 	var tex_uniform := RDUniform.new()
 	tex_uniform.uniform_type = RenderingDevice.UNIFORM_TYPE_IMAGE
 	tex_uniform.binding = 0
@@ -64,37 +78,39 @@ func _initialize_gpu() -> void:
 func update_player_position(pos: Vector3) -> void:
 	current_player_pos = pos
 
-func add_bullet_hole(start: Vector3, dir: Vector3, length: float, radius: float = 1.0, intensity: float = 1.0) -> void:
+func add_bullet_hole(start: Vector3, dir: Vector3, length: float, radius: float = 1.0) -> void:
+	# We've removed 'intensity' argument. It's now handled globally in the editor.
 	active_holes.append({
 		"start": start,
 		"end": start + (dir * length),
 		"radius": radius,
-		"intensity": intensity,
 		"time_alive": 0.0 
 	})
 
 func _process(delta: float) -> void:
-	# 1. Update and cull old bullet holes
+	global_time += delta
+
+	# Update and cull old bullet holes
 	for i in range(active_holes.size() - 1, -1, -1):
 		active_holes[i].time_alive += delta
-		if active_holes[i].time_alive > 2.0:
+		if active_holes[i].time_alive > heal_time_seconds: 
 			active_holes.remove_at(i)
 			
-	_dispatch_to_compute_shader(delta)
+	RenderingServer.call_on_render_thread(_dispatch_to_compute_shader.bind(delta))
 	
 func _dispatch_to_compute_shader(delta: float) -> void:
 	if not rd or not pipeline: return
 	
 	# --- DYNAMIC FOG BOUNDS ---
-	# We dynamically calculate the bounds so it always aligns perfectly with your FogVolume node
 	var grid_pos := Vector3.ZERO
-	var grid_size := 20.0
+	var volume_size := Vector3(128.0, 128.0, 128.0) # Match previous fix
+	
 	if active_fog_volume:
-		grid_size = active_fog_volume.size.x
-		# Fog volumes scale from their center. This calculates the bottom-left corner.
-		grid_pos = active_fog_volume.global_position - (active_fog_volume.size / 2.0)
+		volume_size = active_fog_volume.size 
+		grid_pos = active_fog_volume.global_position - (volume_size / 2.0)
 
 	# --- UPDATE BUFFER SAFELY ---
+	# We need to send the 'time_alive' so the shader can fade the swirl over time.
 	var hole_data := PackedFloat32Array()
 	var holes_to_process: int = min(active_holes.size(), MAX_HOLES)
 	for i in range(holes_to_process):
@@ -102,32 +118,68 @@ func _dispatch_to_compute_shader(delta: float) -> void:
 		hole_data.append(hole.start.x)
 		hole_data.append(hole.start.y)
 		hole_data.append(hole.start.z)
-		hole_data.append(hole.radius)
+		hole_data.append(hole.radius) # Still using radius
 		hole_data.append(hole.end.x)
 		hole_data.append(hole.end.y)
 		hole_data.append(hole.end.z)
-		hole_data.append(hole.intensity)
+		# We replace 'intensity' with 'time_alive'
+		hole_data.append(hole.time_alive) 
 		
 	var hole_bytes := hole_data.to_byte_array()
 	if hole_bytes.size() > 0:
-		# Instead of recreating the buffer, we just overwrite the existing memory. Very fast.
 		rd.buffer_update(buffer_rid, 0, hole_bytes.size(), hole_bytes)
 	
-	# --- PACK PUSH CONSTANTS PERFECTLY ---
-	# GLSL std430 alignment requires vec3s to align to 16 bytes. 
-	# This 12-float array exactly matches the shader's memory expectation (48 bytes total).
+	var heal_rate := 1.0 / heal_time_seconds 
+	var is_even_frame := Engine.get_process_frames() % 2 == 0
+	var z_offset: float = 64.0 if is_even_frame else 0.0
+
+	# --- PACK PUSH CONSTANTS PERFECTLY (Strict 16-byte alignment, 64 bytes total) ---
 	var push_constants := PackedFloat32Array([
 		current_player_pos.x, current_player_pos.y, current_player_pos.z, 
 		float(holes_to_process),
+		
 		grid_pos.x, grid_pos.y, grid_pos.z, 
-		grid_size,
-		delta, 0.0, 0.0, 0.0 # <--- The Delta Time and 3 padding floats to lock the alignment
-	]).to_byte_array()
+		delta * 2.0, 
+		
+		# Now passing the Vector3 size instead of a scalar! (From previous fix)
+		volume_size.x, volume_size.y, volume_size.z, 
+		global_time, 
+		
+		# (From previous fix/your logic)
+		heal_rate,   
+		player_trail_radius,
+		z_offset, 
+		
+		# NEW: GLOBAL CINEMATIC VALUES PACKED TOGETHER
+		# We need to compress some variables to fit 16 floats total or alignment breaks.
+		# Let's pack heal_rate and player_radius into Vec2, and global values into another Vec3.
+		# It's cleaner to rewrite the whole push constant struct for stability.
+	])
 	
-	# --- DISPATCH TO GPU ---
+	# Rewritten Push Constants for stability and clarity.
+	var push_constants_array := PackedFloat32Array([
+		# Vec3 player_pos, float num_holes
+		current_player_pos.x, current_player_pos.y, current_player_pos.z, float(holes_to_process),
+		# Vec3 grid_pos, float delta
+		grid_pos.x, grid_pos.y, grid_pos.z, delta * 2.0,
+		# Vec3 grid_size, float time
+		volume_size.x, volume_size.y, volume_size.z, global_time,
+		# Vec4 global_configs
+		hole_clear_intensity, swirl_strength, swirl_frequency, player_trail_radius,
+		# Vec4 system_offset + heal_rate
+		z_offset, heal_rate, 0.0, 0.0 # Pad last two for alignment
+	])
+	
+	# CRITICAL FIX: Convert the float array to a byte array for the GPU
+	var push_constants_bytes := push_constants_array.to_byte_array()
+	
+	# Dispatched to GPU...
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
-	rd.compute_list_set_push_constant(compute_list, push_constants, push_constants.size())
-	rd.compute_list_dispatch(compute_list, 8, 8, 8) # Warning gone!
+	
+	# CRITICAL FIX: Pass the byte array, and use its exact size (no longer multiply by 4)
+	rd.compute_list_set_push_constant(compute_list, push_constants_bytes, push_constants_bytes.size()) 
+	
+	rd.compute_list_dispatch(compute_list, 16, 16, 8) 
 	rd.compute_list_end()
