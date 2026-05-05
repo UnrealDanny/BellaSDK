@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://bb7ydpnyyqnba"]
+
+[ext_resource type="Script" uid="uid://ppgk345pd5rf" path="res://scripts/menus/chapter_screen.gd" id="1_w8ad5"]
+[ext_resource type="Script" uid="uid://45jvq8yps1jm" path="res://scripts/menus/chapter_data.gd" id="2_sl2hs"]
+[ext_resource type="Texture2D" uid="uid://dqqg54m0bl4k1" path="res://assets/images/chapter_imgs/TestBED.png" id="3_ef8iv"]
+[ext_resource type="Texture2D" uid="uid://yxgdfvdpfmu7" path="res://assets/images/chapter_imgs/VisTEST.png" id="4_1symm"]
+[ext_resource type="Shader" uid="uid://d3hb763n705g4" path="res://scenes/ChapterScreen.gdshader" id="5_ef8iv"]
+[ext_resource type="FontFile" uid="uid://dg3xyu4f8ta7g" path="res://assets/fonts/kramola/Kramola.otf" id="5_sl2hs"]
+
+[sub_resource type="Resource" id="Resource_53ons"]
+script = ExtResource("2_sl2hs")
+chapter_name = "TESTBed"
+description = "Уровень, на котором есть все геймплейные механики и эффекты. 
+
+This is where you can find all the gameplay mechanics and effects"
+image = ExtResource("3_ef8iv")
+scene_path = "uid://omwvkueo82i7"
+metadata/_custom_type_script = "uid://45jvq8yps1jm"
+
+[sub_resource type="Resource" id="Resource_h04da"]
+script = ExtResource("2_sl2hs")
+chapter_name = "TESTVis"
+description = "Простой уровень с первым визуалом.
+
+A simple level with first visuals. "
+image = ExtResource("4_1symm")
+scene_path = "uid://dhh7c5j6i8bkk"
+metadata/_custom_type_script = "uid://45jvq8yps1jm"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1symm"]
+shader = ExtResource("5_ef8iv")
+shader_parameter/blur_size = 3.0000001425
+shader_parameter/pan_amount = 0.10000000149012
+shader_parameter/pan_speed = 0.10000000475
+
+[node name="ChapterScreen" type="Control" unique_id=76184905]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_w8ad5")
+chapters = Array[ExtResource("2_sl2hs")]([SubResource("Resource_53ons"), SubResource("Resource_h04da")])
+
+[node name="Background" type="TextureRect" parent="." unique_id=2096381043]
+unique_name_in_owner = true
+texture_filter = 4
+material = SubResource("ShaderMaterial_1symm")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1147295522]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 80
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 80
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=820746252]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer" unique_id=148075035]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("5_sl2hs")
+theme_override_font_sizes/font_size = 72
+text = "Select Level"
+
+[node name="HSpacer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1142274857]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="MainLayout" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1500973635]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/MainLayout" unique_id=1253466354]
+custom_minimum_size = Vector2(600, 300)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChapterList" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/ScrollContainer" unique_id=987420282]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ChapterButtonTemplate" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/ScrollContainer/ChapterList" unique_id=470232776]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 200)
+layout_mode = 2
+
+[node name="Btn" type="Button" parent="MarginContainer/VBoxContainer/MainLayout/ScrollContainer/ChapterList/ChapterButtonTemplate" unique_id=98251096]
+custom_minimum_size = Vector2(400, 225)
+layout_mode = 2
+size_flags_vertical = 3
+icon_alignment = 1
+expand_icon = true
+
+[node name="ChapterTitle" type="Label" parent="MarginContainer/VBoxContainer/MainLayout/ScrollContainer/ChapterList/ChapterButtonTemplate" unique_id=748323791]
+layout_mode = 2
+text = "Chapter Name"
+
+[node name="DetailsPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/MainLayout" unique_id=912112118]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel" unique_id=877669960]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer" unique_id=1213332894]
+layout_mode = 2
+
+[node name="BottomSplit" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer" unique_id=485839697]
+layout_mode = 2
+
+[node name="TextSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit" unique_id=1803041284]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="DescTitle" type="Label" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/TextSection" unique_id=1086251352]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+
+[node name="DescText" type="RichTextLabel" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/TextSection" unique_id=1747043265]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 175)
+layout_mode = 2
+size_flags_vertical = 3
+text = "Test Description"
+
+[node name="ButtonSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit" unique_id=773401128]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PlayButton" type="Button" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/ButtonSection" unique_id=213882705]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Play Chapter"
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/ButtonSection" unique_id=356699486]
+layout_mode = 2
+text = "Back to Main Menu"

@@ -52,6 +52,10 @@ theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 text = "Continue"
 
+[node name="NewGame" type="Button" parent="MainButtons" unique_id=665868782]
+unique_name_in_owner = true
+layout_mode = 2
+
 [node name="StartGame" type="Button" parent="MainButtons" unique_id=1877365184]
 unique_name_in_owner = true
 layout_mode = 2
