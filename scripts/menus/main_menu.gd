@@ -5,6 +5,7 @@ extends CanvasLayer
 @onready var controls_panel: Panel = $ControlsPanel
 
 @onready var continue_button: Button = %Continue
+@onready var new_game_button: Button = %NewGame
 @onready var start_button: Button = %StartGame
 
 # --- EXPLICIT UI REFERENCES ---
@@ -35,15 +36,18 @@ const DEFAULT_SENSITIVITY: float = 0.05
 var max_mouse_speed: float = 0.0
 var has_calibrated: bool = false # Prevents overwriting if they already saved a preference
 
+const CHAPTER_SCREEN = preload("res://scenes/ChapterScreen.tscn")
+
 func _ready() -> void:
 	# 1. Connect signals FIRST
 	sens_slider.value_changed.connect(_on_sensitivity_changed)
-	sens_slider.drag_ended.connect(_on_sensitivity_drag_ended) # FIX: Handles saving to disk
+	sens_slider.drag_ended.connect(_on_sensitivity_drag_ended) 
 	
 	if has_node("%MouseSensitivityLine"):
 		sens_input.text_submitted.connect(_on_sensitivity_input_submitted)
 		
 	continue_button.pressed.connect(_on_resume_pressed)
+	new_game_button.pressed.connect(_on_new_game_pressed) # <-- ADD THIS LINE
 
 	# 2. Load from file
 	load_controls()
@@ -52,11 +56,14 @@ func _ready() -> void:
 	if get_parent().has_method("toggle_pause"):
 		# We are IN-GAME (Attached to the Player)
 		continue_button.show()
+		start_button.show() # Show Restart button
 		start_button.text = "Restart Level" 
+		new_game_button.text = "Select Level" # Optional: rename it while in-game so it makes sense!
 	else:
 		# We are at the MAIN MENU (First time launch)
 		continue_button.hide()
-		start_button.text = "Start Game"
+		start_button.hide() # <-- HIDE Restart Level on the Main Menu
+		new_game_button.text = "New Game"
 	
 	# 4. Set up the UI visibility
 	main_buttons.visible = true
@@ -101,12 +108,28 @@ func update_button_text(button: Button, action: String) -> void:
 						
 	button.text = action.capitalize() + ": " + key_name
 
+# This handles the %NewGame button
+func _on_new_game_pressed() -> void:
+	if not has_calibrated:
+		_apply_bucket_calibration()
+		
+	# 1. Hide the menu buttons so they don't overlap the Chapter Screen
+	main_buttons.hide() 
+	
+	# 2. Spawn the Chapter Screen ON TOP of this menu
+	var chapter_window := CHAPTER_SCREEN.instantiate()
+	add_child(chapter_window)
+
+# This handles the %StartGame button (Which now strictly acts as "Restart Level")
 func _on_start_game_pressed() -> void:
 	if not has_calibrated:
 		_apply_bucket_calibration()
 		
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/levels/testbed.scn")
+	
+	# Reloads whatever the current active level is
+	if get_parent().has_method("toggle_pause"):
+		get_tree().reload_current_scene()
 
 func _apply_bucket_calibration() -> void:
 	has_calibrated = true

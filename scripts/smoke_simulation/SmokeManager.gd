@@ -99,30 +99,33 @@ func _process(delta: float) -> void:
 	RenderingServer.call_on_render_thread(_dispatch_to_compute_shader.bind(delta))
 	
 func _dispatch_to_compute_shader(delta: float) -> void:
-	if not rd or not pipeline: return
+	if not rd or not pipeline: 
+		return
 	
 	# --- DYNAMIC FOG BOUNDS ---
 	var grid_pos := Vector3.ZERO
-	var volume_size := Vector3(128.0, 128.0, 128.0) # Match previous fix
+	var volume_size := Vector3(128.0, 128.0, 128.0) 
 	
-	if active_fog_volume:
-		volume_size = active_fog_volume.size 
+	if is_instance_valid(active_fog_volume) and active_fog_volume.is_inside_tree():
+		volume_size = active_fog_volume.size
 		grid_pos = active_fog_volume.global_position - (volume_size / 2.0)
+	else:
+		# Safely skip the entire compute pass if the fog volume doesn't exist
+		return
 
 	# --- UPDATE BUFFER SAFELY ---
-	# We need to send the 'time_alive' so the shader can fade the swirl over time.
 	var hole_data := PackedFloat32Array()
 	var holes_to_process: int = min(active_holes.size(), MAX_HOLES)
+	
 	for i in range(holes_to_process):
 		var hole := active_holes[i]
 		hole_data.append(hole.start.x)
 		hole_data.append(hole.start.y)
 		hole_data.append(hole.start.z)
-		hole_data.append(hole.radius) # Still using radius
+		hole_data.append(hole.radius) 
 		hole_data.append(hole.end.x)
 		hole_data.append(hole.end.y)
 		hole_data.append(hole.end.z)
-		# We replace 'intensity' with 'time_alive'
 		hole_data.append(hole.time_alive) 
 		
 	var hole_bytes := hole_data.to_byte_array()
@@ -133,52 +136,34 @@ func _dispatch_to_compute_shader(delta: float) -> void:
 	var is_even_frame := Engine.get_process_frames() % 2 == 0
 	var z_offset: float = 64.0 if is_even_frame else 0.0
 
-	# --- PACK PUSH CONSTANTS PERFECTLY (Strict 16-byte alignment, 64 bytes total) ---
-	var push_constants := PackedFloat32Array([
-		current_player_pos.x, current_player_pos.y, current_player_pos.z, 
-		float(holes_to_process),
-		
-		grid_pos.x, grid_pos.y, grid_pos.z, 
-		delta * 2.0, 
-		
-		# Now passing the Vector3 size instead of a scalar! (From previous fix)
-		volume_size.x, volume_size.y, volume_size.z, 
-		global_time, 
-		
-		# (From previous fix/your logic)
-		heal_rate,   
-		player_trail_radius,
-		z_offset, 
-		
-		# NEW: GLOBAL CINEMATIC VALUES PACKED TOGETHER
-		# We need to compress some variables to fit 16 floats total or alignment breaks.
-		# Let's pack heal_rate and player_radius into Vec2, and global values into another Vec3.
-		# It's cleaner to rewrite the whole push constant struct for stability.
-	])
-	
-	# Rewritten Push Constants for stability and clarity.
+	# --- PACK PUSH CONSTANTS PERFECTLY (Strict 16-byte alignment, 80 BYTES TOTAL) ---
+	# NOTE: Ensure your GLSL shader expects exactly 5 vec4s (20 floats / 80 bytes)
 	var push_constants_array := PackedFloat32Array([
-		# Vec3 player_pos, float num_holes
+		# 1. Vec4 (player_pos, num_holes)
 		current_player_pos.x, current_player_pos.y, current_player_pos.z, float(holes_to_process),
-		# Vec3 grid_pos, float delta
+		
+		# 2. Vec4 (grid_pos, delta)
 		grid_pos.x, grid_pos.y, grid_pos.z, delta * 2.0,
-		# Vec3 grid_size, float time
+		
+		# 3. Vec4 (grid_size, time)
 		volume_size.x, volume_size.y, volume_size.z, global_time,
-		# Vec4 global_configs
+		
+		# 4. Vec4 (global_configs)
 		hole_clear_intensity, swirl_strength, swirl_frequency, player_trail_radius,
-		# Vec4 system_offset + heal_rate
-		z_offset, heal_rate, 0.0, 0.0 # Pad last two for alignment
+		
+		# 5. Vec4 (system_offset + heal_rate + padding to fulfill alignment)
+		z_offset, heal_rate, 0.0, 0.0 
 	])
 	
 	# CRITICAL FIX: Convert the float array to a byte array for the GPU
 	var push_constants_bytes := push_constants_array.to_byte_array()
 	
-	# Dispatched to GPU...
+	# --- DISPATCH TO GPU ---
 	var compute_list := rd.compute_list_begin()
 	rd.compute_list_bind_compute_pipeline(compute_list, pipeline)
 	rd.compute_list_bind_uniform_set(compute_list, uniform_set, 0)
 	
-	# CRITICAL FIX: Pass the byte array, and use its exact size (no longer multiply by 4)
+	# CRITICAL FIX: Pass the byte array, and use its exact size
 	rd.compute_list_set_push_constant(compute_list, push_constants_bytes, push_constants_bytes.size()) 
 	
 	rd.compute_list_dispatch(compute_list, 16, 16, 8) 

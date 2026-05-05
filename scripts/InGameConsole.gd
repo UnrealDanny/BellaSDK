@@ -104,11 +104,14 @@ func _on_command_submitted(text: String) -> void:
 func _process_command(cmd: String, _args: PackedStringArray) -> void:
 	match cmd:
 		"help":
-			write("Available commands: help, clear, noclip, iddqd", "green")
+			write("Available commands: help, clear, noclip, iddqd, quit", "green")
 		"clear":
 			output_log.clear()
 			message_history.clear() 
 			write("Console cleared.", "cyan")
+		"quit":
+			write("Exiting game...", "red")
+			get_tree().quit()
 		"noclip":
 			Events.noclip_ui_button_pressed.emit()
 			write("Toggled Noclip.", "yellow")

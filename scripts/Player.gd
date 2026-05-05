@@ -13,6 +13,7 @@ extends CharacterBody3D
 @onready var crouch_cast_check: RayCast3D = $CrouchCastCheck
 @onready var cam: Camera3D = $Head/Eyes/Camera3D
 @onready var camera_anims: AnimationPlayer = $Head/Eyes/CameraAnims
+@onready var omni_light_3d: OmniLight3D = $Head/Eyes/Camera3D/OmniLight3D
 
 @onready var flash_light_node: Node3D = $Head/Eyes/Camera3D/FlashLightNode
 @onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
@@ -45,6 +46,8 @@ extends CharacterBody3D
 @export var jump_buffer_duration: float = 0.15
 @export var coyote_time_duration: float = 0.15
 @export var fall_gravity_multiplier: float = 1.5 # For snappier falling
+
+var fullbright_env: Environment
 
 var jump_buffer_timer: float = 0.0
 var coyote_timer: float = 0.0
@@ -123,6 +126,17 @@ var sway_target: Vector2 = Vector2.ZERO
 # HL2-like flashlight
 var default_spot_angle: float = 45.0
 var flashlight_maintain_distance: float = 1.5 # Starts compensating when closer than 1.5 meters
+
+# --- INSTABILITY VARIABLES ---
+@export var base_energy: float = 10.0
+
+# Electrical Instability
+var flicker_timer: float = 0.0
+var is_flickering: bool = false
+
+# Physical Instability (Shaky Hand)
+var jitter_noise := FastNoiseLite.new()
+var noise_time: float = 0.0
 
 # SPRINT FOV VARS
 var zoom_fov: float = 10.0
@@ -276,13 +290,18 @@ func _ready() -> void:
 
 	default_flashlight_pos = flash_light_node.position
 	flashlight.visible = false
+	if omni_light_3d:
+		omni_light_3d.visible = false
 	#flashlight_decal.top_level = true
 	#flashlight_decal.hide()
 	if flashlight:
 		base_light_energy = flashlight.light_energy
 		base_spot_range = flashlight.spot_range
 		default_spot_angle = flashlight.spot_angle
-
+		
+	jitter_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	jitter_noise.frequency = 0.8
+	
 	var config := ConfigFile.new()
 	var err := config.load("user://settings.cfg")
 
@@ -294,7 +313,23 @@ func _ready() -> void:
 		# First time playing! Or the file was deleted/corrupted.
 		# Apply your newly tested, comfortable default.
 		_apply_sensitivity(mouse_sensitivity_base)
-
+	
+	Events.fullbright_toggled.connect(_on_fullbright_toggled)
+	
+	# Pre-build our custom debug environment
+	fullbright_env = Environment.new()
+	fullbright_env.background_mode = Environment.BG_COLOR
+	fullbright_env.background_color = Color(0.5, 0.5, 0.5)
+	fullbright_env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	fullbright_env.ambient_light_color = Color.WHITE
+	fullbright_env.ambient_light_energy = 2.0
+	
+	# Disable expensive/shadow effects
+	fullbright_env.ssao_enabled = false
+	fullbright_env.ssil_enabled = false
+	fullbright_env.sdfgi_enabled = false
+	fullbright_env.glow_enabled = false
+	
 func _unhandled_input(event: InputEvent) -> void:
 	if is_paused or is_menu_open:
 		return
@@ -578,6 +613,8 @@ func _process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("flashlight"):
 		flashlight.visible = !flashlight.visible
+		if omni_light_3d:
+			omni_light_3d.visible = flashlight.visible
 
 	# --- 1. DYNAMIC REACH FIX ---
 	# Get the up/down look angle (pitch).
@@ -666,7 +703,7 @@ func update_flashlight(delta: float) -> void:
 	# This creates that natural heavy "lag and catch-up" feeling.
 	sway_target = sway_target.lerp(Vector2.ZERO, delta * (smooth_speed * 0.5))
 
-# ---------------------------------------------------------
+	# ---------------------------------------------------------
 	# --- THE TRUE AAA FLASHLIGHT (PUSH-BACK TRICK) ---
 	# ---------------------------------------------------------
 	if flashlight.visible:
@@ -699,7 +736,9 @@ func update_flashlight(delta: float) -> void:
 		else:
 			# No wall nearby, smoothly return the flashlight to the camera
 			flashlight.position.z = lerpf(flashlight.position.z, 0.0, delta * 15.0)
-
+		
+		apply_instability(delta)
+		
 func get_interactable_component_at_shapecast() -> Interact_Component:
 	var closest_comp: Interact_Component = null
 	var closest_dist: float = INF
@@ -1875,3 +1914,48 @@ func _handle_fast_rope_physics(delta: float) -> void:
 
 	# Notice we do NOT apply gravity or call move_and_slide() here.
 	# The FastRope Node is taking complete control of our global_position.
+
+func apply_instability(delta: float) -> void:
+	# ---------------------------------------------------------
+	# 1. ELECTRICAL INSTABILITY (The Failing Bulb)
+	# ---------------------------------------------------------
+	# Very small chance every frame to trigger a major flicker event
+	if not is_flickering and randf() < 0.003: 
+		is_flickering = true
+		flicker_timer = randf_range(0.1, 0.6) # Flicker lasts a fraction of a second
+
+	if is_flickering:
+		flicker_timer -= delta
+		# Rapid, aggressive jumps in light energy (looks like failing wiring)
+		# Drops low, sometimes spikes a tiny bit higher than base
+		flashlight.light_energy = randf_range(2.0, base_energy * 1.1) 
+		
+		if flicker_timer <= 0.0:
+			is_flickering = false
+			flashlight.light_energy = base_energy
+	else:
+		# THE SUBLIMINAL BUZZ: Even when "stable", it's never perfectly 10.0
+		# It constantly fluctuates by tiny margins. This creates subconscious tension.
+		var micro_fluctuation := randf_range(-0.4, 0.4)
+		flashlight.light_energy = lerpf(flashlight.light_energy, base_energy + micro_fluctuation, delta * 20.0)
+
+	# ---------------------------------------------------------
+	# 2. PHYSICAL INSTABILITY (The Shaking Hand)
+	# ---------------------------------------------------------
+	noise_time += delta * 4.0 # Speed of the trembling
+	
+	# Generate tiny random offsets
+	var jitter_x := jitter_noise.get_noise_2d(noise_time, 0.0) * 0.003
+	var jitter_y := jitter_noise.get_noise_2d(0.0, noise_time) * 0.003
+	
+	# Apply directly to the node's rotation
+	# Because this runs after your sway lerp, it layers the jitter ON TOP of the smooth movement
+	flash_light_node.rotation.x += jitter_x
+	flash_light_node.rotation.y += jitter_y
+
+func _on_fullbright_toggled(is_fullbright: bool) -> void:
+	if is_fullbright:
+		# Use single '=' for assignment
+		cam.environment = fullbright_env
+	else:
+		cam.environment = null
