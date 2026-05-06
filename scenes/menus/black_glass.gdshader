@@ -17,6 +17,9 @@ uniform float reveal_radius : hint_range(0.0, 3.0) = 0.15;
 uniform float reveal_softness : hint_range(0.0, 1.0) = 0.1; 
 uniform vec2 blood_offset = vec2(0.0, 0.0); 
 
+// NEW: Add a scale so you can tune how big the blood splatters are
+uniform float blood_scale = 1.0; 
+
 void fragment() {
     // --- 1. BASE MATERIAL ---
     float bevel = (1.0 - UV.y) * 0.01 + (1.0 - UV.x) * 0.01;
@@ -54,14 +57,16 @@ void fragment() {
     // --- 5. THE BLOOD REVEAL MASK ---
     float aspect = rect_size.x / rect_size.y;
     vec2 aspect_uv = UV;
-    aspect_uv.x *= aspect;
+    aspect_uv.x *= aspect; // aspect_uv is now perfectly square, preventing squishing
+    
     vec2 aspect_mouse = mouse_pos_uv;
     aspect_mouse.x *= aspect;
     
     float d = distance(aspect_uv, aspect_mouse);
     float reveal_mask = smoothstep(reveal_radius, reveal_radius - reveal_softness, d) * hover_intensity;
     
-    vec4 blood_col = texture(blood_texture, UV + blood_offset);
+    // UPDATED: Use aspect_uv instead of UV, and apply the scale and offset
+    vec4 blood_col = texture(blood_texture, (aspect_uv * blood_scale) + blood_offset);
     vec3 facade_result = mix(solid_black_result, blood_col.rgb, reveal_mask);
 
     // --- 6. MOONLIGHT RIM EDGE ---

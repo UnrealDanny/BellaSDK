@@ -47,6 +47,7 @@ var is_glitching := false
 var can_glitch := false
 
 func _ready() -> void:
+	randomize() # Ensure we get true random numbers
 	pivot_offset = size / 2.0
 	original_scale = scale
 	
@@ -75,6 +76,9 @@ func _ready() -> void:
 		bg_rect.material = bg_material
 		bg_material.set_shader_parameter("hover_intensity", 0.0)
 		bg_material.set_shader_parameter("rect_size", size)
+		
+		# FIXED: Randomize blood offset ONLY ONCE when the game loads
+		bg_material.set_shader_parameter("blood_offset", Vector2(randf_range(0.0, 100.0), randf_range(0.0, 100.0)))
 		
 	# Force Full Rect and Centering
 	if text_label != null:
@@ -118,16 +122,11 @@ func _on_resized() -> void:
 	if text_label:
 		text_label.pivot_offset = text_label.size / 2.0
 		
-	if border_material:
-		border_material.set_shader_parameter("rect_size", size)
-	if bg_material:
-		bg_material.set_shader_parameter("rect_size", size)
-		
 func _on_mouse_entered() -> void:
 	is_mouse_over = true
 	
 	if bg_material:
-		bg_material.set_shader_parameter("blood_offset", Vector2(randf(), randf()))
+		# REMOVED: The blood randomizer was here, shifting the texture every hover.
 		current_hover_intensity = 1.0
 		
 		if shine_tween and shine_tween.is_valid():
@@ -158,7 +157,7 @@ func _process(delta: float) -> void:
 	# ----------------------------------------
 	# 1. EXTREME 3D SEESAW & PARALLAX
 	# ----------------------------------------
-	if is_mouse_over: # Changed from is_hovered
+	if is_mouse_over: 
 		current_hover_intensity = move_toward(current_hover_intensity, 1.0, 3.0 * delta)
 		
 		var normalized_x := clampf((mouse_pos.x - center_x) / center_x, -1.0, 1.0)
@@ -174,7 +173,6 @@ func _process(delta: float) -> void:
 		
 		if text_label:
 			# INVERTED (-): Text moves slightly opposite to the tilt. 
-			# This makes it look "raised" and stamped onto the physical button.
 			var target_text_pos := Vector2(-normalized_x, -normalized_y) * parallax_intensity
 			text_label.position = text_label.position.lerp(target_text_pos, response_speed * delta)
 			
@@ -198,14 +196,20 @@ func _process(delta: float) -> void:
 	# ----------------------------------------
 	# 2. SHADER MATERIAL UPDATES
 	# ----------------------------------------
+	# FIXED: Send the ACTUAL scaled size to the shader to perfectly negate the 3D squash stretch
+	var current_actual_size := size * scale
+
 	if bg_rect and bg_material:
 		bg_material.set_shader_parameter("hover_intensity", current_hover_intensity)
+		bg_material.set_shader_parameter("rect_size", current_actual_size) # Send corrected size
+		
 		var local_mouse_pos := bg_rect.get_local_mouse_position()
 		var mouse_uv := Vector2(local_mouse_pos.x / bg_rect.size.x, local_mouse_pos.y / bg_rect.size.y)
 		bg_material.set_shader_parameter("mouse_pos_uv", mouse_uv)
 		
 	if border_material:
 		border_material.set_shader_parameter("hover_intensity", current_hover_intensity)
+		border_material.set_shader_parameter("rect_size", current_actual_size) # Send corrected size
 		
 	if label_material:
 		label_material.set_shader_parameter("hover_intensity", current_hover_intensity)

@@ -31,6 +31,7 @@ shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
+shader_parameter/blood_scale = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1hnlc"]
 shader = ExtResource("5_ng0o5")
@@ -75,6 +76,7 @@ shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
+shader_parameter/blood_scale = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ng0o5"]
 shader = ExtResource("5_ng0o5")
@@ -120,6 +122,7 @@ shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
+shader_parameter/blood_scale = 1.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_50h1w"]
 font = ExtResource("2_2o76q")
@@ -142,6 +145,7 @@ shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.150000007125
 shader_parameter/reveal_softness = 0.10000000475
 shader_parameter/blood_offset = Vector2(0, 0)
+shader_parameter/blood_scale = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8r73w"]
 shader = ExtResource("5_ng0o5")
@@ -177,6 +181,7 @@ shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
+shader_parameter/blood_scale = 1.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_bre17"]
 font = ExtResource("2_2o76q")
