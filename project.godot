@@ -12,7 +12,7 @@ config_version=5
 
 config/name="BellaSDK"
 config/description="A replacement for Source. Something to help you start building your next super-duper next-gen FPS masterpiece. "
-run/main_scene="uid://omwvkueo82i7"
+run/main_scene="uid://c261acv3ex6c0"
 config/features=PackedStringArray("4.6", "Forward Plus")
 run/max_fps=60
 config/icon="uid://cijw0jse7sfs8"
@@ -34,6 +34,7 @@ gdscript/warnings/untyped_declaration=2
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [dotnet]
