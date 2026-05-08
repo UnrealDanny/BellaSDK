@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://ckx2iw4xdsaqd"]
+
+[ext_resource type="PackedScene" uid="uid://mqae3mth7tfx" path="res://scenes/pickable_object.tscn" id="1_cgl81"]
+[ext_resource type="PackedScene" uid="uid://dxjvfecyxxbn5" path="res://assets/VisTEST/2. Modular_Models/Props/barrel_green.tscn" id="2_nag1q"]
+
+[node name="PickableObject" unique_id=594279821 instance=ExtResource("1_cgl81")]
+
+[node name="Barrels" parent="." index="5" unique_id=2129049427 instance=ExtResource("2_nag1q")]

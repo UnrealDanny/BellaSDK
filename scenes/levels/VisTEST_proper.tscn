@@ -45,7 +45,7 @@
 [ext_resource type="PackedScene" uid="uid://bnlraeb1v7dau" path="res://assets/VisTEST/2. Modular_Models/Props/scaffolding_tube.tscn" id="43_wx75l"]
 [ext_resource type="PackedScene" uid="uid://c1j1p38hn3qg8" path="res://assets/VisTEST/2. Modular_Models/Props/scaffolding_base_platform.tscn" id="44_1pcfk"]
 [ext_resource type="PackedScene" uid="uid://cre2eqhw64w1f" path="res://assets/VisTEST/2. Modular_Models/Props/scaffolding_structure.tscn" id="45_52h53"]
-[ext_resource type="PackedScene" uid="uid://cf8pnlqxpdri3" path="res://scenes/Pickable_Barrel.tscn" id="46_ubk4r"]
+[ext_resource type="PackedScene" uid="uid://cf8pnlqxpdri3" path="res://scenes/Pickable_Barrel_red.tscn" id="46_ubk4r"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_kja8q"]
 panorama = ExtResource("36_6sdu6")
