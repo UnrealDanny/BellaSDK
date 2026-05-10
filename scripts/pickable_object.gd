@@ -3,7 +3,8 @@ class_name PickableObject
 
 @export_category("Pickable Nodes")
 @export var interact_comp: Interact_Component
-@export var mesh: MeshInstance3D
+#@export var mesh: MeshInstance3D
+@export var mesh: Node3D
 @export var label: Label3D
 #@export var outline_material: ShaderMaterial
 
@@ -17,8 +18,10 @@ class_name PickableObject
 
 # --- HOLDING CONFIG ---
 ## How much closer to the player this object should be held.
-## Set to 0.0 for boxes, set to 0.8 for small valves or cables.
 @export var hold_distance_offset: float = 0.0
+
+## How transparent the object gets when held (0.0 = solid, 1.0 = completely invisible)
+@export_range(0.0, 1.0) var held_transparency: float = 0.25
 
 var is_held: bool = false
 var hold_target: Marker3D = null
@@ -63,7 +66,8 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 	angular_velocity = Vector3.ZERO
 	freeze = false 
 	gravity_scale = 0.0 
-	if mesh: mesh.transparency = 0.25
+	#if mesh: mesh.transparency = held_transparency
+	if mesh: _set_model_transparency(mesh, held_transparency)
 
 	if interact_comp:
 		interact_comp.is_currently_focused = false
@@ -87,7 +91,8 @@ func drop() -> void:
 		
 	freeze = false 
 	gravity_scale = 1.0 
-	if mesh: mesh.transparency = 0.0
+	#if mesh: mesh.transparency = 0.0
+	if mesh: _set_model_transparency(mesh, 0.0)
 
 	if holder:
 		if "velocity" in holder:
@@ -252,3 +257,15 @@ func _wait_to_enable_collision(player: Node3D) -> void:
 	else:
 		# If it's still too close, wait a tiny fraction of a second and check again
 		get_tree().create_timer(0.1).timeout.connect(_wait_to_enable_collision.bind(player))
+
+# --- NEW: Recursive Transparency Function ---
+func _set_model_transparency(parent_node: Node, alpha: float) -> void:
+	if not is_instance_valid(parent_node): return
+	
+	# If this specific piece is a mesh, make it transparent
+	if parent_node is MeshInstance3D:
+		parent_node.transparency = alpha
+		
+	# Dig through all of its children and do the exact same thing
+	for child in parent_node.get_children():
+		_set_model_transparency(child, alpha)

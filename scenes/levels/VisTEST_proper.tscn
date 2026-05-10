@@ -1892,7 +1892,6 @@ transform = Transform3D(-4.371139e-08, 0, -1, 0, 1, 0, 1, 0, -4.371139e-08, 16, 
 
 [node name="Label3D" type="Label3D" parent="." unique_id=1058892914]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, -1.6844381, 4.4444304, 3.936422)
-visible = false
 double_sided = false
 text = "Assets and the initial layout
  are created by Lucas Andres Manzoni  

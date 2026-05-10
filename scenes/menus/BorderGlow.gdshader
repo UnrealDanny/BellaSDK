@@ -1,5 +1,9 @@
 shader_type canvas_item;
 
+// Add these variables to the top of your background AND text shaders if they aren't there
+uniform vec2 ui_tilt; 
+uniform float perspective_strength : hint_range(0.0, 0.5) = 0.15; 
+
 uniform vec4 line_color : source_color = vec4(1.0, 1.0, 1.0, 1.0);
 uniform float line_thickness = 2.0;    // Thickness of the border in pixels
 uniform vec2 rect_size;                // Fed by GDScript
@@ -53,4 +57,17 @@ void fragment() {
 
         COLOR = vec4(line_color.rgb, final_alpha * line_color.a);
     }
+}
+
+void vertex() {
+    // CRITICAL FIX: Prevent division by zero by forcing a minimum size of 1.0
+    vec2 safe_rect = max(rect_size, vec2(1.0)); 
+    vec2 pivot = safe_rect / 2.0;
+    vec2 offset = VERTEX - pivot;
+
+    // Calculate 3D depth push
+    float depth = (offset.x / pivot.x) * ui_tilt.x + (offset.y / pivot.y) * ui_tilt.y;
+    float perspective = 1.0 - (depth * perspective_strength);
+    
+    VERTEX = pivot + (offset * perspective);
 }

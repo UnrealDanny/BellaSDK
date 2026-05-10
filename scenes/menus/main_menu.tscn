@@ -17,14 +17,15 @@ texture = ExtResource("1_ovrgc")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_euy4r"]
 shader = ExtResource("6_8r73w")
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/sweep_progress = -0.5
 shader_parameter/hover_intensity = 0.0
 shader_parameter/angle = 25.0
-shader_parameter/rect_size = Vector2(0, 0)
 shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
-shader_parameter/rim_light_color = Color(0.8, 0.9, 1, 0.25)
 shader_parameter/slab_opacity = 0.95
 shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
@@ -41,10 +42,12 @@ shader_parameter/shadow_2_x = 1.5
 shader_parameter/speed = 0.5
 shader_parameter/shadow_width = 0.15
 shader_parameter/softness = 0.1
-shader_parameter/tilt = 0.3
+shader_parameter/shadow_slant = 0.3
 shader_parameter/hover_intensity = 0.0
 shader_parameter/glow_color = Color(1, 0.85, 0.4, 1)
-shader_parameter/glow_strength = 4.0
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 
 [sub_resource type="LabelSettings" id="LabelSettings_8r73w"]
 font = ExtResource("2_2o76q")
@@ -53,6 +56,8 @@ outline_size = 3
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3w8rc"]
 shader = ExtResource("7_1hnlc")
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/line_color = Color(1, 1, 1, 1)
 shader_parameter/line_thickness = 2.0
 shader_parameter/rect_size = Vector2(0, 0)
@@ -62,14 +67,15 @@ shader_parameter/hover_intensity = 0.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_50h1w"]
 shader = ExtResource("6_8r73w")
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/sweep_progress = -0.5
 shader_parameter/hover_intensity = 0.0
 shader_parameter/angle = 25.0000011875
-shader_parameter/rect_size = Vector2(0, 0)
 shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
-shader_parameter/rim_light_color = Color(0.8, 0.9, 1, 0.25)
 shader_parameter/slab_opacity = 0.95
 shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
@@ -86,10 +92,12 @@ shader_parameter/shadow_2_x = 1.5
 shader_parameter/speed = 0.5
 shader_parameter/shadow_width = 0.15
 shader_parameter/softness = 0.1
-shader_parameter/tilt = 0.3
+shader_parameter/shadow_slant = 0.3
 shader_parameter/hover_intensity = 0.0
 shader_parameter/glow_color = Color(1, 0.85, 0.4, 1)
-shader_parameter/glow_strength = 4.0
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 
 [sub_resource type="LabelSettings" id="LabelSettings_1hnlc"]
 font = ExtResource("2_2o76q")
@@ -107,14 +115,15 @@ bg_color = Color(0.25882354, 0.25882354, 0.25882354, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bre17"]
 shader = ExtResource("6_8r73w")
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/sweep_progress = -0.5
 shader_parameter/hover_intensity = 0.0
 shader_parameter/angle = 25.0
-shader_parameter/rect_size = Vector2(0, 0)
 shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
-shader_parameter/rim_light_color = Color(0.8, 0.9, 1, 0.25)
 shader_parameter/slab_opacity = 0.95
 shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
@@ -130,14 +139,15 @@ outline_size = 3
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_88kup"]
 shader = ExtResource("6_8r73w")
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/sweep_progress = -0.5
 shader_parameter/hover_intensity = 0.0
 shader_parameter/angle = 25.0
-shader_parameter/rect_size = Vector2(0, 0)
 shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
-shader_parameter/rim_light_color = Color(0.8, 0.9, 1, 0.25)
 shader_parameter/slab_opacity = 0.95
 shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
@@ -154,10 +164,12 @@ shader_parameter/shadow_2_x = 1.5
 shader_parameter/speed = 0.5
 shader_parameter/shadow_width = 0.15
 shader_parameter/softness = 0.1
-shader_parameter/tilt = 0.3
+shader_parameter/shadow_slant = 0.3
 shader_parameter/hover_intensity = 0.0
 shader_parameter/glow_color = Color(1, 0.85, 0.4, 1)
-shader_parameter/glow_strength = 4.0
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 
 [sub_resource type="LabelSettings" id="LabelSettings_euy4r"]
 font = ExtResource("2_2o76q")
@@ -166,14 +178,15 @@ outline_size = 3
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_bh4e2"]
 shader = ExtResource("6_8r73w")
+shader_parameter/rect_size = Vector2(0, 0)
+shader_parameter/ui_tilt = Vector2(0, 0)
+shader_parameter/perspective_strength = 0.15
 shader_parameter/sweep_progress = -0.5
 shader_parameter/hover_intensity = 0.0
 shader_parameter/angle = 25.0
-shader_parameter/rect_size = Vector2(0, 0)
 shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
-shader_parameter/rim_light_color = Color(0.8, 0.9, 1, 0.25)
 shader_parameter/slab_opacity = 0.95
 shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
@@ -243,7 +256,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(1, 0.98917264)
 mouse_filter = 2
 
 [node name="Label2" type="Label" parent="MarginContainer/MainButtons/Continue" unique_id=1042436901]
@@ -324,7 +336,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
 script = ExtResource("5_8r73w")
-max_rotation_degrees = 5.0
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/RestartGame" unique_id=613823549]
 material = SubResource("ShaderMaterial_bre17")
@@ -367,7 +378,6 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 script = ExtResource("5_8r73w")
-max_rotation_degrees = 5.0
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/Options" unique_id=265741086]
 material = SubResource("ShaderMaterial_88kup")
@@ -410,7 +420,6 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 script = ExtResource("5_8r73w")
-max_rotation_degrees = 5.0
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/Exit" unique_id=1095930513]
 material = SubResource("ShaderMaterial_bh4e2")
