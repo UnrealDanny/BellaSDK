@@ -8,7 +8,11 @@
 [ext_resource type="Shader" uid="uid://6lomg4ekdndh" path="res://assets/shaders/HorrorTextShader.gdshader" id="5_ng0o5"]
 [ext_resource type="Shader" uid="uid://gqm2yghwiqry" path="res://scenes/menus/black_glass.gdshader" id="6_8r73w"]
 [ext_resource type="Shader" uid="uid://coifevcbmk5s2" path="res://scenes/menus/BorderGlow.gdshader" id="7_1hnlc"]
-[ext_resource type="Texture2D" uid="uid://b18hseul05yj" path="res://assets/images/Menu/blood_splatter.png" id="8_50h1w"]
+[ext_resource type="Texture2D" uid="uid://1q332wqk3msu" path="res://assets/images/Menu/gasmasks_ui.png" id="8_bh4e2"]
+[ext_resource type="Texture2D" uid="uid://c1x73e40p14mc" path="res://assets/images/UI/flashlight_pattern_ui.png" id="9_euy4r"]
+[ext_resource type="Texture2D" uid="uid://c3lwv0r8i4xr8" path="res://assets/images/Menu/blood_splatter_ui.png" id="11_3w8rc"]
+[ext_resource type="Texture2D" uid="uid://c46j3p1tq225j" path="res://assets/images/Menu/evil_eyes_ui.png" id="11_bh4e2"]
+[ext_resource type="Texture2D" uid="uid://b7trhjbq4trgf" path="res://assets/images/Menu/skulls_ui.png" id="12_uxao6"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_50h1w"]
 
@@ -27,12 +31,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1hnlc"]
 shader = ExtResource("5_ng0o5")
@@ -77,12 +82,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
-shader_parameter/reveal_radius = 0.15
+shader_parameter/reveal_radius = 0.2000000095
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ng0o5"]
 shader = ExtResource("5_ng0o5")
@@ -125,12 +131,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="LabelSettings" id="LabelSettings_50h1w"]
 font = ExtResource("2_2o76q")
@@ -149,12 +156,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.150000007125
 shader_parameter/reveal_softness = 0.10000000475
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8r73w"]
 shader = ExtResource("5_ng0o5")
@@ -188,12 +196,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 0.33999997, 0.33999997, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("8_50h1w")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="LabelSettings" id="LabelSettings_bre17"]
 font = ExtResource("2_2o76q")
@@ -247,6 +256,9 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 script = ExtResource("5_8r73w")
+background_images = Array[Texture2D]([ExtResource("11_3w8rc"), ExtResource("11_bh4e2"), ExtResource("12_uxao6"), ExtResource("8_bh4e2")])
+glitch_text = "Give up!"
+flashlight_texture = ExtResource("9_euy4r")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/Continue" unique_id=664105335]
 material = SubResource("ShaderMaterial_euy4r")
@@ -289,7 +301,11 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
+flat = true
 script = ExtResource("5_8r73w")
+background_images = Array[Texture2D]([ExtResource("11_3w8rc"), ExtResource("11_bh4e2"), ExtResource("12_uxao6"), ExtResource("8_bh4e2")])
+glitch_text = "No Games"
+flashlight_texture = ExtResource("9_euy4r")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/NewGame" unique_id=269998739]
 material = SubResource("ShaderMaterial_50h1w")
@@ -336,6 +352,9 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_vn8vg")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_2o76q")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ovrgc")
 script = ExtResource("5_8r73w")
+background_images = Array[Texture2D]([ExtResource("11_3w8rc"), ExtResource("11_bh4e2"), ExtResource("12_uxao6"), ExtResource("8_bh4e2")])
+glitch_text = "No More Tries!"
+flashlight_texture = ExtResource("9_euy4r")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/RestartGame" unique_id=613823549]
 material = SubResource("ShaderMaterial_bre17")
@@ -378,6 +397,9 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 script = ExtResource("5_8r73w")
+background_images = Array[Texture2D]([ExtResource("11_3w8rc"), ExtResource("11_bh4e2"), ExtResource("12_uxao6"), ExtResource("8_bh4e2")])
+glitch_text = "No Options"
+flashlight_texture = ExtResource("9_euy4r")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/Options" unique_id=265741086]
 material = SubResource("ShaderMaterial_88kup")
@@ -420,6 +442,9 @@ size_flags_vertical = 3
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 42
 script = ExtResource("5_8r73w")
+background_images = Array[Texture2D]([ExtResource("11_3w8rc"), ExtResource("11_bh4e2"), ExtResource("12_uxao6"), ExtResource("8_bh4e2")])
+glitch_text = "End It"
+flashlight_texture = ExtResource("9_euy4r")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/MainButtons/Exit" unique_id=1095930513]
 material = SubResource("ShaderMaterial_bh4e2")

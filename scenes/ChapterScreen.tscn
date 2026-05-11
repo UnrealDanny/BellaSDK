@@ -9,8 +9,11 @@
 [ext_resource type="Script" uid="uid://g1iralse1net" path="res://scripts/menus/HorrorButton.gd" id="7_1symm"]
 [ext_resource type="Shader" uid="uid://6lomg4ekdndh" path="res://assets/shaders/HorrorTextShader.gdshader" id="8_53ons"]
 [ext_resource type="Shader" uid="uid://gqm2yghwiqry" path="res://scenes/menus/black_glass.gdshader" id="8_h04da"]
+[ext_resource type="Texture2D" uid="uid://c3lwv0r8i4xr8" path="res://assets/images/Menu/blood_splatter_ui.png" id="8_uoioa"]
 [ext_resource type="Shader" uid="uid://coifevcbmk5s2" path="res://scenes/menus/BorderGlow.gdshader" id="8_xokdh"]
-[ext_resource type="Texture2D" uid="uid://cqsm2o4tsvbg2" path="res://assets/images/Menu/skulls.png" id="9_qx2xq"]
+[ext_resource type="Texture2D" uid="uid://c46j3p1tq225j" path="res://assets/images/Menu/evil_eyes_ui.png" id="9_mhu1t"]
+[ext_resource type="Texture2D" uid="uid://b7trhjbq4trgf" path="res://assets/images/Menu/skulls_ui.png" id="9_qx2xq"]
+[ext_resource type="Texture2D" uid="uid://c1x73e40p14mc" path="res://assets/images/UI/flashlight_pattern_ui.png" id="11_mhu1t"]
 
 [sub_resource type="Resource" id="Resource_53ons"]
 script = ExtResource("2_sl2hs")
@@ -50,12 +53,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 1, 1, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("9_qx2xq")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h04da"]
 shader = ExtResource("8_53ons")
@@ -100,12 +104,13 @@ shader_parameter/base_color = Color(0, 0, 0, 1)
 shader_parameter/shine_color = Color(1, 1, 1, 0.6)
 shader_parameter/shine_width = 0.15
 shader_parameter/slab_opacity = 0.95
-shader_parameter/blood_texture = ExtResource("9_qx2xq")
 shader_parameter/mouse_pos_uv = Vector2(0, 0)
 shader_parameter/reveal_radius = 0.15
 shader_parameter/reveal_softness = 0.1
 shader_parameter/blood_offset = Vector2(0, 0)
 shader_parameter/blood_scale = 1.0
+shader_parameter/flashlight_color = Color(1, 1, 1, 1)
+shader_parameter/flashlight_energy = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_xokdh"]
 shader = ExtResource("8_53ons")
@@ -262,6 +267,8 @@ theme_override_fonts/font = ExtResource("5_sl2hs")
 theme_override_font_sizes/font_size = 42
 text = "Play Chapter"
 script = ExtResource("7_1symm")
+background_images = Array[Texture2D]([ExtResource("8_uoioa"), ExtResource("9_mhu1t"), ExtResource("9_qx2xq")])
+flashlight_texture = ExtResource("11_mhu1t")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/ButtonSection/PlayButton" unique_id=1036043634]
 material = SubResource("ShaderMaterial_qx2xq")
@@ -302,7 +309,8 @@ theme_override_fonts/font = ExtResource("5_sl2hs")
 theme_override_font_sizes/font_size = 42
 text = "Back to Main Menu"
 script = ExtResource("7_1symm")
-max_rotation_degrees = 5.0
+background_images = Array[Texture2D]([ExtResource("8_uoioa"), ExtResource("9_mhu1t"), ExtResource("9_qx2xq")])
+flashlight_texture = ExtResource("11_mhu1t")
 
 [node name="Background" type="ColorRect" parent="MarginContainer/VBoxContainer/MainLayout/DetailsPanel/MarginContainer/BottomSplit/ButtonSection/BackButton" unique_id=241964077]
 material = SubResource("ShaderMaterial_as3aa")

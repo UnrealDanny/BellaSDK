@@ -19,6 +19,9 @@ uniform float reveal_radius : hint_range(0.0, 3.0) = 0.15;
 uniform float reveal_softness : hint_range(0.0, 1.0) = 0.1; 
 uniform vec2 blood_offset = vec2(0.0, 0.0); 
 uniform float blood_scale = 1.0; 
+uniform sampler2D custom_light_texture;
+uniform vec3 flashlight_color : source_color = vec3(1.0, 1.0, 1.0);
+uniform float flashlight_energy : hint_range(0.0, 5.0) = 0.8; // Controls the "pop"
 
 void vertex() {
     vec2 safe_rect = max(rect_size, vec2(1.0)); 
@@ -53,7 +56,6 @@ void fragment() {
     float dist_y = min(px_coords.y, rect_size.y - px_coords.y);
     float outer_mask = smoothstep(0.0, 1.0, min(dist_x, dist_y));
 
-    // --- FIX 2: 3D MOUSE TRACKING ALIGNMENT ---
     // Calculate where this pixel visually sits after the 3D vertex tilt
     vec2 uv_offset = UV - vec2(0.5);
     float pixel_depth = (uv_offset.x / 0.5) * ui_tilt.x + (uv_offset.y / 0.5) * ui_tilt.y;
@@ -62,19 +64,38 @@ void fragment() {
 
     float aspect = rect_size.x / rect_size.y;
     
-    // We now use the visually-shifted UV to calculate the distance to the mouse
     vec2 aspect_uv = visual_uv; 
     aspect_uv.x *= aspect; 
     
     vec2 aspect_mouse = mouse_pos_uv;
     aspect_mouse.x *= aspect;
     
-    float d = distance(aspect_uv, aspect_mouse);
-    float reveal_mask = smoothstep(reveal_radius, reveal_radius - reveal_softness, d) * hover_intensity;
-    // ------------------------------------------
+    // --- UPDATED FLASHLIGHT LOGIC ---
+    // Calculate UVs to map your custom flashlight image around the mouse pointer
+    // --- UPDATED FLASHLIGHT LOGIC ---
+    vec2 light_uv = (aspect_uv - aspect_mouse) / reveal_radius;
+    light_uv = (light_uv * 0.5) + 0.5; 
+    
+    float reveal_mask = 0.0;
+    float custom_light_intensity = 0.0; // Declare this outside so we can use it later
+    
+    // Only sample the texture if we are inside its boundaries
+    if (light_uv.x >= 0.0 && light_uv.x <= 1.0 && light_uv.y >= 0.0 && light_uv.y <= 1.0) {
+        // Read the custom texture 
+        custom_light_intensity = texture(custom_light_texture, light_uv).r;
+        reveal_mask = custom_light_intensity * hover_intensity;
+    }
+    // --------------------------------
     
     vec4 blood_col = texture(blood_texture, (aspect_uv * blood_scale) + blood_offset);
+    
+    // 1. Reveal the background texture (Opacity Masking)
     vec3 facade_result = mix(solid_black_result, blood_col.rgb, reveal_mask);
+
+    // 2. Illuminate the result (Additive Lighting)
+    // This physically brightens the pixels based on the flashlight pattern
+    vec3 added_light = flashlight_color * custom_light_intensity * hover_intensity * flashlight_energy;
+    facade_result += added_light;
 
     COLOR = vec4(facade_result, base_color.a * slab_opacity * outer_mask);
 }
