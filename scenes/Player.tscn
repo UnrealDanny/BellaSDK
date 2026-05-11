@@ -81,7 +81,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.1, 0.3),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(0, -0.1, 0), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0, 0.05, 0), Vector3(0, 0, 0)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -93,7 +93,7 @@ tracks/1/keys = {
 "times": PackedFloat32Array(0, 0.1, 0.3),
 "transitions": PackedFloat32Array(1, 1, 1),
 "update": 0,
-"values": [Vector3(0, 0, 0), Vector3(-0.017453292, 0, 0.034906585), Vector3(0, 0, 0)]
+"values": [Vector3(0, 0, 0), Vector3(0, 0, 0.008726646), Vector3(0, 0, 0)]
 }
 
 [sub_resource type="Animation" id="Animation_mdl7e"]
@@ -269,6 +269,18 @@ shader_parameter/highlight_punch = 0.02000000095
 process_mode = 3
 collision_mask = 7
 script = ExtResource("1_34orh")
+walking_speed = null
+sprinting_speed = null
+crouching_speed = null
+swimming_speed = null
+sway_amount = null
+smooth_speed = null
+base_fov = null
+sprint_fov = null
+jump_buffer_duration = null
+coyote_time_duration = null
+fall_gravity_multiplier = null
+base_energy = null
 player_ui = NodePath("UI")
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]

@@ -80,7 +80,6 @@ var is_stunned: bool = false
 var is_vaulting: bool = false
 
 # INPUT VARS
-
 var mouse_sensitivity: float = 0.05
 var mouse_sensitivity_base: float = 0.05
 var mouse_sensitivity_zoom: float = mouse_sensitivity / 10.0
@@ -155,6 +154,9 @@ var _last_frame_was_on_floor: int = -999999 # Safe integer instead of -INF
 # LADDER VARS
 var on_ladder: bool = false
 var LADDER_SPEED: float = 5.0
+var current_ladder: Node3D = null
+const MAX_LADDER_SIDE_DIST: float = 0.6 # How far left/right you can go before stopping
+const LADDER_CENTER_SNAP_SPEED: float = 8.0 # How fast you slide back to the middle
 
 # ROPE VARS
 var current_rope: RigidBody3D = null
@@ -661,11 +663,15 @@ func _process(delta: float) -> void:
 	elif Input.is_action_just_released("zoom"):
 		Events.player_zoomed.emit(false)
 		is_using_zoom = false
+	
+	# Determine if we should be in sprint FOV.
+	# True IF: (Button pressed + moving) OR (In the air + already using sprint FOV)
+	var is_valid_sprint := (sprint_active and input_dir.length() > 0.1) or (not is_on_floor() and target_fov == sprint_fov)
 
 	if Input.is_action_pressed("zoom"):
 		target_fov = zoom_fov
 		mouse_sensitivity = mouse_sensitivity_zoom
-	elif sprint_active and input_dir.length() > 0.1 and not is_swimming:
+	elif is_valid_sprint and not is_swimming:
 		target_fov = sprint_fov
 		mouse_sensitivity = mouse_sensitivity_base
 	else:
@@ -774,11 +780,34 @@ func get_interactable_component_at_shapecast() -> Interact_Component:
 
 	return closest_comp
 
-func enter_ladder() -> void:
+func enter_ladder(ladder_node: Node3D) -> void:
 	on_ladder = true
+	current_ladder = ladder_node 
+	
+	var push_out_distance: float = 0.6 
+	var ladder_forward: Vector3 = ladder_node.global_transform.basis.z.normalized()
+	
+	# Calculate target X and Z
+	var target_pos: Vector3 = ladder_node.global_position + (ladder_forward * push_out_distance)
+	
+	# Keep the player's current height so they don't snap up or down
+	target_pos.y = global_position.y 
+	
+	# Create a Tween to smoothly move the player into position
+	var tween := get_tree().create_tween()
+	
+	# Smoothly move global_position to target_pos over 0.15 seconds
+	# Using slightly eased movement so it feels organic
+	tween.tween_property(self, "global_position", target_pos, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-func exit_ladder() -> void:
+func exit_ladder(ladder_node: Node3D = null) -> void:
+	# If a specific ladder told us to exit, but we are already attached 
+	# to a NEW ladder, ignore the exit signal!
+	if ladder_node != null and current_ladder != ladder_node:
+		return
+		
 	on_ladder = false
+	current_ladder = null # Clear the ladder when we step off
 
 # --------------------------------------
 # MONKE BARS
@@ -1317,33 +1346,109 @@ func _handle_ladder_physics(_delta: float) -> void:
 	sprinting = false
 	crouching = Input.is_action_pressed("crouch")
 
-	var look_dir: Vector3 = - cam.global_transform.basis.z
+	var look_dir: Vector3 = -cam.global_transform.basis.z
 	var right_dir: Vector3 = cam.global_transform.basis.x
 
 	if Input.is_action_pressed("crouch"):
 		velocity = Vector3.DOWN * sprinting_speed
 		current_speed = sprinting_speed # <-- SYNC
 	else:
-		var ladder_vel: Vector3 = (look_dir * -input_dir.y) + (right_dir * input_dir.x)
-		velocity = ladder_vel.normalized() * LADDER_SPEED
+		var up_down_movement: float = 0.0
+		var lateral_movement: Vector3 = Vector3.ZERO
+		
+		if current_ladder != null:
+			var local_pos: Vector3 = current_ladder.to_local(global_position)
+			var offset_from_center: float = local_pos.x
+			
+			var ladder_right: Vector3 = current_ladder.global_transform.basis.x.normalized()
+			var ladder_forward: Vector3 = current_ladder.global_transform.basis.z.normalized()
+			
+			# --- 1. FREE-LOOK PROJECTION (W/S Input) ---
+			var lateral_weight_ws: float = look_dir.dot(ladder_right)
+			var vertical_weight_ws: float = 1.0 - abs(lateral_weight_ws)
+			if look_dir.y < -0.15: 
+				vertical_weight_ws *= -1.0
+				
+			var forward_input: float = -input_dir.y 
+			var ws_lateral: float = lateral_weight_ws * forward_input
+			var ws_vertical: float = vertical_weight_ws * forward_input
+			
+			# --- 2. FREE-LOOK PROJECTION (A/D Input) ---
+			var lateral_weight_ad: float = right_dir.dot(ladder_right)
+			var vertical_weight_ad: float = 1.0 - abs(lateral_weight_ad)
+			if right_dir.y < -0.15:
+				vertical_weight_ad *= -1.0
+				
+			var strafe_input: float = input_dir.x
+			var ad_lateral: float = lateral_weight_ad * strafe_input
+			var ad_vertical: float = vertical_weight_ad * strafe_input
+			
+			# --- 3. COMBINE INTENT ---
+			var plane_intent := Vector2(ws_lateral + ad_lateral, ws_vertical + ad_vertical)
+			if plane_intent.length() > 1.0:
+				plane_intent = plane_intent.normalized()
+				
+			var intended_lateral: float = plane_intent.x
+			up_down_movement = plane_intent.y
+			
+			# --- 4. LATERAL BOUNDING & CENTERING ---
+			if abs(intended_lateral) > 0.05: 
+				if intended_lateral > 0 and offset_from_center >= MAX_LADDER_SIDE_DIST:
+					lateral_movement = Vector3.ZERO
+				elif intended_lateral < 0 and offset_from_center <= -MAX_LADDER_SIDE_DIST:
+					lateral_movement = Vector3.ZERO
+				else:
+					lateral_movement = ladder_right * intended_lateral * LADDER_SPEED
+			else:
+				lateral_movement = -ladder_right * (offset_from_center * LADDER_CENTER_SNAP_SPEED)
+				if lateral_movement.length() > LADDER_SPEED:
+					lateral_movement = lateral_movement.normalized() * LADDER_SPEED
+			
+			# --- 5. DEPTH PULL (Stick to surface) ---
+			var depth_pull: Vector3 = -ladder_forward * (local_pos.z * 4.0)
+			
+			velocity = (Vector3.UP * up_down_movement * LADDER_SPEED) + lateral_movement + depth_pull
+			
+		else:
+			# Fallback if current_ladder isn't set yet
+			var vertical_aim: float = 1.0
+			if look_dir.y < -0.15: 
+				vertical_aim = -1.0
+				
+			up_down_movement = -input_dir.y * vertical_aim
+			lateral_movement = right_dir * input_dir.x * LADDER_SPEED
+			velocity = (Vector3.UP * up_down_movement * LADDER_SPEED) + lateral_movement
+			
 		current_speed = LADDER_SPEED # <-- SYNC
 
-	# <-- SYNC DIRECTION SO GROUND PHYSICS DOESN'T DEAD-STOP YOU
 	var flat_vel: Vector3 = Vector3(velocity.x, 0, velocity.z)
 	if flat_vel.length() > 0:
 		direction = flat_vel.normalized()
 
-	# (Your jump logic remains exactly the same below)
+	# --- NEW: LOOK-BASED JUMP LOGIC ---
 	if Input.is_action_just_pressed("jump"):
 		on_ladder = false
-		var jump_back_dir: Vector3 = cam.global_transform.basis.z
-		jump_back_dir.y = 0
-		velocity = jump_back_dir.normalized() * 5.0
-		velocity.y = 5.0
+		
+		var jump_dir := -cam.global_transform.basis.z.normalized()
+		var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
+		
+		# Calculate lift and push similar to your rope logic
+		var camera_lift: float = maxf(jump_dir.y, 0.0) * 2.5
+		var vertical_hop: float = 4.5 + camera_lift
+		var forward_push: float = 6.0 # Kept slightly lower than rope's 8.0 for tighter ladder control
+		
+		# Apply momentum
+		velocity = (flat_jump_dir * forward_push) + Vector3(0, vertical_hop, 0)
+		direction = flat_jump_dir
+		current_speed = forward_push
+		
+		# Nudge the player slightly in the jump direction to ensure they detach cleanly
+		# and don't immediately re-trigger the ladder's Area3D
+		global_position += jump_dir * 0.2
 
-		# Optional: Sync jump off too just to be pristine
-		direction = Vector3(velocity.x, 0, velocity.z).normalized()
-		current_speed = 5.0
+	# Dismount when hitting the ground
+	if is_on_floor() and velocity.y < 0:
+		on_ladder = false
 
 func _handle_zipline_physics(delta: float) -> void:
 	if not on_zipline or is_zipline_transitioning:

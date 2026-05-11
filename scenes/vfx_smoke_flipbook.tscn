@@ -1,0 +1,43 @@
+[gd_scene format=3 uid="uid://dkmm4qelgt7gp"]
+
+[ext_resource type="Texture2D" uid="uid://bvicax8m3kdh5" path="res://assets/textures/LeLu_Smoke/T_smoke_flipbook.png" id="1_mhjge"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a2idi"]
+transparency = 1
+vertex_color_use_as_albedo = true
+vertex_color_is_srgb = true
+albedo_texture = ExtResource("1_mhjge")
+billboard_mode = 3
+billboard_keep_scale = true
+particles_anim_h_frames = 8
+particles_anim_v_frames = 8
+particles_anim_loop = false
+proximity_fade_enabled = true
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_ul3b4"]
+particle_flag_rotate_y = true
+emission_shape = 1
+emission_sphere_radius = 0.1
+angle_min = -179.99998
+angle_max = 180.00002
+direction = Vector3(0, 1, 0)
+spread = 0.0
+initial_velocity_min = 1.8
+initial_velocity_max = 2.3
+angular_velocity_min = -50.000015
+angular_velocity_max = 49.99998
+gravity = Vector3(0, 0, 0)
+scale_min = 0.9
+scale_max = 2.2
+anim_speed_min = 1.0
+anim_speed_max = 1.0
+
+[sub_resource type="QuadMesh" id="QuadMesh_vvn46"]
+
+[node name="VFX_Smoke_Flipbook" type="GPUParticles3D" unique_id=2050701906]
+material_override = SubResource("StandardMaterial3D_a2idi")
+amount = 20
+lifetime = 2.0
+fixed_fps = 60
+process_material = SubResource("ParticleProcessMaterial_ul3b4")
+draw_pass_1 = SubResource("QuadMesh_vvn46")

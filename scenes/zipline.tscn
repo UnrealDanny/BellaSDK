@@ -17,13 +17,13 @@ point_count = 2
 resource_local_to_scene = true
 top_radius = 0.05
 bottom_radius = 0.05
-height = 35.238163
+height = 11.301482
 radial_segments = 16
 rings = 0
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_1tsh7"]
 resource_local_to_scene = true
-height = 35.238163
+height = 11.301482
 radius = 0.05
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_6k1gw"]
