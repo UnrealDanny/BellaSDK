@@ -99,17 +99,107 @@ func drop() -> void:
 			linear_velocity = holder.velocity
 
 		var cam_forward: Vector3 = -holder.cam.global_transform.basis.z
-		var push_dir := Vector3(cam_forward.x, 0.0, cam_forward.z).normalized()
+		var flat_cam_forward := Vector3(cam_forward.x, 0.0, cam_forward.z)
+		
+		if flat_cam_forward.length_squared() < 0.01:
+			flat_cam_forward = -holder.global_transform.basis.z
+			flat_cam_forward.y = 0.0
+		
+		var push_dir := flat_cam_forward.normalized()
+		
+		# --- NEW: VELOCITY COMPENSATION ---
+		# Calculate how far the player will travel during our 0.15s tween
+		var player_vel: Vector3 = holder.velocity if "velocity" in holder else Vector3.ZERO
+		var velocity_offset := Vector3(player_vel.x, 0.0, player_vel.z) * 0.15
+		
+		# --- NEW: SMART OBJECT NUDGE (Looking Down Check) ---
+		var is_nudging := false
+		if cam_forward.y < -0.2:
+			var space_state := get_world_3d().direct_space_state
+			
+			# Combine our base push (0.35) with the distance the player is about to run!
+			var intended_slide := (push_dir * 0.35) + velocity_offset
+			
+			# Check slightly further ahead than the intended slide to ensure we don't clip a wall
+			var check_dir := intended_slide.normalized()
+			var check_dist := intended_slide.length() + 0.1
+			var ray_end := global_position + (check_dir * check_dist)
+			
+			var query := PhysicsRayQueryParameters3D.create(global_position, ray_end)
+			query.exclude = [self.get_rid(), holder.get_rid()]
+			
+			var result := space_state.intersect_ray(query)
+			var target_pos := global_position
+			
+			if result:
+				# Wall found! Slide it as far as possible before hitting the wall
+				var safe_dist := global_position.distance_to(result.position) - 0.1
+				if safe_dist > 0:
+					target_pos += check_dir * safe_dist
+			else:
+				# Open space! Slide it the full intended amount (Push + Player Speed)
+				target_pos += intended_slide
+				
+			# --- THE TWEEN ---
+			if target_pos != global_position:
+				is_nudging = true
+				
+				# Zero out rotational velocity so it doesn't spin wildly while sliding
+				angular_velocity = Vector3.ZERO
+				
+				var nudge_tween := create_tween()
+				nudge_tween.tween_property(self, "global_position:x", target_pos.x, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				nudge_tween.parallel().tween_property(self, "global_position:z", target_pos.z, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				
+				# Wait for the slide to finish, THEN apply the pop impulse
+				nudge_tween.tween_callback(func() -> void:
+					var toss_dir := push_dir
+					toss_dir.y = 0.5
+					apply_central_impulse(toss_dir * 5.0)
+				)
+		# ----------------------------------------------------
+		
+		# If we didn't tween it (looking forward/up), toss it immediately!
+		if not is_nudging:
+			push_dir.y = 0.5 
+			apply_central_impulse(push_dir * 5.0)
+		
+		if "held_object" in holder:
+			holder.held_object = null
+			
+		#var push_dir := flat_cam_forward.normalized()
+		
+		## --- NEW: SMART OBJECT NUDGE (Looking Down Check) ---
+		## If we are looking down, the object is squeezed at our feet.
+		#if cam_forward.y < -0.2:
+			#var space_state := get_world_3d().direct_space_state
+			#var check_distance := 0.8 # How far ahead to check for a wall
+			#var ray_end := global_position + (push_dir * check_distance)
+			#
+			#var query := PhysicsRayQueryParameters3D.create(global_position, ray_end)
+			#query.exclude = [self.get_rid(), holder.get_rid()]
+			#
+			#var result := space_state.intersect_ray(query)
+			#
+			#if result:
+				## There is a wall! Move the box as close to the wall as safely possible.
+				#var safe_dist := global_position.distance_to(result.position) - 0.2
+				#if safe_dist > 0:
+					#global_position += push_dir * safe_dist
+			#else:
+				## No wall! Instantly bump the object forward out of our personal space.
+				#global_position += push_dir * 0.75 
+		## ----------------------------------------------------
+		
+		# Now apply the standard toss impulse
 		push_dir.y = 0.5 
 		apply_central_impulse(push_dir * 5.0)
 		
-		# IMPORTANT: Change "held_object" to whatever variable name your Player.gd actually uses!
 		if "held_object" in holder:
 			holder.held_object = null
-		elif "grabbed_object" in holder: # Just in case it's named this instead
+		elif "grabbed_object" in holder: 
 			holder.grabbed_object = null
 
-		# ✅ NEW: Turn collisions with the player back on, but push it away first
 		var previous_holder := holder
 		_wait_to_enable_collision(previous_holder)
 	
@@ -179,8 +269,14 @@ func _physics_process(_delta: float) -> void:
 		var cam_forward: Vector3 = -holder.cam.global_transform.basis.z
 		target_pos -= cam_forward * hold_distance_offset
 		
-		# Lower on screen
+		# Lower on screen (Base offset)
 		target_pos.y -= 0.5 
+		
+		# --- NEW: LOOK DOWN LOWERING ---
+		# cam_forward.y is 0.0 when looking straight, and approaches -1.0 as you look down.
+		# We add this negative value (multiplied by a strength factor) to push the object lower!
+		if cam_forward.y < 0.0:
+			target_pos.y += (cam_forward.y * 8.6) # Tweak the 0.6 to make it dip more or less
 		
 		# 2. APPLY CONSTRAINTS (Hula Hoop & Floor)
 		var flat_offset := Vector2(target_pos.x - player_pos.x, target_pos.z - player_pos.z)
@@ -189,7 +285,11 @@ func _physics_process(_delta: float) -> void:
 			target_pos.x = player_pos.x + flat_offset.x
 			target_pos.z = player_pos.z + flat_offset.y
 			
-		var min_height: float = player_pos.y + 1.0 
+		# --- THE TRUE FIX: PURE FLOOR CLAMP ---
+		# Forget tracking the head. Just stop the box from clipping through the floor!
+		# 0.2 meters above your feet gives it a nice physical resting spot on the ground.
+		var min_height: float = player_pos.y + 0.2 
+		
 		if target_pos.y < min_height:
 			target_pos.y = min_height
 
@@ -246,17 +346,61 @@ func _physics_process(_delta: float) -> void:
 	if submerged and not is_held:
 		apply_central_force(-linear_velocity * water_drag * mass)
 		apply_torque(-angular_velocity * water_angular_drag * mass)
-
-func _wait_to_enable_collision(player: Node3D) -> void:
-	if not is_instance_valid(self) or not is_instance_valid(player): 
-		return
 		
-	# Check if the box is far enough away to safely turn collision back on (1.2 meters)
-	if global_position.distance_to(player.global_position) > 2.0:
+func _wait_to_enable_collision(player: Node3D) -> void:
+	var max_wait_frames := 30 
+	var current_frame := 0
+	
+	while is_instance_valid(self) and is_instance_valid(player) and current_frame < max_wait_frames:
+		var flat_my_pos := Vector2(global_position.x, global_position.z)
+		var flat_player_pos := Vector2(player.global_position.x, player.global_position.z)
+		
+		# Slightly tightened the clearance check from 1.2 to 1.0 for better feel
+		if flat_my_pos.distance_to(flat_player_pos) >= 1.0:
+			break
+			
+		current_frame += 1
+		await get_tree().physics_frame
+		
+	if is_instance_valid(self) and is_instance_valid(player):
+		var flat_my_pos := Vector2(global_position.x, global_position.z)
+		var flat_player_pos := Vector2(player.global_position.x, player.global_position.z)
+		
+		# If they are STILL overlapping after the timer...
+		if flat_my_pos.distance_to(flat_player_pos) < 1.0:
+			
+			var player_forward := -player.global_transform.basis.z
+			var flat_backward := Vector3(-player_forward.x, 0.0, -player_forward.z).normalized()
+			
+			# 1. MUCH SMALLER DISTANCE (0.6 meters instead of 1.5)
+			var push_distance := 0.2 
+			var push_vector := flat_backward * push_distance
+			
+			# 2. TEST THE WALL COLLISION (true = test_only)
+			# This calculates exactly how far we can slide without clipping a wall
+			var safe_travel := push_vector
+			var collision: KinematicCollision3D = player.move_and_collide(push_vector, true)
+			if collision:
+				safe_travel = collision.get_travel()
+			
+			var target_pos := player.global_position + safe_travel
+			
+			# 3. SMOOTH TWEEN SLIDE
+			var tween := get_tree().create_tween()
+			tween.tween_property(player, "global_position", target_pos, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			
+			linear_velocity = Vector3.ZERO
+			angular_velocity = Vector3.ZERO
+
+			# 4. TURN COLLISION ON *AFTER* THE TWEEN FINISHES
+			tween.tween_callback(func() -> void:
+				if is_instance_valid(self) and is_instance_valid(player):
+					remove_collision_exception_with(player)
+			)
+			return # Exit early so we don't accidentally enable collision below
+
+		# If they stepped away naturally and no tween was needed, turn collision on immediately
 		remove_collision_exception_with(player)
-	else:
-		# If it's still too close, wait a tiny fraction of a second and check again
-		get_tree().create_timer(0.1).timeout.connect(_wait_to_enable_collision.bind(player))
 
 # --- NEW: Recursive Transparency Function ---
 func _set_model_transparency(parent_node: Node, alpha: float) -> void:

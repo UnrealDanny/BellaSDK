@@ -13,7 +13,7 @@ shader_parameter/min_intensity = 0.01
 shader_parameter/max_intensity = 0.050000002375
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_ryygw"]
-height = 1.2
+height = 1.25
 radius = 0.45
 
 [node name="PickableBarrel" unique_id=594279821 node_paths=PackedStringArray("mesh") instance=ExtResource("1_aapj8")]
@@ -28,7 +28,7 @@ outline_material = SubResource("ShaderMaterial_u0s6k")
 visible = false
 
 [node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6487124, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6205874, 0)
 shape = SubResource("CylinderShape3D_ryygw")
 
 [node name="Barrel_red" parent="." index="5" unique_id=1477624360 instance=ExtResource("3_wkfba")]

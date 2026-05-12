@@ -20,6 +20,7 @@ extends CharacterBody3D
 
 @onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
 @onready var hold_position: Marker3D = $Head/Eyes/Camera3D/SpringArm3D/HoldPosition
+@onready var spring_arm: SpringArm3D = $Head/Eyes/Camera3D/SpringArm3D
 
 # --- ADD TO THE TOP OF Player.gd (Node Caching) ---
 @onready var weapon_holder: Node3D = %WeaponHolder
@@ -28,10 +29,12 @@ extends CharacterBody3D
 
 @onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
 
-
 # --------------------------------------
 # @EXPORTS
 # --------------------------------------
+# UI & Sensitivity Variables (Assign player_ui in the Inspector!)
+@export var player_ui: CanvasLayer
+
 @export var walking_speed: float = 5.0
 @export var sprinting_speed: float = 6.5
 @export var crouching_speed: float = 3.0
@@ -46,6 +49,9 @@ extends CharacterBody3D
 @export var jump_buffer_duration: float = 0.15
 @export var coyote_time_duration: float = 0.15
 @export var fall_gravity_multiplier: float = 1.5 # For snappier falling
+
+@export_category("Physics Interaction")
+@export var push_force: float = 2.0
 
 var fullbright_env: Environment
 
@@ -157,6 +163,7 @@ var LADDER_SPEED: float = 5.0
 var current_ladder: Node3D = null
 const MAX_LADDER_SIDE_DIST: float = 0.6 # How far left/right you can go before stopping
 const LADDER_CENTER_SNAP_SPEED: float = 8.0 # How fast you slide back to the middle
+var last_hoist_time: int = 0
 
 # ROPE VARS
 var current_rope: RigidBody3D = null
@@ -244,11 +251,8 @@ var is_in_terminal_mode: bool = false
 var active_terminal: Node3D = null
 var terminal_start_pos: Vector3
 
-# UI & Sensitivity Variables (Assign player_ui in the Inspector!)
-@export var player_ui: CanvasLayer
-
 # SHAPECAST REACH VARS
-var base_reach: float = 0.5
+var base_reach: float = 0.7
 var floor_reach: float = 2.2 # 2m height + 0.2m margin
 
 # OTHER VARS
@@ -261,6 +265,8 @@ var overlapping_water_areas: Array[Area3D] = []
 # MAIN SCRIPT
 # --------------------------------------
 func _ready() -> void:
+	spring_arm.add_excluded_object(self.get_rid())
+	
 	# --- DYNAMIC VAULT INDICATOR ---
 	vault_indicator = MeshInstance3D.new()
 	var dot_mesh := SphereMesh.new()
@@ -536,6 +542,7 @@ func _physics_process(delta: float) -> void:
 	if not _snap_up_stairs_check(delta):
 		move_and_slide()
 		_snap_down_to_stairs_check()
+		_push_rigid_bodies()
 
 	# --- THE ZIPLINE CHECK ---
 	# We only check if we are actually crouching, and NOT already on the zipline or vaulting
@@ -641,6 +648,7 @@ func _process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("interact"):
 		if held_object:
+			#remove_collision_exception_with(held_object)
 			held_object.drop()
 			held_object = null
 			if weapon_holder:
@@ -653,6 +661,7 @@ func _process(delta: float) -> void:
 			if parent_node is PickableObject:
 				held_object = parent_node as PickableObject
 				held_object.pick_up(hold_position, self )
+				#add_collision_exception_with(held_object)
 
 				if weapon_holder:
 					weapon_holder.hide()
@@ -1266,6 +1275,7 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	if Input.is_action_just_pressed("jump"):
 		# --- NEW: Quick-release the box instead of jumping! ---
 		if is_heavy_lifting and held_object:
+			#remove_collision_exception_with(held_object)
 			held_object.drop()
 		# ------------------------------------------------------
 		elif _try_vault():
@@ -1293,6 +1303,7 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	# --- REFACTORED: Buffered & Coyote Jump Logic ---
 	if jump_buffer_timer > 0.0:
 		if is_heavy_lifting and held_object:
+			#remove_collision_exception_with(held_object) # <--- AND ADD IT HERE
 			held_object.drop()
 			jump_buffer_timer = 0.0 # Consume input
 		elif _try_vault():
@@ -1344,7 +1355,14 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 
 func _handle_ladder_physics(_delta: float) -> void:
 	sprinting = false
+	
+	# --- FIX 1: Track crouch state changes so the UI vignette updates ---
+	var previous_crouch: bool = crouching
 	crouching = Input.is_action_pressed("crouch")
+	
+	# If we pressed/released crouch while on the ladder, tell the UI to update
+	if crouching != previous_crouch:
+		Events.player_crouch_changed.emit(crouching)
 
 	var look_dir: Vector3 = -cam.global_transform.basis.z
 	var right_dir: Vector3 = cam.global_transform.basis.x
@@ -1425,30 +1443,89 @@ func _handle_ladder_physics(_delta: float) -> void:
 	if flat_vel.length() > 0:
 		direction = flat_vel.normalized()
 
-	# --- NEW: LOOK-BASED JUMP LOGIC ---
+	# --- FIX 2 & 3: LOOK-BASED & DIRECTIONAL JUMP LOGIC ---
 	if Input.is_action_just_pressed("jump"):
-		on_ladder = false
+		var is_looking_down := look_dir.y < -0.3
+		var is_looking_up := look_dir.y > 0.4 # Must be pitching up a decent amount
+		var is_looking_away := false
+		var is_looking_at_ladder := false
+		var strafe_input := input_dir.x 
 		
-		var jump_dir := -cam.global_transform.basis.z.normalized()
-		var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
-		
-		# Calculate lift and push similar to your rope logic
-		var camera_lift: float = maxf(jump_dir.y, 0.0) * 2.5
-		var vertical_hop: float = 4.5 + camera_lift
-		var forward_push: float = 6.0 # Kept slightly lower than rope's 8.0 for tighter ladder control
-		
-		# Apply momentum
-		velocity = (flat_jump_dir * forward_push) + Vector3(0, vertical_hop, 0)
-		direction = flat_jump_dir
-		current_speed = forward_push
-		
-		# Nudge the player slightly in the jump direction to ensure they detach cleanly
-		# and don't immediately re-trigger the ladder's Area3D
-		global_position += jump_dir * 0.2
+		if current_ladder != null:
+			var ladder_forward := current_ladder.global_transform.basis.z.normalized()
+			var dot_forward := look_dir.dot(ladder_forward)
+			
+			# If dot > -0.2, you are looking sideways or completely away from the ladder
+			is_looking_away = dot_forward > -0.2 
+			
+			# If dot < -0.6, you are looking firmly toward the ladder's center plane
+			is_looking_at_ladder = dot_forward < -0.6 
+			
+		# NEW: Use the shapecast as a safety net since looking sharply up breaks the dot product
+		var is_shapecast_hitting := interact_shapecast.is_colliding()
+			
+		# CONDITION A: Side jump (Looking at the ladder, pressing A or D)
+		if abs(strafe_input) > 0.1 and not is_looking_away and not is_looking_down:
+			on_ladder = false
+			
+			var flat_right := Vector3(right_dir.x, 0.0, right_dir.z).normalized()
+			var side_push := 6.0 
+			var vertical_hop := 0.0 # CHANGED: Set to 0.0 for a strict horizontal leap
+			
+			velocity = (flat_right * strafe_input * side_push) + Vector3(0, vertical_hop, 0)
+			direction = (flat_right * strafe_input).normalized()
+			current_speed = side_push
+			
+			global_position += (flat_right * strafe_input) * 0.2
+			
+		# CONDITION C: Upward leap (Looking strictly UP)
+		elif is_looking_up and (is_looking_at_ladder or is_shapecast_hitting) and abs(strafe_input) < 0.1:
+			var current_time := Time.get_ticks_msec()
+			
+			# 1000 milliseconds = 1 second cooldown
+			if current_time - last_hoist_time >= 1000:
+				last_hoist_time = current_time
+				
+				if is_shapecast_hitting:
+					# Shapecast hit something (still on ladder) - Leap UP without detaching
+					var hoist_target := global_position + (Vector3.UP * 1.5)
+					var tween := create_tween()
+					tween.tween_property(self, "global_position", hoist_target, 0.2)\
+						.set_trans(Tween.TRANS_QUAD)\
+						.set_ease(Tween.EASE_OUT)
+				else:
+					# Shapecast missed (at the top) - Detach and vault OVER the ledge
+					on_ladder = false
+					var jump_dir := look_dir
+					var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
+					
+					velocity = (flat_jump_dir * 5.0) + Vector3(0, 4.5, 0)
+					direction = flat_jump_dir
+					current_speed = 5.0
+					global_position += jump_dir * 0.2
+
+		# CONDITION B: Detach jump (Looking down, away, or neutral/side without strafing)
+		else:
+			on_ladder = false
+			
+			var jump_dir := look_dir
+			var flat_jump_dir := Vector3(jump_dir.x, 0.0, jump_dir.z).normalized()
+			
+			var camera_lift: float = maxf(jump_dir.y, 0.0) * 2.5
+			var vertical_hop: float = 4.5 + camera_lift
+			var forward_push: float = 6.0 
+			
+			velocity = (flat_jump_dir * forward_push) + Vector3(0, vertical_hop, 0)
+			direction = flat_jump_dir
+			current_speed = forward_push
+			
+			global_position += jump_dir * 0.2
 
 	# Dismount when hitting the ground
 	if is_on_floor() and velocity.y < 0:
 		on_ladder = false
+		# Ensure the UI syncs the crouch state immediately upon entering the grounded state
+		Events.player_crouch_changed.emit(crouching)
 
 func _handle_zipline_physics(delta: float) -> void:
 	if not on_zipline or is_zipline_transitioning:
@@ -2074,3 +2151,35 @@ func _on_fullbright_toggled(is_fullbright: bool) -> void:
 		# If fullbright is ON, sun is hidden/disabled. Vice versa.
 		sun.visible = not is_fullbright
 		sun.shadow_enabled = not is_fullbright
+
+func _push_rigid_bodies() -> void:
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		
+		# Check if we hit a physics object that isn't currently frozen
+		if collider is RigidBody3D and not collider.freeze:
+			
+			# Prevent the player from punting the object they are currently holding
+			if held_object and collider == held_object:
+				continue
+				
+			# Determine the direction of the push by reversing the collision normal
+			var push_dir := -collision.get_normal()
+			
+			# Prevent pushing straight down into floors or straight up into ceilings
+			if absf(push_dir.y) > 0.8:
+				continue
+				
+			# Flatten the direction so the push is strictly horizontal
+			push_dir.y = 0.0
+			push_dir = push_dir.normalized()
+			
+			# --- THE FIX ---
+			# Use last_velocity instead of velocity! 
+			var player_speed := Vector3(last_velocity.x, 0.0, last_velocity.z).length()
+			
+			# Only apply the force if the player was actively moving into the box
+			if player_speed > 0.1:
+				var impulse_strength := push_force * (player_speed / sprinting_speed)
+				collider.apply_central_impulse(push_dir * impulse_strength)

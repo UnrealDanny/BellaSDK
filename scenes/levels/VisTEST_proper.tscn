@@ -46,6 +46,7 @@
 [ext_resource type="PackedScene" uid="uid://c1j1p38hn3qg8" path="res://assets/VisTEST/2. Modular_Models/Props/scaffolding_base_platform.tscn" id="44_1pcfk"]
 [ext_resource type="PackedScene" uid="uid://cre2eqhw64w1f" path="res://assets/VisTEST/2. Modular_Models/Props/scaffolding_structure.tscn" id="45_52h53"]
 [ext_resource type="PackedScene" uid="uid://cf8pnlqxpdri3" path="res://scenes/Pickable_Barrel_red.tscn" id="46_ubk4r"]
+[ext_resource type="Texture2D" uid="uid://dqbpt2iyril23" path="res://assets/VisTEST/2. Modular_Models/Walls/Wall_Fan/Wall_Fan_T_Concrete_BaseColor-T_Concrete_Alpha.png" id="47_6vg87"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_kja8q"]
 panorama = ExtResource("36_6sdu6")
@@ -72,6 +73,17 @@ uv1_world_triplanar = true
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_kja8q"]
 material = SubResource("StandardMaterial3D_6sdu6")
+size = Vector2(10, 20)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_ubk4r"]
+data = PackedVector3Array(5, 0, 10, -5, 0, 10, 5, 0, -10, -5, 0, 10, -5, 0, -10, 5, 0, -10)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mhg1j"]
+albedo_texture = ExtResource("47_6vg87")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ubk4r"]
+material = SubResource("StandardMaterial3D_mhg1j")
+size = Vector2(20, 5)
 
 [node name="VisTEST" type="Node3D" unique_id=240456945]
 
@@ -84,18 +96,6 @@ shadow_enabled = true
 
 [node name="Player" parent="." unique_id=1502339238 instance=ExtResource("6_ns8v3")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.13312268, 3, 5.241954)
-walking_speed = null
-sprinting_speed = null
-crouching_speed = null
-swimming_speed = null
-sway_amount = null
-smooth_speed = null
-base_fov = null
-sprint_fov = null
-jump_buffer_duration = null
-coyote_time_duration = null
-fall_gravity_multiplier = null
-base_energy = null
 
 [node name="Columns" type="Node3D" parent="." unique_id=834293260]
 
@@ -130,7 +130,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0, 7.7)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.18414, 0, 7.7)
 
 [node name="Ladder_2m" parent="." unique_id=2127978841 instance=ExtResource("6_ki5bd")]
-transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 3, 0.05604756, 2.3454103)
+transform = Transform3D(-4.851964e-08, 0, 1.11, 0, 1.11, 0, -1.11, 0, -4.851964e-08, 3, 0.05604756, 2.3454103)
 
 [node name="SecondFloor" type="Node3D" parent="." unique_id=1978912397]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
@@ -510,6 +510,12 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.1, -7.4177256)
 
 [node name="Floors89" parent="Floor" unique_id=81627727 instance=ExtResource("1_d4pdq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.1, -7.4177256)
+
+[node name="Floors90" parent="Floor" unique_id=203643972 instance=ExtResource("1_d4pdq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.1, -9.417726)
+
+[node name="Floors91" parent="Floor" unique_id=168678350 instance=ExtResource("1_d4pdq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 1.1, -9.417726)
 
 [node name="Floors57" parent="Floor" unique_id=367792840 instance=ExtResource("1_d4pdq")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 2)
@@ -1598,13 +1604,15 @@ transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 12, 
 [node name="Walls_Concrete_Holes9" parent="Walls_concrete" unique_id=119817341 instance=ExtResource("17_h2k22")]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 14, 1, 8)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=87820575]
-transform = Transform3D(-1.8633031e-07, -0.9999999, 0, 4.2627406, -4.3711385e-08, 0, 0, 0, 10.469499, 19.70457, 5.2, 0)
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1005833664]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D" unique_id=87820575]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 19.70457, 5.2, 0)
 mesh = SubResource("PlaneMesh_kja8q")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="." unique_id=687203144]
-transform = Transform3D(8.885971, 0, 0, 0, 0.9999999, 0, 0, 0, 1.8307858, 6.037314, 0.47677708, -7.9220033)
-mesh = SubResource("PlaneMesh_kja8q")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=769974609]
+transform = Transform3D(-4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0, 1, 19.70457, 5.2, 0)
+shape = SubResource("ConcavePolygonShape3D_ubk4r")
 
 [node name="Walkway_Right2" parent="." unique_id=136757007 instance=ExtResource("33_r02c6")]
 transform = Transform3D(-1.3113416e-07, 0, 1, 0, 1.2, 0, -3, 0, -4.371139e-08, 16, 0, -5.347)
@@ -1963,3 +1971,7 @@ transform = Transform3D(0.1474469, 0, 0.98906976, 0, 0.99999976, 0, -0.98906976,
 
 [node name="PickableBarrel2" parent="." unique_id=547637893 instance=ExtResource("46_ubk4r")]
 transform = Transform3D(-0.87457746, -0.4725532, -0.10866326, 0, 0.22410071, -0.97456586, 0.48488584, -0.85233337, -0.19599342, 2.3589222, 2.7746546, 1.9679065)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=330572922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.257725, 0.3337083, -8.055398)
+mesh = SubResource("PlaneMesh_ubk4r")
