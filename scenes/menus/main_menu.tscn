@@ -561,6 +561,11 @@ theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 32
 text = "Controls"
 
+[node name="AccessibilityButton" type="Button" parent="Options/MarginContainer/OptionsButtons" unique_id=1386859692]
+layout_mode = 2
+text = "Accessibility
+"
+
 [node name="VBoxContainer" type="VBoxContainer" parent="Options" unique_id=426590616]
 layout_mode = 1
 anchors_preset = 8
@@ -574,6 +579,19 @@ offset_right = 219.0
 offset_bottom = 39.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ResolutionContainer" type="HBoxContainer" parent="Options/VBoxContainer" unique_id=362797068]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Options/VBoxContainer/ResolutionContainer" unique_id=1949453308]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_2o76q")
+theme_override_font_sizes/font_size = 32
+text = "Resolution"
+
+[node name="ResolutionOptionButton" type="OptionButton" parent="Options/VBoxContainer/ResolutionContainer" unique_id=277477321]
+unique_name_in_owner = true
+layout_mode = 2
 
 [node name="FullscreenControl" type="CheckButton" parent="Options/VBoxContainer" unique_id=129794192]
 layout_mode = 2
@@ -683,6 +701,49 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 8
 theme_override_fonts/font = ExtResource("2_2o76q")
+
+[node name="AccessibilityPanel" type="Panel" parent="." unique_id=431138313]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BrightnessSlider" type="HSlider" parent="AccessibilityPanel" unique_id=945943110]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 16.0
+
+[node name="ContrastSlider" type="HSlider" parent="AccessibilityPanel" unique_id=1797811631]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 16.0
+
+[node name="SaturationSlider" type="HSlider" parent="AccessibilityPanel" unique_id=218519361]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 16.0
+
+[node name="BrightnessLine" type="LineEdit" parent="AccessibilityPanel" unique_id=1110208814]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 68.5
+offset_bottom = 31.0
+
+[node name="ContrastLine" type="LineEdit" parent="AccessibilityPanel" unique_id=1073436282]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 68.5
+offset_bottom = 31.0
+
+[node name="SaturationLine" type="LineEdit" parent="AccessibilityPanel" unique_id=709576011]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 68.5
+offset_bottom = 31.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1919384477]
 environment = SubResource("Environment_1hnlc")
