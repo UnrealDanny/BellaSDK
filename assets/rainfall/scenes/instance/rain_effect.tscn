@@ -10,6 +10,8 @@ spread = 2.0
 initial_velocity_min = 36.0
 initial_velocity_max = 44.0
 color = Color(0.82, 0.9, 1, 0.38)
+turbulence_initial_displacement_min = 1.490116e-06
+turbulence_initial_displacement_max = 1.490116e-06
 
 [sub_resource type="Shader" id="Shader_swvpt"]
 code = "
@@ -25,58 +27,58 @@ uniform sampler2D screen_tex : hint_screen_texture, repeat_disable, filter_linea
 uniform vec4 tint_color : source_color = vec4(0.9, 0.95, 1.0, 0.5);
 uniform float refraction_strength = 0.35;
 uniform float shine_strength = 0.6;
-uniform float blur_amount = 1.5; // Controls the new background blur
+uniform float blur_amount = 1.5; // Controls the muddy background blur
 
 void vertex() {
-	// Forces the 2D plane to always face the camera without crashing
-	mat4 modified_model_view = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
-	modified_model_view = modified_model_view * mat4(
-		vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), 
-		vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), 
-		vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), 
-		vec4(0.0, 0.0, 0.0, 1.0)
-	);
-	MODELVIEW_MATRIX = modified_model_view;
-	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
+    // Forces the 2D plane to always face the camera without crashing
+    mat4 modified_model_view = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+    modified_model_view = modified_model_view * mat4(
+        vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0), 
+        vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), 
+        vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), 
+        vec4(0.0, 0.0, 0.0, 1.0)
+    );
+    MODELVIEW_MATRIX = modified_model_view;
+    MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
 }
 
 void fragment() {
-	vec4 base = texture(albedo_tex, UV);
-	vec3 n_tex = texture(normal_tex, UV).rgb * 2.0 - 1.0; 
-	
-	vec4 pColor = COLOR;
-	float final_mask = base.r * tint_color.a * pColor.a;
-	
-	if (final_mask < 0.1) {
-		discard;
-	}
+    vec4 base = texture(albedo_tex, UV);
+    vec3 n_tex = texture(normal_tex, UV).rgb * 2.0 - 1.0; 
+    
+    vec4 pColor = COLOR;
+    float final_mask = base.r * tint_color.a * pColor.a;
+    
+    if (final_mask < 0.1) {
+        discard;
+    }
 
-	// --- TRUE FISHEYE CONVEX LENS ---
-	// Multiplied by 5.0 for a massive pull. 
-	// We ADD the offset to pull pixels from the outside edges INWARD,
-	// allowing you to see the environment located beside the raindrop.
-	vec2 normal_offset = n_tex.xy * (refraction_strength * 5.0) * final_mask;
-	vec2 dist_uv = SCREEN_UV + normal_offset;
+    // --- TRUE FISHEYE CONVEX LENS ---
+    // Multiplied heavily to create massive distortion. 
+    // If refraction_strength is negative, it pulls from the opposite direction.
+    vec2 normal_offset = n_tex.xy * (refraction_strength * 20.0) * final_mask;
+    vec2 dist_uv = SCREEN_UV + normal_offset;
 
-	// --- CHROMATIC ABERRATION ---
-	float chrom_abb = 0.015 * refraction_strength * final_mask;
-	
-	// --- BACKGROUND BLUR ---
-	// Using textureLod() instead of texture() samples downscaled, blurry mipmaps.
-	float r = textureLod(screen_tex, dist_uv + vec2(chrom_abb, 0.0), blur_amount).r;
-	float g = textureLod(screen_tex, dist_uv, blur_amount).g;
-	float b = textureLod(screen_tex, dist_uv - vec2(chrom_abb, 0.0), blur_amount).b;
-	
-	vec3 refracted_bg = vec3(r, g, b);
+    // --- CHROMATIC ABERRATION ---
+    // Separates the RGB channels to make the distortion look muddier and thicker.
+    float chrom_abb = 0.08 * refraction_strength * final_mask;
+    
+    // --- BACKGROUND BLUR ---
+    // textureLod samples blurry mipmaps based on your 'background_blur' slider.
+    float r = textureLod(screen_tex, dist_uv + vec2(chrom_abb, 0.0), blur_amount).r;
+    float g = textureLod(screen_tex, dist_uv, blur_amount).g;
+    float b = textureLod(screen_tex, dist_uv - vec2(chrom_abb, 0.0), blur_amount).b;
+    
+    vec3 refracted_bg = vec3(r, g, b);
 
-	// --- ENHANCED SHINE ---
-	vec3 light_dir = normalize(vec3(0.1, 0.5, 0.8));
-	float spec = max(dot(n_tex, light_dir), 0.0);
-	vec3 shine = pow(spec, 8.0) * shine_strength * vec3(1.0);
-	
-	ALBEDO = refracted_bg * tint_color.rgb;
-	ALBEDO += shine * final_mask;
-	ALPHA = final_mask;
+    // --- ENHANCED SHINE ---
+    vec3 light_dir = normalize(vec3(0.1, 0.5, 0.8));
+    float spec = max(dot(n_tex, light_dir), 0.0);
+    vec3 shine = pow(spec, 8.0) * shine_strength * vec3(1.0);
+    
+    ALBEDO = refracted_bg * tint_color.rgb;
+    ALBEDO += shine * final_mask;
+    ALPHA = final_mask;
 }
 "
 
@@ -130,4 +132,3 @@ trail_lifetime = 0.01
 process_material = SubResource("ParticleProcessMaterial_swvpt")
 draw_pass_1 = SubResource("QuadMesh_wv2np")
 script = ExtResource("1_rain_script")
-area_extents = Vector3(3, 2, 3)

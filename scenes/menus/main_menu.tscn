@@ -555,13 +555,16 @@ theme_override_constants/margin_top = 100
 [node name="OptionsButtons" type="VBoxContainer" parent="Options/MarginContainer" unique_id=16186041]
 layout_mode = 2
 
-[node name="Contols" type="Button" parent="Options/MarginContainer/OptionsButtons" unique_id=1783187329]
+[node name="HBoxContainer" type="HBoxContainer" parent="Options/MarginContainer/OptionsButtons" unique_id=1199260749]
+layout_mode = 2
+
+[node name="Contols" type="Button" parent="Options/MarginContainer/OptionsButtons/HBoxContainer" unique_id=1783187329]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_2o76q")
 theme_override_font_sizes/font_size = 32
 text = "Controls"
 
-[node name="AccessibilityButton" type="Button" parent="Options/MarginContainer/OptionsButtons" unique_id=1386859692]
+[node name="AccessibilityButton" type="Button" parent="Options/MarginContainer/OptionsButtons/HBoxContainer" unique_id=1386859692]
 layout_mode = 2
 text = "Accessibility
 "
@@ -703,47 +706,96 @@ size_flags_horizontal = 8
 theme_override_fonts/font = ExtResource("2_2o76q")
 
 [node name="AccessibilityPanel" type="Panel" parent="." unique_id=431138313]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -441.0
+offset_top = -289.0
+offset_right = 441.0
+offset_bottom = 289.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="BrightnessSlider" type="HSlider" parent="AccessibilityPanel" unique_id=945943110]
+[node name="VBoxContainer" type="VBoxContainer" parent="AccessibilityPanel" unique_id=1880548481]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -50.5
+offset_right = 320.0
+offset_bottom = 50.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BrightnessRow" type="HBoxContainer" parent="AccessibilityPanel/VBoxContainer" unique_id=476412237]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AccessibilityPanel/VBoxContainer/BrightnessRow" unique_id=691327402]
+layout_mode = 2
+text = "Brightness"
+
+[node name="BrightnessLine" type="LineEdit" parent="AccessibilityPanel/VBoxContainer/BrightnessRow" unique_id=1110208814]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BrightnessSlider" type="HSlider" parent="AccessibilityPanel/VBoxContainer/BrightnessRow" unique_id=945943110]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+step = 0.01
+value = 1.0
+
+[node name="ContrastRow" type="HBoxContainer" parent="AccessibilityPanel/VBoxContainer" unique_id=32356601]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AccessibilityPanel/VBoxContainer/ContrastRow" unique_id=1440177983]
+layout_mode = 2
+text = "Contrast"
+
+[node name="ContrastLine" type="LineEdit" parent="AccessibilityPanel/VBoxContainer/ContrastRow" unique_id=1073436282]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ContrastSlider" type="HSlider" parent="AccessibilityPanel/VBoxContainer/ContrastRow" unique_id=1797811631]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+step = 0.01
+value = 1.0
+
+[node name="SaturationRow" type="HBoxContainer" parent="AccessibilityPanel/VBoxContainer" unique_id=188704167]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="AccessibilityPanel/VBoxContainer/SaturationRow" unique_id=219917818]
+layout_mode = 2
+text = "Saturation"
+
+[node name="SaturationLine" type="LineEdit" parent="AccessibilityPanel/VBoxContainer/SaturationRow" unique_id=709576011]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="SaturationSlider" type="HSlider" parent="AccessibilityPanel/VBoxContainer/SaturationRow" unique_id=218519361]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 3.0
+step = 0.01
+value = 1.0
+
+[node name="BackAccessibilityButton" type="Button" parent="AccessibilityPanel" unique_id=1101262896]
 unique_name_in_owner = true
 layout_mode = 0
 offset_right = 8.0
-offset_bottom = 16.0
-
-[node name="ContrastSlider" type="HSlider" parent="AccessibilityPanel" unique_id=1797811631]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 16.0
-
-[node name="SaturationSlider" type="HSlider" parent="AccessibilityPanel" unique_id=218519361]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 16.0
-
-[node name="BrightnessLine" type="LineEdit" parent="AccessibilityPanel" unique_id=1110208814]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 68.5
-offset_bottom = 31.0
-
-[node name="ContrastLine" type="LineEdit" parent="AccessibilityPanel" unique_id=1073436282]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 68.5
-offset_bottom = 31.0
-
-[node name="SaturationLine" type="LineEdit" parent="AccessibilityPanel" unique_id=709576011]
-unique_name_in_owner = true
-layout_mode = 0
-offset_right = 68.5
-offset_bottom = 31.0
+offset_bottom = 8.0
+text = "Back"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1919384477]
 environment = SubResource("Environment_1hnlc")
@@ -752,7 +804,7 @@ environment = SubResource("Environment_1hnlc")
 [connection signal="pressed" from="MarginContainer/MainButtons/Options" to="." method="_on_options_pressed"]
 [connection signal="pressed" from="MarginContainer/MainButtons/Exit" to="." method="_on_exit_pressed"]
 [connection signal="pressed" from="Options/Back" to="." method="_on_back_pressed"]
-[connection signal="pressed" from="Options/MarginContainer/OptionsButtons/Contols" to="." method="_on_contols_pressed"]
+[connection signal="pressed" from="Options/MarginContainer/OptionsButtons/HBoxContainer/Contols" to="." method="_on_contols_pressed"]
 [connection signal="toggled" from="Options/VBoxContainer/FullscreenControl" to="Options/VBoxContainer/FullscreenControl" method="_on_toggled"]
 [connection signal="pressed" from="ControlsPanel/BackControls" to="." method="_on_back_controls_pressed"]
 [connection signal="pressed" from="ControlsPanel/ResetButton" to="." method="_on_reset_button_pressed"]

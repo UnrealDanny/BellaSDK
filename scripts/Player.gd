@@ -28,6 +28,7 @@ extends CharacterBody3D
 @onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
 
 @onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
+@onready var rain_drops_overlay: ColorRect = $CanvasLayer/RainDropsOverlay
 
 # --------------------------------------
 # @EXPORTS
@@ -64,6 +65,19 @@ extends CharacterBody3D
 @export var walk_step_interval: float = 0.45
 @export var sprint_step_interval: float = 0.28  # Faster steps for sprinting
 @export var crouch_step_interval: float = 0.65  # Slower steps for crouching
+
+@export_category("Surface Physics")
+@export var default_lerp_speed: float = 15.0
+@export var ice_lerp_speed: float = 1.5 # Lower value = longer slide
+@export var footstep_audio_ice: AudioStreamPlayer
+
+var on_ice: bool = false
+
+# Static variables for group identification
+static var SURFACE_ICE: StringName = &"ice"
+static var SURFACE_METAL: StringName = &"metal"
+static var SURFACE_STONE: StringName = &"stone"
+static var SURFACE_WET: StringName = &"wet_dirt"
 
 var step_timer: float = 0.0
 
@@ -265,6 +279,11 @@ var terminal_start_pos: Vector3
 # SHAPECAST REACH VARS
 var base_reach: float = 0.7
 var floor_reach: float = 2.2 # 2m height + 0.2m margin
+
+# RAIN VARS
+var in_rain_volume: bool = false
+var current_drop_intensity: float = 0.0
+var current_wash_intensity: float = 0.0
 
 # OTHER VARS
 var input_dir: Vector2 = Vector2.ZERO
@@ -549,12 +568,13 @@ func _physics_process(delta: float) -> void:
 		_handle_ground_physics(delta, is_truly_grounded)
 
 	last_velocity = velocity
-
+	
 	if not _snap_up_stairs_check(delta):
 		move_and_slide()
 		_snap_down_to_stairs_check()
 		_push_rigid_bodies()
-
+		_check_floor_surface() # <-- ADD THIS HERE
+		
 	# --- THE ZIPLINE CHECK ---
 	# We only check if we are actually crouching, and NOT already on the zipline or vaulting
 	if not on_zipline and not is_vaulting:
@@ -608,12 +628,14 @@ func _physics_process(delta: float) -> void:
 			if result:
 				var collider: Object = result["collider"]
 				if is_instance_valid(collider):
-					if collider.is_in_group("metal") and footstep_audio_metal:
+					if collider.is_in_group(SURFACE_METAL) and footstep_audio_metal:
 						active_audio_player = footstep_audio_metal
-					elif collider.is_in_group("stone") and footstep_audio_stone:
+					elif collider.is_in_group(SURFACE_STONE) and footstep_audio_stone:
 						active_audio_player = footstep_audio_stone
-					elif collider.is_in_group("wet_dirt") and footstep_audio_wet_dirt:
+					elif collider.is_in_group(SURFACE_WET) and footstep_audio_wet_dirt:
 						active_audio_player = footstep_audio_wet_dirt
+					elif collider.is_in_group(SURFACE_ICE) and footstep_audio_ice:
+						active_audio_player = footstep_audio_ice
 			
 			# 3. Play the correct sound
 			if active_audio_player:
@@ -638,7 +660,9 @@ func _process(delta: float) -> void:
 
 	if is_paused or is_menu_open: # <--- ADDED HERE
 		return
-
+	
+	_handle_rain_drops(delta)
+	
 	if is_in_terminal_mode:
 		# --- NEW: Exit if the player starts moving with WASD ---
 		# Replace these strings with your actual movement Input Map names!
@@ -1388,18 +1412,35 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 			else:
 				camera_anims.play("landing")
 
+	var active_lerp: float = ice_lerp_speed if on_ice else default_lerp_speed
+
+	# 1. Momentum Interpolation
+	var target_dir: Vector3 = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
+	
 	if is_on_floor():
-		direction = direction.lerp((transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * lerp_speed)
+		direction = direction.lerp(target_dir, delta * active_lerp)
 	else:
 		if input_dir != Vector2.ZERO:
-			direction = direction.lerp((transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized(), delta * air_lerp_speed)
+			direction = direction.lerp(target_dir, delta * air_lerp_speed)
 
-	if direction.length() > 0:
+	# 2. Velocity Application & Deceleration
+	if input_dir != Vector2.ZERO or on_ice:
+		# Player is pressing keys, OR we are gliding on ice! 
+		# By tying velocity directly to the lerping direction, you get a beautiful 
+		# slide effect that applies to both stopping AND wide turns.
 		velocity.x = direction.x * current_speed
 		velocity.z = direction.z * current_speed
 	else:
+		# Player let go of keys on normal ground - Snappy FPS stop
 		velocity.x = move_toward(velocity.x, 0.0, current_speed)
 		velocity.z = move_toward(velocity.z, 0.0, current_speed)
+		direction = Vector3.ZERO
+		
+	# 3. Kill micro-drifting when completely stopped on ice
+	if on_ice and input_dir == Vector2.ZERO and velocity.length() < 0.2:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		direction = Vector3.ZERO
 
 	if in_updraft:
 		velocity.y = lerpf(velocity.y, current_updraft_strength, delta * 4.0)
@@ -2251,3 +2292,70 @@ func _push_rigid_bodies() -> void:
 			if player_speed > 0.1:
 				var impulse_strength := push_force * (player_speed / sprinting_speed)
 				collider.apply_central_impulse(push_dir * impulse_strength)
+
+func _handle_rain_drops(delta: float) -> void:
+	if not screen_water_ui or not rain_drops_overlay or not rain_drops_overlay.material: 
+		return
+		
+	var target_drop: float = 0.0
+	var target_wash: float = 0.0
+	
+	if in_rain_volume:
+		var pitch: float = head.rotation.x 
+		# (Negative is DOWN, Positive is UP)
+		
+		# 1. STANDARD DROPS (Fades in looking straight, fades out looking up/down)
+		if pitch > -0.3 and pitch < 0.6:
+			if pitch <= 0.1:
+				# Fading in from ground to straight ahead
+				target_drop = remap(pitch, -0.3, 0.1, 0.0, 1.0)
+			else:
+				# Fading out as we look up toward the sky
+				target_drop = remap(pitch, 0.1, 0.6, 1.0, 0.0)
+				
+		# 2. BIOSHOCK WASH (Only happens when looking UP)
+		if pitch > 0.3:
+			# Pitch 0.3 to 1.2 (Straight up)
+			target_wash = remap(pitch, 0.3, 1.2, 0.0, 1.0)
+			
+	# Clamp for safety
+	target_drop = clampf(target_drop, 0.0, 1.0)
+	target_wash = clampf(target_wash, 0.0, 1.0)
+		
+	# Smoothly ease the intensities (Wash builds slightly slower for dramatic effect)
+	current_drop_intensity = lerpf(current_drop_intensity, target_drop, delta * 4.0)
+	current_wash_intensity = lerpf(current_wash_intensity, target_wash, delta * 2.5)
+	
+	# Render handling
+	if current_drop_intensity < 0.01 and current_wash_intensity < 0.01:
+		rain_drops_overlay.hide()
+	else:
+		rain_drops_overlay.show()
+		var mat: ShaderMaterial = rain_drops_overlay.material as ShaderMaterial
+		mat.set_shader_parameter("drop_intensity", current_drop_intensity)
+		mat.set_shader_parameter("wash_intensity", current_wash_intensity)
+
+func enter_rain_volume() -> void:
+	in_rain_volume = true
+
+func exit_rain_volume() -> void:
+	in_rain_volume = false
+
+func _check_floor_surface() -> void:
+	on_ice = false
+	if not is_on_floor(): return
+	
+	# Using a raycast instead of get_slide_collision() guarantees we read 
+	# the floor surface even if gravity isn't actively pushing us into it.
+	var space_state := get_world_3d().direct_space_state
+	var ray_start := global_position + Vector3(0, 0.5, 0)
+	var ray_end := global_position + Vector3(0, -1.0, 0)
+	
+	var query := PhysicsRayQueryParameters3D.create(ray_start, ray_end)
+	query.exclude = [self.get_rid()]
+	
+	var result := space_state.intersect_ray(query)
+	if result:
+		var collider: Object = result["collider"]
+		if is_instance_valid(collider) and collider.is_in_group(SURFACE_ICE):
+			on_ice = true

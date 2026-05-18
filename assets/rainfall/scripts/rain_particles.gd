@@ -135,6 +135,9 @@ void fragment() {
 func _ready() -> void:
 	_init_system()
 	_apply_settings()
+	
+	if not Engine.is_editor_hint():
+		call_deferred("_setup_auto_volume")
 
 func _init_system() -> void:
 	# 1. Mesh setup
@@ -238,3 +241,49 @@ func _generate_fallback_normal() -> Texture2D:
 			var nz := sqrt(1.0 - nx*nx - ny*ny)
 			image.set_pixel(x, y, Color(nx * 0.5 + 0.5, ny * 0.5 + 0.5, nz * 0.5 + 0.5, 1.0))
 	return ImageTexture.create_from_image(image)
+
+# --- AUTOMATIC PLAYER DETECTION ---
+
+func _setup_auto_volume() -> void:
+	var rain_area := Area3D.new()
+	# Collision Layer 0 (detects nothing by default), Mask 1 (detects Player)
+	rain_area.collision_layer = 0 
+	rain_area.collision_mask = 1
+	add_child(rain_area)
+	
+	var shape_node := CollisionShape3D.new()
+	var box_shape := BoxShape3D.new()
+	
+	var width: float = 20.0
+	var depth: float = 20.0
+	var height: float = 30.0
+	
+	# Calculate the size of the rainstorm based on your Particle Physics settings!
+	if process_material is ParticleProcessMaterial:
+		if process_material.emission_shape == ParticleProcessMaterial.EMISSION_SHAPE_BOX:
+			width = process_material.emission_box_extents.x * 2.0
+			depth = process_material.emission_box_extents.z * 2.0
+			
+		# Estimate how far the particles fall: (Velocity * Lifetime)
+		var fall_speed: float = (process_material.initial_velocity_min + process_material.initial_velocity_max) / 2.0
+		height = fall_speed * lifetime
+
+	box_shape.size = Vector3(width, height, depth)
+	shape_node.shape = box_shape
+	
+	# Shift the box down so it covers the space *beneath* the emitter
+	shape_node.position.y = - (height / 2.0)
+	
+	rain_area.add_child(shape_node)
+	
+	# Wire up the detection internally
+	rain_area.body_entered.connect(_on_body_entered)
+	rain_area.body_exited.connect(_on_body_exited)
+
+func _on_body_entered(body: Node3D) -> void:
+	if body.has_method("enter_rain_volume"):
+		body.enter_rain_volume()
+
+func _on_body_exited(body: Node3D) -> void:
+	if body.has_method("exit_rain_volume"):
+		body.exit_rain_volume()

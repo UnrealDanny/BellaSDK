@@ -26,8 +26,9 @@ extends CanvasLayer
 @onready var resolution_options: OptionButton = %ResolutionOptionButton
 
 #@onready var accessibility_button: Button = $MarginContainer/OptionsButtons/AccessibilityButton # Adjust path if needed
-@onready var accessibility_button: Button = $Options/MarginContainer/OptionsButtons/AccessibilityButton
+@onready var accessibility_button: Button = $Options/MarginContainer/OptionsButtons/HBoxContainer/AccessibilityButton
 @onready var options_content: VBoxContainer = $Options/VBoxContainer # The container holding Resolution/Sens
+@onready var back_accessibility_button: Button = %BackAccessibilityButton
 
 const RESOLUTIONS: Dictionary = {
 	"1920 x 1080": Vector2i(1920, 1080),
@@ -84,6 +85,7 @@ func _ready() -> void:
 		
 	continue_button.pressed.connect(_on_resume_pressed)
 	new_game_button.pressed.connect(_on_new_game_pressed) 
+	back_accessibility_button.pressed.connect(_on_back_accessibility_pressed)
 	
 	# --- NEW: ACCESSIBILITY SIGNAL BINDING ---
 	# Binding allows us to reuse the same 5 functions for all 3 sliders
@@ -235,6 +237,37 @@ func _on_back_accessibility_pressed() -> void:
 	accessibility_panel.visible = false
 		
 func _input(event: InputEvent) -> void:
+	# --- NEW: ESCAPE TO GO BACK OR PAUSE ---
+	if event.is_action_pressed("ui_cancel"):
+		if not self.visible:
+			return
+			
+		# 1. Cancel remapping safely
+		if is_remapping:
+			is_remapping = false
+			pending_swap_event = null
+			remapping_button.button_pressed = false
+			update_button_text(remapping_button, action_to_remap)
+			if has_node("%ConflictPanel"):
+				%ConflictPanel.hide()
+			get_viewport().set_input_as_handled()
+			return
+			
+		# 2. If a menu panel is opevar is_menu_open: bool = main_buttons.visible or options.visible or controls_panel.visible or accessibility_panel.visiblen, close it!
+		if controls_panel.visible:
+			_on_back_controls_pressed()
+			get_viewport().set_input_as_handled()
+		elif accessibility_panel.visible:
+			_on_back_accessibility_pressed()
+			get_viewport().set_input_as_handled()
+		elif options.visible:
+			_on_back_pressed()
+			get_viewport().set_input_as_handled()
+		elif main_buttons.visible and get_parent().has_method("toggle_pause"):
+			_on_resume_pressed()
+			get_viewport().set_input_as_handled()
+
+	# --- EXISTING REMAPPING AND MOUSE TRACKING LOGIC ---
 	if is_remapping:
 		if event is InputEventKey or event is InputEventMouseButton:
 			if event.is_pressed():
@@ -344,7 +377,10 @@ func load_controls() -> void:
 	contrast_slider.value = config.get_value("Settings", "contrast", DEFAULT_CONTRAST)
 	saturation_slider.value = config.get_value("Settings", "saturation", DEFAULT_SATURATION)
 	_apply_visual_settings()
-
+	brightness_input.text = "%.2f" % brightness_slider.value
+	contrast_input.text = "%.2f" % contrast_slider.value
+	saturation_input.text = "%.2f" % saturation_slider.value
+	
 	# --- Load Resolution ---
 	if config.has_section_key("Settings", "resolution_x") and config.has_section_key("Settings", "resolution_y"):
 		var res_x: int = config.get_value("Settings", "resolution_x")

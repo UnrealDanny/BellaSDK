@@ -2,6 +2,9 @@
 class_name FastRope
 extends StaticBody3D
 
+# Keep track of all ropes globally using a Godot 4 static variable
+static var all_fast_ropes: Array[FastRope] = []
+
 @export_category("Fast Rope Settings")
 
 ## CHANGE THIS to make the rope longer/shorter without using Transform Scale!
@@ -29,6 +32,13 @@ var locked_z: float = 0.0
 @onready var highlight_comp: HighlightComponent = $HighlightComponent
 @onready var interact_label: Label3D = $Label3D
 @onready var rope_mesh: MeshInstance3D = $MeshInstance3D 
+
+func _enter_tree() -> void:
+	if not self in all_fast_ropes:
+		all_fast_ropes.append(self)
+
+func _exit_tree() -> void:
+	all_fast_ropes.erase(self)
 
 func _ready() -> void:
 	_update_rope_size()
@@ -150,7 +160,7 @@ func detach(reached_top: bool) -> void:
 	
 	if highlight_comp: highlight_comp.suppress(false)
 	
-	# --- ADD THIS: Tell the player they are free BEFORE giving them the boost ---
+	# Tell the player they are free BEFORE giving them the boost
 	if attached_player.has_method("exit_fast_rope"):
 		attached_player.exit_fast_rope()
 	

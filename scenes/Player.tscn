@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://cv4syvckbtm2f" path="res://scenes/ui.tscn" id="2_k2mo6"]
 [ext_resource type="Texture2D" uid="uid://dnv1e6gebl5gj" path="res://assets/images/UI/flashlight_pattern.png" id="3_di6f5"]
 [ext_resource type="Shader" uid="uid://e5j85108j8s0" path="res://utils/WaterMaker3D/CameraWaterOverlay2.gdshader" id="5_qu4a1"]
+[ext_resource type="Shader" uid="uid://onn1sa83xj6n" path="res://scenes/WaterRippleOverlay.gdshader" id="6_61ith"]
 [ext_resource type="AudioStream" uid="uid://bp7lht4opa4rr" path="res://assets/sounds/ConcreteFS_1.wav" id="6_khinc"]
 [ext_resource type="AudioStream" uid="uid://oot00opauoyd" path="res://assets/sounds/ConcreteFS_2.wav" id="7_bruh7"]
 [ext_resource type="Texture2D" uid="uid://c7cbvlpeqy6d5" path="res://assets/images/Concept/BellaInGameReflection.png" id="7_cw2d6"]
@@ -277,6 +278,11 @@ shader_parameter/chromatic_aberration = 0.0010000000475
 shader_parameter/water_tint = Color(0.1, 0.4, 0.7, 0.2)
 shader_parameter/highlight_punch = 0.02000000095
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jfpux"]
+shader = ExtResource("6_61ith")
+shader_parameter/drop_intensity = 0.0
+shader_parameter/wash_intensity = 0.0
+
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_d3wef"]
 streams_count = 3
 stream_0/stream = ExtResource("6_khinc")
@@ -407,6 +413,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="RainDropsOverlay" type="ColorRect" parent="CanvasLayer" unique_id=1203447522]
+material = SubResource("ShaderMaterial_jfpux")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Audio" type="Node" parent="." unique_id=51504732]
 
