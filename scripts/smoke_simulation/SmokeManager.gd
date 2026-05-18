@@ -79,6 +79,11 @@ func update_player_position(pos: Vector3) -> void:
 	current_player_pos = pos
 
 func add_bullet_hole(start: Vector3, dir: Vector3, length: float, radius: float = 1.0) -> void:
+	# --- OPTIMIZATION: Enforce strict cap so the array never bloats ---
+	if active_holes.size() >= MAX_HOLES:
+		active_holes.pop_front() # Instantly remove the oldest hole
+	# ------------------------------------------------------------------
+
 	# We've removed 'intensity' argument. It's now handled globally in the editor.
 	active_holes.append({
 		"start": start,

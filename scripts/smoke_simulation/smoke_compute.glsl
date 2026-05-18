@@ -125,21 +125,33 @@ void main() {
     }
     
     // Bullet Interaction
+    // Bullet Interaction
     int hole_count = int(params.num_holes);
     for (int i = 0; i < hole_count; i++) {
-        // Optimization: Use global heal rate to figure out when a hole is dead on GPU
-        // We calculate 'normalized_age' (0.0 = fresh shot, 1.0 = fading away completely)
-        // Note: heal_rate is (1.0 / heal_time_seconds)
         float hole_normalized_age = holes[i].age * params.heal_rate;
         if (hole_normalized_age > 1.0) continue; 
         
-        SegmentHit hit = dist_to_segment_detailed(world_pos, holes[i].start, holes[i].end);
-        
         float base_radius = holes[i].radius;
-        // The hole expands slightly over time for a cinematic gasp effect
         float dynamic_radius = base_radius * (1.0 + hole_normalized_age * 0.5); 
         
-        if (hit.dist < dynamic_radius * 2.0) { // Check radius * 2 for swirl mask coverage
+        // --- NEW OPTIMIZATION: AABB BOUNDING BOX CULLING ---
+        // We multiply by 2.5 because your swirl_mask extends to base_radius * 2.5
+        float max_effect_distance = dynamic_radius * 2.5; 
+        
+        vec3 min_bound = min(holes[i].start, holes[i].end) - vec3(max_effect_distance);
+        vec3 max_bound = max(holes[i].start, holes[i].end) + vec3(max_effect_distance);
+        
+        // Fast cull: If the voxel is outside this 3D box, skip to the next hole immediately
+        if (any(lessThan(world_pos, min_bound)) || any(greaterThan(world_pos, max_bound))) {
+            continue;
+        }
+        // ---------------------------------------------------
+
+        // Only voxels close to the line will ever reach this expensive math
+        SegmentHit hit = dist_to_segment_detailed(world_pos, holes[i].start, holes[i].end);
+        
+        if (hit.dist < dynamic_radius * 2.0) { 
+        // Check radius * 2 for swirl mask coverage
             
             // 1. MASKING (The key to kinematics)
             // Mask 1: The core hole (Where density is subtracted)
