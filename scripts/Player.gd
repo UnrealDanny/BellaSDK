@@ -1,34 +1,27 @@
 extends CharacterBody3D
+const JUMP_VELOCITY: float = 4.5
+const CROUCH_JUMP_VELOCITY: float = 3.5
+const SPRINT_JUMP_VELOCITY: float = 5.0
 
-# BASED GODOT YOUTUBERS
-# LUKKY - https://www.youtube.com/watch?v=xIKErMgJ1Yk - FPS CONTROLLER
-# https://www.youtube.com/@stayathomedev - FPS CONTROLLER + HE HELPED ME STARTED
+# HEADBOB VARS
+const HEAD_BOBBING_SPRINTING_SPEED: float = 22.0
+const HEAD_BOBBING_WALKING_SPEED: float = 14.0
+const HEAD_BOBBING_CROUCHING_SPEED: float = 10.0
+const HEAD_BOBBING_IDLE_SPEED: float = 3.0
 
-# PLAYER NODES
+const HEAD_BOBBING_SPRINTING_INTENSITY: float = 0.2
+const HEAD_BOBBING_WALKING_INTENSITY: float = 0.1
+const HEAD_BOBBING_CROUCHING_INTENSITY: float = 0.08
+const HEAD_BOBBING_IDLE_INTENSITY: float = 0.02
 
-@onready var head: Node3D = $Head
-@onready var eyes: Node3D = $Head/Eyes
-@onready var standing_collision_shape: CollisionShape3D = $StandingCollisionShape
-@onready var crouching_collision_shape: CollisionShape3D = $CrouchingCollisionShape
-@onready var crouch_cast_check: RayCast3D = $CrouchCastCheck
-@onready var cam: Camera3D = $Head/Eyes/Camera3D
-@onready var camera_anims: AnimationPlayer = $Head/Eyes/CameraAnims
-@onready var omni_light_3d: OmniLight3D = $Head/Eyes/Camera3D/OmniLight3D
+const CAMERA_TILT_LEFT: float = 3.0
+const CAMERA_TILT_RIGHT: float = -3.0
 
-@onready var flash_light_node: Node3D = $Head/Eyes/Camera3D/FlashLightNode
-@onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
-
-@onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
-@onready var hold_position: Marker3D = $Head/Eyes/Camera3D/SpringArm3D/HoldPosition
-@onready var spring_arm: SpringArm3D = $Head/Eyes/Camera3D/SpringArm3D
-
-# --- ADD TO THE TOP OF Player.gd (Node Caching) ---
-@onready var weapon_holder: Node3D = %WeaponHolder
-@onready var stairs_below_cast: RayCast3D = %StairsBelowCast
-@onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
-
-@onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
-@onready var rain_drops_overlay: ColorRect = $CanvasLayer/RainDropsOverlay
+# STAIRS AND STEEP SURFACES VARS
+const MAX_STEP_HEIGHT: float = 0.5
+const MAX_LADDER_SIDE_DIST: float = 0.6  # How far left/right you can go before stopping
+const LADDER_CENTER_SNAP_SPEED: float = 8.0  # How fast you slide back to the middle
+const ROPE_CLIMB_SPEED: float = 1.0
 
 # --------------------------------------
 # @EXPORTS
@@ -90,9 +83,6 @@ var coyote_timer: float = 0.0
 
 # SPEED VARS
 var current_speed: float = 0.0
-const JUMP_VELOCITY: float = 4.5
-const crouch_jump_velocity: float = 3.5
-const sprint_jump_velocity: float = 5.0
 
 # SPEED STATES
 var walking: bool = false
@@ -121,17 +111,6 @@ var mouse_sensitivity_base: float = 0.05
 var mouse_sensitivity_zoom: float = mouse_sensitivity / 10.0
 var direction: Vector3 = Vector3.ZERO
 
-# HEADBOB VARS
-const head_bobbing_sprinting_speed: float = 22.0
-const head_bobbing_walking_speed: float = 14.0
-const head_bobbing_crouching_speed: float = 10.0
-const head_bobbing_idle_speed: float = 3.0
-
-const head_bobbing_sprinting_intensity: float = 0.2
-const head_bobbing_walking_intensity: float = 0.1
-const head_bobbing_crouching_intensity: float = 0.08
-const head_bobbing_idle_intensity: float = 0.02
-
 var head_bobbing_index: float = 0.0
 var head_bobbing_current_intensity: float = 0.0
 
@@ -141,15 +120,8 @@ var air_lerp_speed: float = 3.0
 var crouching_depth: float = 0.7
 var last_velocity: Vector3 = Vector3.ZERO
 
-const CameraTiltLeft: float = 3.0
-const CameraTiltRight: float = -3.0
-
 var stair_offset: float = 0.0
 var headbob_offset: Vector2 = Vector2.ZERO
-
-# --- ADD TO THE MOVEMENT VARS SECTION (Optimization) ---
-var _motion_params := PhysicsTestMotionParameters3D.new()
-var _motion_result := PhysicsTestMotionResult3D.new()
 
 ## FLASHLIGHT VARS
 var flashlight_rotation_smoothness: float = 10.0
@@ -180,23 +152,15 @@ var disable_sprint_fov: bool = false
 var current_interactable: Interact_Component = null
 var held_object: PickableObject = null
 
-# STAIRS AND STEEP SURFACES VARS
-const MAX_STEP_HEIGHT: float = 0.5
-var _snapped_to_stairs_last_frame: bool = false
-var _last_frame_was_on_floor: int = -999999  # Safe integer instead of -INF
-
 # LADDER VARS
 var on_ladder: bool = false
 var LADDER_SPEED: float = 5.0
 var current_ladder: Node3D = null
-const MAX_LADDER_SIDE_DIST: float = 0.6  # How far left/right you can go before stopping
-const LADDER_CENTER_SNAP_SPEED: float = 8.0  # How fast you slide back to the middle
 var last_hoist_time: int = 0
 
 # ROPE VARS
 var current_rope: RigidBody3D = null
 var rope_offset: float = 0.0
-const ROPE_CLIMB_SPEED: float = 1.0
 var rope_local_grab_dir := Vector3.ZERO
 var rope_lerp_weight: float = 0.0
 
@@ -251,6 +215,42 @@ var on_monkey_bars: bool = false
 var MONKEY_BAR_SPEED: float = 2.5
 var MONKEY_BAR_HANG_OFFSET: float = 2.1
 var current_monkey_bar_volume: Node3D = null
+
+# --- ADD TO THE MOVEMENT VARS SECTION (Optimization) ---
+var _motion_params := PhysicsTestMotionParameters3D.new()
+var _motion_result := PhysicsTestMotionResult3D.new()
+var _snapped_to_stairs_last_frame: bool = false
+var _last_frame_was_on_floor: int = -999999  # Safe integer instead of -INF
+
+# BASED GODOT YOUTUBERS
+# LUKKY - https://www.youtube.com/watch?v=xIKErMgJ1Yk - FPS CONTROLLER
+# https://www.youtube.com/@stayathomedev - FPS CONTROLLER + HE HELPED ME STARTED
+
+# PLAYER NODES
+
+@onready var head: Node3D = $Head
+@onready var eyes: Node3D = $Head/Eyes
+@onready var standing_collision_shape: CollisionShape3D = $StandingCollisionShape
+@onready var crouching_collision_shape: CollisionShape3D = $CrouchingCollisionShape
+@onready var crouch_cast_check: RayCast3D = $CrouchCastCheck
+@onready var cam: Camera3D = $Head/Eyes/Camera3D
+@onready var camera_anims: AnimationPlayer = $Head/Eyes/CameraAnims
+@onready var omni_light_3d: OmniLight3D = $Head/Eyes/Camera3D/OmniLight3D
+
+@onready var flash_light_node: Node3D = $Head/Eyes/Camera3D/FlashLightNode
+@onready var flashlight: SpotLight3D = $Head/Eyes/Camera3D/FlashLightNode/Flashlight
+
+@onready var interact_shapecast: ShapeCast3D = %InteractShapeCast
+@onready var hold_position: Marker3D = $Head/Eyes/Camera3D/SpringArm3D/HoldPosition
+@onready var spring_arm: SpringArm3D = $Head/Eyes/Camera3D/SpringArm3D
+
+# --- ADD TO THE TOP OF Player.gd (Node Caching) ---
+@onready var weapon_holder: Node3D = %WeaponHolder
+@onready var stairs_below_cast: RayCast3D = %StairsBelowCast
+@onready var stairs_ahead_cast: RayCast3D = %StairsAheadCast
+
+@onready var screen_water_ui: ColorRect = $CanvasLayer/WaterRippleOverlay
+@onready var rain_drops_overlay: ColorRect = $CanvasLayer/RainDropsOverlay
 
 
 # Add these receiver functions anywhere in your player script
@@ -1263,10 +1263,10 @@ func _handle_water_physics(delta: float) -> bool:
 	var target_anim: String = ""
 	if input_dir.x > 0.1:
 		target_anim = "swimming_underwater_sideways_right"
-		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight * 2), delta * lerp_speed / 3.0)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_RIGHT * 2), delta * lerp_speed / 3.0)
 	elif input_dir.x < -0.1:
 		target_anim = "swimming_underwater_sideways_left"
-		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft * 2), delta * lerp_speed / 3.0)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_LEFT * 2), delta * lerp_speed / 3.0)
 	elif absf(input_dir.y) > 0.1:
 		target_anim = "swimming"
 		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed / 3.0)
@@ -1429,9 +1429,9 @@ func _on_debug_menu_toggled(is_open: bool) -> void:
 
 func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 	if Input.is_action_pressed("left"):
-		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_LEFT), delta * lerp_speed)
 	elif Input.is_action_pressed("right"):
-		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
+		eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_RIGHT), delta * lerp_speed)
 	else:
 		eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
@@ -1496,9 +1496,9 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 			camera_anims.play("jump")
 		elif is_on_floor():
 			if sprinting:
-				velocity.y = sprint_jump_velocity
+				velocity.y = SPRINT_JUMP_VELOCITY
 			elif crouching:
-				velocity.y = crouch_jump_velocity
+				velocity.y = CROUCH_JUMP_VELOCITY
 			else:
 				velocity.y = JUMP_VELOCITY
 			camera_anims.play("jump")
@@ -1527,9 +1527,9 @@ func _handle_ground_physics(delta: float, is_truly_grounded: bool) -> void:
 			coyote_timer = 0.0  # Consume floor state
 		elif coyote_timer > 0.0:
 			if sprinting:
-				velocity.y = sprint_jump_velocity
+				velocity.y = SPRINT_JUMP_VELOCITY
 			elif crouching:
-				velocity.y = crouch_jump_velocity
+				velocity.y = CROUCH_JUMP_VELOCITY
 			else:
 				velocity.y = JUMP_VELOCITY
 			camera_anims.play("jump")
@@ -2003,9 +2003,9 @@ func _handle_noclip_physics(delta: float) -> void:
 
 	if not swimming:
 		if Input.is_action_pressed("left"):
-			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltLeft), delta * lerp_speed)
+			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_LEFT), delta * lerp_speed)
 		elif Input.is_action_pressed("right"):
-			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CameraTiltRight), delta * lerp_speed)
+			eyes.rotation.z = lerpf(eyes.rotation.z, deg_to_rad(CAMERA_TILT_RIGHT), delta * lerp_speed)
 		else:
 			eyes.rotation.z = lerpf(eyes.rotation.z, 0.0, delta * lerp_speed)
 
@@ -2015,24 +2015,24 @@ func _handle_headbob(delta: float, intensity_modifier: float = 1.0) -> void:
 	var is_zipline_moving: bool = on_zipline and not is_auto_sliding and absf(input_dir.y) > 0.1
 
 	# Calculate how fast to increment the bob index based on state
-	var bob_speed: float = head_bobbing_idle_speed
+	var bob_speed: float = HEAD_BOBBING_IDLE_SPEED
 	if is_climbing_rope:
 		bob_speed = 6.0  # Standardized rope speed
-		head_bobbing_current_intensity = head_bobbing_walking_intensity * 1.5
+		head_bobbing_current_intensity = HEAD_BOBBING_WALKING_INTENSITY * 1.5
 	elif is_zipline_moving:
 		bob_speed = 6.0
-		head_bobbing_current_intensity = head_bobbing_walking_intensity
+		head_bobbing_current_intensity = HEAD_BOBBING_WALKING_INTENSITY
 	elif sprinting and input_dir != Vector2.ZERO:
-		bob_speed = head_bobbing_sprinting_speed
-		head_bobbing_current_intensity = head_bobbing_sprinting_intensity
+		bob_speed = HEAD_BOBBING_SPRINTING_SPEED
+		head_bobbing_current_intensity = HEAD_BOBBING_SPRINTING_INTENSITY
 	elif walking and input_dir != Vector2.ZERO:
-		bob_speed = head_bobbing_walking_speed
-		head_bobbing_current_intensity = head_bobbing_walking_intensity
+		bob_speed = HEAD_BOBBING_WALKING_SPEED
+		head_bobbing_current_intensity = HEAD_BOBBING_WALKING_INTENSITY
 	elif crouching and input_dir != Vector2.ZERO:
-		bob_speed = head_bobbing_crouching_speed
-		head_bobbing_current_intensity = head_bobbing_crouching_intensity
+		bob_speed = HEAD_BOBBING_CROUCHING_SPEED
+		head_bobbing_current_intensity = HEAD_BOBBING_CROUCHING_INTENSITY
 	else:
-		head_bobbing_current_intensity = head_bobbing_idle_intensity
+		head_bobbing_current_intensity = HEAD_BOBBING_IDLE_INTENSITY
 
 	# Increment the shared timer
 	head_bobbing_index += (
