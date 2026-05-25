@@ -80,6 +80,7 @@ billboard_mode = 1
 material = SubResource("StandardMaterial3D_yexsu")
 
 [node name="UpdraftVolume" type="Area3D" unique_id=1690739398]
+collision_mask = 2
 script = ExtResource("1_2vvrv")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1399732228]

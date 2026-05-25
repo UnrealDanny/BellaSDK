@@ -23,6 +23,26 @@ const DEFAULT_SATURATION: float = 1.0
 
 const CHAPTER_SCREEN = preload("res://scenes/ChapterScreen.tscn")
 
+const FPS_LIMITS: Dictionary = {
+	"30 FPS": 30,
+	"40 FPS": 40,
+	"60 FPS": 60,
+	"90 FPS": 90,
+	"120 FPS": 120,
+	"144 FPS": 144,
+	"Unlimited": 0
+}
+
+const DEFAULT_FPS: int = 60
+
+const VSYNC_MODES: Dictionary = {
+	"Enabled": DisplayServer.VSYNC_ENABLED,
+	"Disabled": DisplayServer.VSYNC_DISABLED,
+	"Adaptive": DisplayServer.VSYNC_ADAPTIVE
+}
+
+const DEFAULT_VSYNC: DisplayServer.VSyncMode = DisplayServer.VSYNC_ENABLED
+
 # --- AUTOMATED REMAPPING ---
 var is_remapping: bool = false
 var action_to_remap: String = ""
@@ -87,13 +107,22 @@ AccessibilityButton
 @onready var fov_slider: HSlider = %FOVSlider
 @onready var fov_input: LineEdit = %FOVLine
 @onready var sprint_fov_checkbox: CheckBox = %SprintFovCheckbox
-
+@onready var fps_options: OptionButton = %FPSOptionButton
+@onready var vsync_options: OptionButton = %VSyncOptionButton
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 	_populate_resolution_dropdown()
 	resolution_options.item_selected.connect(_on_resolution_selected)
+
+	# --- NEW: Setup FPS Dropdown ---
+	_populate_fps_dropdown()
+	fps_options.item_selected.connect(_on_fps_selected)
+
+	# VSYNC
+	_populate_vsync_dropdown()
+	vsync_options.item_selected.connect(_on_vsync_selected)
 
 	# 1. Connect signals FIRST
 	sens_slider.value_changed.connect(_on_sensitivity_changed)
@@ -426,6 +455,23 @@ func _on_reset_button_pressed() -> void:
 	fov_slider.value = DEFAULT_FOV
 	sprint_fov_checkbox.button_pressed = DEFAULT_DISABLE_SPRINT_FOV
 
+	# --- Reset FPS ---
+	Engine.max_fps = DEFAULT_FPS
+	for i: int in range(fps_options.get_item_count()):
+		var key: String = fps_options.get_item_text(i)
+		if FPS_LIMITS[key] == DEFAULT_FPS:
+			fps_options.select(i)
+			break
+	_save_setting_to_disk("fps_limit", DEFAULT_FPS)
+
+	# --- Reset VSync ---
+	DisplayServer.window_set_vsync_mode(DEFAULT_VSYNC)
+	for i: int in range(vsync_options.get_item_count()):
+		var key: String = vsync_options.get_item_text(i)
+		if VSYNC_MODES[key] == DEFAULT_VSYNC:
+			vsync_options.select(i)
+			break
+	_save_setting_to_disk("vsync_mode", DEFAULT_VSYNC)
 
 func refresh_all_button_labels() -> void:
 	var container := $ControlsPanel/VBoxContainer
@@ -433,7 +479,6 @@ func refresh_all_button_labels() -> void:
 		if child is Button and child.has_meta("action"):
 			var action_name: String = child.get_meta("action")
 			update_button_text(child, action_name)
-
 
 func save_controls() -> void:
 	var config := ConfigFile.new()
@@ -525,7 +570,26 @@ func load_controls() -> void:
 		if "disable_sprint_fov" in player:
 			player.disable_sprint_fov = sprint_fov_checkbox.button_pressed
 
+	# --- Load FPS Limit ---
+	var saved_fps: int = config.get_value("Settings", "fps_limit", DEFAULT_FPS)
+	Engine.max_fps = saved_fps
 
+	# Update the UI to match the loaded setting
+	for i: int in range(fps_options.get_item_count()):
+		var key: String = fps_options.get_item_text(i)
+		if FPS_LIMITS[key] == saved_fps:
+			fps_options.select(i)
+			break
+
+	# --- Load VSync ---
+	var saved_vsync: int = config.get_value("Settings", "vsync_mode", DEFAULT_VSYNC)
+	DisplayServer.window_set_vsync_mode(saved_vsync as DisplayServer.VSyncMode)
+
+	for i: int in range(vsync_options.get_item_count()):
+		var key: String = vsync_options.get_item_text(i)
+		if VSYNC_MODES[key] == saved_vsync:
+			vsync_options.select(i)
+			break
 func get_action_with_event(new_event: InputEvent) -> String:
 	for action: String in my_actions:
 		if InputMap.action_has_event(action, new_event):
@@ -762,3 +826,35 @@ func _on_sprint_fov_toggled(toggled_on: bool) -> void:
 	var player: Node = get_parent()
 	if player and "disable_sprint_fov" in player:
 		player.disable_sprint_fov = toggled_on
+
+# ==========================================
+# FRAMERATE SYSTEM
+# ==========================================
+
+func _populate_fps_dropdown() -> void:
+	fps_options.clear()
+	for fps_string: String in FPS_LIMITS.keys():
+		fps_options.add_item(fps_string)
+
+func _on_fps_selected(index: int) -> void:
+	var key: String = fps_options.get_item_text(index)
+	var limit: int = FPS_LIMITS[key]
+
+	Engine.max_fps = limit
+	_save_setting_to_disk("fps_limit", limit)
+
+# ==========================================
+# VSYNC SYSTEM
+# ==========================================
+
+func _populate_vsync_dropdown() -> void:
+	vsync_options.clear()
+	for vsync_string: String in VSYNC_MODES.keys():
+		vsync_options.add_item(vsync_string)
+
+func _on_vsync_selected(index: int) -> void:
+	var key: String = vsync_options.get_item_text(index)
+	var mode: DisplayServer.VSyncMode = VSYNC_MODES[key]
+
+	DisplayServer.window_set_vsync_mode(mode)
+	_save_setting_to_disk("vsync_mode", mode)

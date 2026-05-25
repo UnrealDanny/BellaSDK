@@ -13,6 +13,7 @@ albedo_color = Color(1, 0, 0, 0.19607843)
 material = SubResource("StandardMaterial3D_jij66")
 
 [node name="Killfield" type="Area3D" unique_id=2040269414]
+collision_mask = 2
 script = ExtResource("1_r6clw")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=2115725744]

@@ -277,19 +277,37 @@ func _manage_cpu_displacement_textures_updates(delta: float) -> void:
 
 
 func _do_texture_readback(idx: int) -> void:
-	var rid_downsampled_map: RID = wave_generator.descriptors[&"downsampled_map"].rid  # <-- CHANGED
+	var rid_downsampled_map: RID = wave_generator.descriptors[&"downsampled_map"].rid
 	var device: RenderingDevice = RenderingServer.get_rendering_device()
 
-	var tex: PackedByteArray = device.texture_get_data(rid_downsampled_map, idx)
-	var img: Image = Image.create_from_data(
-		wave_generator.cpu_map_size, wave_generator.cpu_map_size, false, Image.FORMAT_RGBAH, tex
-	)  # <-- CHANGED
+	# CRITICAL FIX: Request the data asynchronously instead of blocking the CPU.
+	# We bind 'idx' so the callback knows which layer it is processing.
+	var callable: Callable = _on_texture_data_received.bind(idx)
+	var _err: int = device.texture_get_data_async(rid_downsampled_map, idx, callable)
+	
+	if _err != OK:
+		push_error("Failed to enqueue asynchronous texture readback for layer: ", idx)
+		# Handle the error state if necessary (e.g., release the lock if it was set prior)
 
+# NEW: The callback function triggered by the RenderingDevice when the data is ready
+func _on_texture_data_received(tex: PackedByteArray, idx: int) -> void:
+	# Ensure the wave_generator reference is still valid if this node can be destroyed
+	if not is_instance_valid(wave_generator):
+		return
+		
+	var img: Image = Image.create_from_data(
+		wave_generator.cpu_map_size, 
+		wave_generator.cpu_map_size, 
+		false, 
+		Image.FORMAT_RGBAH, 
+		tex
+	)
+
+	# Safely lock the mutex and update the dictionary/array
 	mutex.lock()
 	_cpu_displacement_textures[idx] = img
 	_is_reading_back = false
 	mutex.unlock()
-
 
 func _setup_cpu_displacement_textures() -> void:
 	var _actually_used_textures_idx: Array[int] = []

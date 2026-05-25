@@ -25,6 +25,7 @@ radial_segments = 32
 rings = 0
 
 [node name="Teleport" type="Area3D" unique_id=498528318]
+collision_mask = 2
 script = ExtResource("1_w4hbs")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1870042939]

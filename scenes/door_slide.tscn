@@ -55,6 +55,7 @@ script = ExtResource("1_4t8ph")
 libraries/ = SubResource("AnimationLibrary_65w8c")
 
 [node name="Detector" type="Area3D" parent="." unique_id=851795081]
+collision_mask = 2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Detector" unique_id=1420947612]
 shape = SubResource("BoxShape3D_65w8c")

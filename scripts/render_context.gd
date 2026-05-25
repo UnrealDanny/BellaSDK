@@ -11,18 +11,20 @@ class DeletionQueue:
 		return rid
 
 	func flush(device: RenderingDevice) -> void:
-		# We work backwards in order of allocation when freeing resources
-		for i in range(queue.size() - 1, -1, -1):
+		# Removed device.sync() - The global RenderingServer manages deferred cleanup natively.
+		for i: int in range(queue.size() - 1, -1, -1):
 			if not queue[i].is_valid():
 				continue
 			device.free_rid(queue[i])
+			
 		queue.clear()
 
 	func free_rid(device: RenderingDevice, rid: RID) -> void:
-		var rid_idx := queue.find(rid)
+		var rid_idx: int = queue.find(rid)
 		assert(rid_idx != -1, "RID was not found in deletion queue!")
+		
+		# Removed device.sync()
 		device.free_rid(queue.pop_at(rid_idx))
-
 
 class Descriptor:
 	var rid: RID

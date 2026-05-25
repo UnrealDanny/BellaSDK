@@ -19,11 +19,15 @@ extends StaticBody3D
 
 # Keep track of all ropes globally using a Godot 4 static variable
 static var all_fast_ropes: Array[FastRope] = []
+
 var attached_player: CharacterBody3D = null
 var attach_timer: float = 0.0
-
 var locked_x: float = 0.0
 var locked_z: float = 0.0
+
+# Track whether the player is currently going up or down
+var is_descending: bool = false
+var interact_key_name: String = "E"
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var top_marker: Marker3D = $TopMarker
@@ -48,14 +52,13 @@ func _ready() -> void:
 	if Engine.is_editor_hint():
 		return
 
-	# --- UI SETUP ---
+	# Cache the interact key string once at startup
 	if interact_label:
 		interact_label.hide()
 		var events := InputMap.action_get_events("interact")
 		if events.size() > 0:
 			var raw_text := events[0].as_text()
-			var key_name := raw_text.split(" ")[0]
-			interact_label.text = "[" + key_name + "] GO UP"
+			interact_key_name = raw_text.split(" ")[0]
 
 	# --- SIGNAL CONNECTIONS ---
 	if interact_comp:
@@ -88,6 +91,13 @@ func _update_rope_size() -> void:
 
 func _on_focused() -> void:
 	if not attached_player and interact_label:
+		var cam: Camera3D = get_viewport().get_camera_3d()
+		if cam:
+			var mid_point: float = global_position.y + (rope_length / 2.0)
+			if cam.global_position.y > mid_point:
+				interact_label.text = "[" + interact_key_name + "] GO DOWN"
+			else:
+				interact_label.text = "[" + interact_key_name + "] GO UP"
 		interact_label.show()
 
 
@@ -109,21 +119,22 @@ func _physics_process(delta: float) -> void:
 	if attached_player:
 		attach_timer += delta
 
-		# THIS is the only detach check you need!
 		if attach_timer > 0.15 and Input.is_action_just_pressed("interact"):
 			detach(false)
+			return
 
 		attached_player.velocity = Vector3.ZERO
-
-		# Lock X and Z to the outside radius of the rope
 		attached_player.global_position.x = locked_x
 		attached_player.global_position.z = locked_z
 
-		# Move Up linearly
-		attached_player.global_position.y += ascend_speed * delta
-
-		if attached_player.global_position.y >= top_marker.global_position.y:
-			detach(true)
+		if is_descending:
+			attached_player.global_position.y -= ascend_speed * delta
+			if attached_player.global_position.y <= global_position.y:
+				detach(false) # false = don't launch them into the floor
+		else:
+			attached_player.global_position.y += ascend_speed * delta
+			if attached_player.global_position.y >= top_marker.global_position.y:
+				detach(true) # true = apply launch velocity
 
 	# --- 2. DYNAMIC UI POSITIONING ---
 	elif interact_comp and interact_comp.is_currently_focused and interact_label.visible:
@@ -131,8 +142,6 @@ func _physics_process(delta: float) -> void:
 		if cam:
 			var hit_point: Vector3 = interact_comp.last_hit_position
 			var cam_up: Vector3 = cam.global_transform.basis.y
-
-			# Subtracting cam_up puts the label perfectly Center Down from the hit point
 			var final_pos: Vector3 = hit_point - (cam_up * label_offset_amount)
 			interact_label.global_position = final_pos
 
@@ -141,16 +150,19 @@ func attach(player: CharacterBody3D) -> void:
 	attached_player = player
 	attach_timer = 0.0
 
+	# Determine if we go up or down based on player height vs rope center
+	var mid_point: float = global_position.y + (rope_length / 2.0)
+	is_descending = player.global_position.y > mid_point
+
 	# --- CALCULATE PERIMETER POSITION ---
 	var offset_dir := attached_player.global_position - global_position
-	offset_dir.y = 0.0  # Ignore vertical height for this math
+	offset_dir.y = 0.0 
 
 	if offset_dir.length_squared() < 0.001:
-		offset_dir = Vector3.FORWARD  # Failsafe if they are somehow dead center
+		offset_dir = Vector3.FORWARD 
 	else:
 		offset_dir = offset_dir.normalized()
 
-	# Lock the X and Z coordinates to the edge of the climb radius
 	locked_x = global_position.x + (offset_dir.x * climb_radius)
 	locked_z = global_position.z + (offset_dir.z * climb_radius)
 	# ------------------------------------
@@ -175,13 +187,12 @@ func detach(reached_top: bool) -> void:
 	if highlight_comp:
 		highlight_comp.suppress(false)
 
-	# Tell the player they are free BEFORE giving them the boost
 	if attached_player.has_method("exit_fast_rope"):
 		attached_player.exit_fast_rope()
 
 	if reached_top:
 		attached_player.velocity.y = launch_velocity
 	else:
-		attached_player.velocity.y = 0
+		attached_player.velocity.y = 0.0
 
 	attached_player = null
