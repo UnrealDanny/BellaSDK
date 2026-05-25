@@ -81,7 +81,7 @@ const WATER_MESH_LOW := preload("res://assets/ocean_waves/ocean/clipmap_low.obj"
 		if mesh_quality == MeshQuality.HIGH:
 			mesh = WATER_MESH_HIGH
 		if mesh_quality == MeshQuality.HIGH8K:
-			mesh = WATER_MESH_HIGH8K
+			mesh = WATER_MESH_HIGH8_K
 
 @export_range(0, 60) var updates_per_second: float = 50.0:
 	set(value):

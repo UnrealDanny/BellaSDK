@@ -1,0 +1,4 @@
+excluded_directories: !!set
+  .git: null
+  addons: null
+  "TESTS(delete later)": null

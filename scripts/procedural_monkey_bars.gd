@@ -20,7 +20,7 @@ func _ready() -> void:
 			interact_area = Area3D.new()
 			interact_area.name = "InteractArea"
 			interact_area.collision_layer = 0
-			interact_area.collision_mask = 1
+			interact_area.collision_mask = 2
 			add_child(interact_area)
 
 			col_shape = CollisionShape3D.new()

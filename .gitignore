@@ -52,3 +52,5 @@ api_response.json
 gdlint_report.txt
 
 payload.json
+
+addons/gdLinter/
