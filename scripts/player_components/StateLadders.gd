@@ -12,13 +12,9 @@ const LADDER_CENTER_SNAP_SPEED: float = 8.0  # How fast you slide back to the mi
 # VARIABLES
 # --------------------------------------
 var current_ladder: Node3D = null
-var last_hoist_time: int = 0
-var is_hoisting: bool = false
 
 
 func enter(msg: Dictionary = {}) -> void:
-	is_hoisting = false
-
 	if msg.has("ladder_node"):
 		current_ladder = msg["ladder_node"]
 		_snap_to_ladder()
@@ -26,14 +22,9 @@ func enter(msg: Dictionary = {}) -> void:
 
 func exit() -> void:
 	current_ladder = null
-	is_hoisting = false
 
 
 func physics_update(_delta: float) -> void:
-	# Block physics updates if we are actively playing the hoist animation
-	if is_hoisting:
-		return
-
 	_handle_crouch_state()
 
 	var input_dir: Vector2 = Input.get_vector("left", "right", "forward", "backward")
@@ -152,12 +143,9 @@ func _handle_jump_input(input_dir: Vector2) -> void:
 
 	var dot_forward: float = look_dir.dot(ladder_forward)
 	var is_looking_down: bool = look_dir.y < -0.3
-	var is_looking_up: bool = look_dir.y > 0.4
 	var is_looking_away: bool = dot_forward > -0.2
-	var is_looking_at_ladder: bool = dot_forward < -0.6
 	var strafe_input: float = input_dir.x
 
-	var is_shapecast_hitting: bool = player.interaction_scanner.interact_shapecast.is_colliding()
 	var flat_jump_dir: Vector3 = Vector3.ZERO
 
 	# CONDITION A: Side jump (Looking at the ladder, pressing A or D)
@@ -168,37 +156,7 @@ func _handle_jump_input(input_dir: Vector2) -> void:
 		state_machine.transition_to("Air")
 		return
 
-	# CONDITION B: Upward leap / Hoist (Looking strictly UP)
-	if (
-		is_looking_up
-		and (is_looking_at_ladder or is_shapecast_hitting)
-		and absf(strafe_input) < 0.1
-	):
-		var current_time := Time.get_ticks_msec()
-		if current_time - last_hoist_time >= 1000:
-			last_hoist_time = current_time
-
-			if is_shapecast_hitting:
-				# Hoist Upward
-				is_hoisting = true
-				var hoist_target := player.global_position + (Vector3.UP * 1.5)
-				var tween := create_tween()
-				(
-					tween
-					. tween_property(player, "global_position", hoist_target, 0.2)
-					. set_trans(Tween.TRANS_QUAD)
-					. set_ease(Tween.EASE_OUT)
-				)
-				tween.tween_callback(func() -> void: state_machine.transition_to("Air"))
-			else:
-				# Vault over ledge
-				flat_jump_dir = Vector3(look_dir.x, 0.0, look_dir.z).normalized()
-				player.velocity = (flat_jump_dir * 5.0) + Vector3(0.0, 4.5, 0.0)
-				player.global_position += look_dir * 0.2
-				state_machine.transition_to("Air")
-		return
-
-	# CONDITION C: Detach jump (Looking down, away, or neutral)
+	# CONDITION B: Detach jump (Looking down, away, or neutral)
 	flat_jump_dir = Vector3(look_dir.x, 0.0, look_dir.z).normalized()
 	var camera_lift: float = maxf(look_dir.y, 0.0) * 2.5
 	var vertical_hop: float = 4.5 + camera_lift

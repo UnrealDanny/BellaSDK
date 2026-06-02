@@ -73,7 +73,6 @@ var flashlight_controller: Node = null
 @onready var crouching_collision: CollisionShape3D = $CrouchingCollisionShape
 @onready var crouch_cast_check: RayCast3D = $CrouchCastCheck
 
-
 # --------------------------------------
 # INITIALIZATION
 # --------------------------------------
@@ -138,10 +137,12 @@ func _on_player_died() -> void:
 # ENVIRONMENTAL TRIGGERS (Called by Area3Ds)
 # --------------------------------------
 func set_available_monkey_bar(bar: Node3D) -> void:
-	available_monkey_bar = bar
+	if monkey_bar_cooldown <= 0.0:
+		available_monkey_bar = bar
 
 
 func clear_available_monkey_bar(bar: Node3D) -> void:
+	# is actually the one we are currently holding.
 	if available_monkey_bar == bar:
 		available_monkey_bar = null
 
@@ -209,10 +210,15 @@ func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vecto
 
 
 # 3. Ladders (Change the function name to whatever your ladder script tries to call)
-func _on_ladder_grabbed(ladder_node: Node3D) -> void:
+func enter_ladder(ladder_node: Node3D) -> void:
 	if vault_controller.is_vaulting:
 		return
-	state_machine.transition_to("Ladder", {"ladder_node": ladder_node})
+	state_machine.transition_to("Ladders", {"ladder_node": ladder_node})
+
+
+func exit_ladder(_ladder_node: Node3D) -> void:
+	if state_machine.state.name == "Ladders":
+		state_machine.transition_to("Air")
 
 
 # 4. Fast Ropes

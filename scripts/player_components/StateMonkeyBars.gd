@@ -48,6 +48,10 @@ func physics_update(delta: float) -> void:
 		state_machine.transition_to("Air")
 		return
 
+	# FIX: Dynamically update the volume if the player swings onto a new bar
+	if current_monkey_bar_volume != player.available_monkey_bar:
+		current_monkey_bar_volume = player.available_monkey_bar
+
 	if not is_instance_valid(current_monkey_bar_volume):
 		_perform_dismount()
 		return
@@ -60,8 +64,7 @@ func physics_update(delta: float) -> void:
 
 	player.move_and_slide()
 
-	# Update the camera and headbob (passing our custom speed)
-	player.camera_controller.update_camera(delta, input_dir, false, false, false, MONKEY_BAR_SPEED)  # is_sprinting  # is_crouching  # is_grounded
+	player.camera_controller.update_camera(delta, input_dir, false, false, false, MONKEY_BAR_SPEED)
 
 	_check_dismount_conditions()
 
@@ -89,11 +92,23 @@ func _apply_horizontal_movement(input_dir: Vector2) -> void:
 
 
 func _apply_vertical_magnetism() -> void:
-	# Keep the player perfectly suspended beneath the volume's center point
-	var target_y: float = current_monkey_bar_volume.global_position.y - MONKEY_BAR_HANG_OFFSET
-	var distance_to_target: float = target_y - player.global_position.y
+	var volume := current_monkey_bar_volume as MonkeyBarVolume
+	if not is_instance_valid(volume):
+		return
 
-	# If the player manages to slip too far away (e.g., fell off the end of the area)
+	var player_pos: Vector3 = player.global_position
+
+	# 1. Convert the player's position to the volume's local coordinate space
+	var local_pos: Vector3 = volume.to_local(player_pos)
+
+	# 2. Snap the local Y exactly to the bottom face of the CSGBox3D
+	local_pos.y = -volume.size.y / 2.0
+
+	# 3. Convert back to global space to find the true slanted height
+	var target_global: Vector3 = volume.to_global(local_pos)
+	var target_y: float = target_global.y - MONKEY_BAR_HANG_OFFSET
+	var distance_to_target: float = target_y - player_pos.y
+	# If the player manages to slip too far away
 	if absf(distance_to_target) > 4.0:
 		_perform_dismount()
 		return

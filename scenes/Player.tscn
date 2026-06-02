@@ -339,6 +339,17 @@ stream_2/stream = ExtResource("17_ebwui")
 process_mode = 3
 collision_layer = 2
 script = ExtResource("1_34orh")
+walking_speed = null
+sprinting_speed = null
+crouching_speed = null
+swimming_speed = null
+swim_up_speed = null
+jump_buffer_duration = null
+coyote_time_duration = null
+fall_gravity_multiplier = null
+default_lerp_speed = null
+air_lerp_speed = null
+ice_lerp_speed = null
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
@@ -387,10 +398,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
 light_color = Color(1, 1, 0.8356356, 1)
 light_energy = 0.5
 
-[node name="FlashlightController" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=1702426416 node_paths=PackedStringArray("camera", "flashlight")]
+[node name="FlashlightController" type="Node3D" parent="Head/Eyes/Camera3D" unique_id=1702426416 node_paths=PackedStringArray("camera", "flashlight", "omni_light")]
 script = ExtResource("3_b8lor")
 camera = NodePath("..")
 flashlight = NodePath("../FlashLightNode/Flashlight")
+omni_light = NodePath("../OmniLight3D")
 
 [node name="CameraAnims" type="AnimationPlayer" parent="Head/Eyes" unique_id=1765016502]
 libraries/ = SubResource("AnimationLibrary_xfc2n")
