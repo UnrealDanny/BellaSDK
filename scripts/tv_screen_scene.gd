@@ -11,6 +11,7 @@ extends StaticBody3D
 @onready var screen_mesh: MeshInstance3D = $ScreenMesh
 @onready var interact_comp: Node = $Interact_Component
 @onready var cctv_camera: Camera3D = $CameraViewport/CCTVCamera
+@onready var tutorial_label: Label = $CameraViewport/CanvasLayer/MarginContainer/TutorialLabel
 
 var screen_mat_override: StandardMaterial3D
 var active_cam_idx: int = 0
@@ -23,6 +24,7 @@ var current_pitch: float = 0.0
 var _interaction_cooldown: float = 0.0
 
 func _ready() -> void:
+	print("[CCTV] Initializing TV screen and building tutorial UI.")
 	if interact_comp and not interact_comp.interacted.is_connected(_on_interacted):
 		interact_comp.interacted.connect(_on_interacted)
 
@@ -37,12 +39,14 @@ func _ready() -> void:
 
 	if screen_mat_override and camera_vp:
 		screen_mat_override.albedo_texture = camera_vp.get_texture()
-		# Draw a single starting frame, then automatically disable rendering
+		# Draw a single starting frame, then automatically disable rendering to save FPS
 		camera_vp.render_target_update_mode = SubViewport.UPDATE_ONCE
 
 	if is_instance_valid(cctv_camera):
 		target_fov = cctv_camera.fov
 		cctv_camera.make_current()
+
+	_update_tutorial_text()
 
 	if not camera_locations.is_empty():
 		_set_camera(0)
@@ -67,6 +71,7 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 
+	# Assuming "shoot" is mapped to Left Click
 	if event.is_action_pressed("shoot"):
 		print("[CCTV] Cycling to next camera...")
 		_cycle_camera()
@@ -83,6 +88,20 @@ func _input(event: InputEvent) -> void:
 			target_fov += zoom_speed
 			get_viewport().set_input_as_handled()
 
+func _update_tutorial_text() -> void:
+	print("[CCTV] Refreshing tutorial text on screen.")
+	if not is_instance_valid(tutorial_label):
+		return
+		
+	var total_cams: int = camera_locations.size()
+	var display_text: String = "CONTROLS:\n"
+	display_text += "WASD - Move Camera\n"
+	display_text += "Wheel - Zoom In / Out\n"
+	display_text += "Left Click - Switch Camera\n"
+	display_text += "Cameras Connected: %d" % total_cams
+	
+	tutorial_label.text = display_text
+
 func _on_interacted(player: CharacterBody3D) -> void:
 	if is_controlling or _interaction_cooldown > 0.0:
 		return
@@ -92,7 +111,7 @@ func _on_interacted(player: CharacterBody3D) -> void:
 	current_player = player
 	_interaction_cooldown = 0.3 
 
-	# Activate the viewport rendering so the screen visually updates
+	# Activate the viewport rendering so the screen visually updates at 60 FPS
 	if camera_vp:
 		camera_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 

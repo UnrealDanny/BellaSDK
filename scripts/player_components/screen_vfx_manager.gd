@@ -153,6 +153,7 @@ func trigger_surface_wipe() -> void:
 # WATERFALL LOGIC
 # --------------------------------------
 func enter_waterfall() -> void:
+	print("ScreenVFXManager executing enter_waterfall(), triggering overlay tweens.")
 	in_waterfall = true
 	if not waterfall_overlay:
 		return
@@ -171,6 +172,7 @@ func enter_waterfall() -> void:
 
 
 func exit_waterfall() -> void:
+	print("ScreenVFXManager executing exit_waterfall(), fading overlay out.")
 	in_waterfall = false
 	if not waterfall_overlay:
 		return

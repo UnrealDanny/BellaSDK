@@ -25,10 +25,16 @@ func enter(msg: Dictionary = {}) -> void:
 
 func physics_update(delta: float) -> void:
 	# 1. State Transitions (Leaving the Ground)
-	if not player.is_on_floor() and not player.stair_controller._snapped_to_stairs_last_frame:
+	var is_recently_stepped: bool = player.stair_controller.time_since_step_up < 0.2
+	
+	# We ignore false negatives from is_on_floor if we are in the middle of a step traversal
+	if not player.is_on_floor() and not player.stair_controller._snapped_to_stairs_last_frame and not is_recently_stepped:
 		if player.current_water_node != null:
+			print("StateGround: Transitioning to Swim.")
 			state_machine.transition_to("Swim")
 			return
+			
+		print("StateGround: Floor lost. Transitioning to Air.")
 		state_machine.transition_to("Air", {"coyote_time": true})
 		return
 
@@ -39,13 +45,19 @@ func physics_update(delta: float) -> void:
 
 	# 3. Handle Jump / Vault Logic
 	if Input.is_action_just_pressed("jump"):
-		# Only scan for a vault if the player is actively pushing the movement keys.
-		if input_dir != Vector2.ZERO and player.vault_controller.try_vault(player.crouching):
+		var is_on_stairs: bool = player.stair_controller._snapped_to_stairs_last_frame
+		
+		# Hard requirement: MUST be actively holding the forward action mapped key (W). 
+		# Walking backwards (S) will completely bypass vault checks.
+		var is_pressing_forward: bool = Input.is_action_pressed("forward")
+		
+		if is_pressing_forward and not is_on_stairs and player.vault_controller.try_vault(player.crouching):
+			print("StateGround: Valid vault detected. Transitioning.")
 			state_machine.transition_to("Vault")
 			return
 		else:
 			_perform_jump()
-			return 
+			return
 
 	# 4. Determine Speed State
 	_calculate_target_speed(delta, input_dir)
@@ -54,10 +66,11 @@ func physics_update(delta: float) -> void:
 	_apply_movement(delta, input_dir)
 	player.last_velocity = player.velocity
 
-	# 6. Try snapping UP stairs. If it returns true, SKIP move_and_slide!
-	if not player.stair_controller.snap_up_stairs_check(delta):
-		# Move the Character (Normal movement)
-		player.move_and_slide()
+	# 6. Try snapping UP stairs
+	player.stair_controller.snap_up_stairs_check(delta)
+
+	# Move the Character (Normal movement)
+	player.move_and_slide()
 
 	# 7. Try snapping DOWN to keep the player grounded on descending stairs
 	player.stair_controller.snap_down_to_stairs_check()
@@ -69,9 +82,6 @@ func physics_update(delta: float) -> void:
 	_update_components(delta, input_dir)
 
 
-# --------------------------------------
-# PRIVATE METHODS
-# --------------------------------------
 func _perform_jump() -> void:
 	if player.sprint_active:
 		player.velocity.y = SPRINT_JUMP_VELOCITY
@@ -79,6 +89,8 @@ func _perform_jump() -> void:
 		player.velocity.y = CROUCH_JUMP_VELOCITY
 	else:
 		player.velocity.y = JUMP_VELOCITY
+
+	print("StateGround: Executing jump. Velocity Y set to ", player.velocity.y)
 
 	# Force a physics update right now so the engine registers we left the ground
 	player.move_and_slide() 

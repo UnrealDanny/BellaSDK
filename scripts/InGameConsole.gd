@@ -20,39 +20,21 @@ var is_ui_ready: bool = false
 var typed_history: Array[String] = []
 var history_index: int = 0
 
+# --- Live Suggestions (HL2 Style) ---
+var suggestion_label: RichTextLabel
+var current_matches: Array[String] = []
+var match_index: int = -1
+var is_navigating_matches: bool = false
+
 # A list of all available root commands for Tab Autocomplete
 var valid_commands: Array[String] = [
-	"help",
-	"clear",
-	"quit",
-	"noclip",
-	"iddqd",
-	"idkfa",
-	"kirov",
-	"sv_cheats",
-	"soyuz",
-	"motherlode",
-	"konami",
-	"upupdowndownleftrightleftrightbastart",
-	"showmethemoney",
-	"thereisnocowlevel",
-	"whosyourdaddy",
-	"dnkroz",
-	"hesoyam",
-	"leavemealone",
-	"impulse",
-	"thegodfather",
-	"colorblind",
-	"gamespeed",
-	"highcontrast",
-	"screenshake",
-	"subtitles",
-	"mono_audio",
-	"uiscale",
-	"photosensitivity",
-	"setfont",
-	"photosensitivity",
-	"setfont",
+	"help", "clear", "quit", "noclip", "iddqd", "idkfa", "kirov",
+	"sv_cheats", "soyuz", "motherlode", "konami",
+	"upupdowndownleftrightleftrightbastart", "showmethemoney",
+	"thereisnocowlevel", "whosyourdaddy", "dnkroz", "hesoyam",
+	"leavemealone", "impulse", "thegodfather", "colorblind",
+	"gamespeed", "highcontrast", "screenshake", "subtitles",
+	"mono_audio", "uiscale", "photosensitivity", "setfont",
 	"screenfilter"
 ]
 
@@ -62,11 +44,11 @@ var valid_colorblind_args: Array[String] = [
 ]
 var valid_font_args: Array[String] = ["default", "dyslexic", "papyrus", "comic"]
 var valid_on_off_args: Array[String] = ["on", "off"]
-
 var valid_screenfilter_args: Array[String] = [
 	"off", "crt", "vhs", "pixelate", "toon", 
 	"gameboy", "glitch", "grain", "halftone", "nightvision", "kuwahara", "ascii"
 ]
+
 # --- Screen Filter State ---
 var screen_filter_rect: ColorRect
 var cached_shaders: Dictionary = {}
@@ -93,17 +75,22 @@ func _ready() -> void:
 	output_log.add_theme_constant_override("margin_top", 10)
 	vbox.add_child(output_log)
 
+	# HL2 Style Suggestion Box
+	suggestion_label = RichTextLabel.new()
+	suggestion_label.bbcode_enabled = true
+	suggestion_label.fit_content = true
+	suggestion_label.visible = false
+	suggestion_label.add_theme_constant_override("margin_left", 10)
+	vbox.add_child(suggestion_label)
+
 	command_input = LineEdit.new()
 	command_input.placeholder_text = "Type a command..."
-	command_input.text_submitted.connect(_on_command_submitted)
-
-	# Catch Tab and Arrow keys
 	command_input.gui_input.connect(_on_line_edit_gui_input)
+	command_input.text_changed.connect(_on_text_changed)
 	vbox.add_child(command_input)
 
 	is_ui_ready = true
 
-	# Dump any messages that were sent during game startup
 	for msg: Dictionary in message_history:
 		output_log.append_text("[color=" + msg["color"] + "]" + msg["text"] + "[/color]\n")
 
@@ -136,41 +123,180 @@ func _ready() -> void:
 	screen_filter_rect = ColorRect.new()
 	screen_filter_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	screen_filter_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	screen_filter_rect.visible = false # <-- ADD THIS LINE
+	screen_filter_rect.visible = false
 	filter_layer.add_child(screen_filter_rect)
 
 	write("Developer console initialized. Press ~ to toggle.", "cyan")
 
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("console"):
+	var console_pressed: bool = event.is_action_pressed("console")
+	var cancel_pressed: bool = event.is_action_pressed("ui_cancel") and visible
+
+	if console_pressed or cancel_pressed:
 		visible = !visible
 
 		if visible:
 			get_tree().paused = true
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-			command_input.grab_focus()
 			command_input.clear()
+			_reset_suggestions()
 			history_index = typed_history.size()
+			command_input.call_deferred("grab_focus")
+			print("Console UI toggled: OPENED.")
 		else:
 			get_tree().paused = false
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+			print("Console UI toggled: CLOSED.")
 
+		Events.terminal_mode_toggled.emit(visible)
 		get_viewport().set_input_as_handled()
 
 
-# --- Catch Tab and Arrows safely inside the LineEdit ---
+# --- Keyboard Input Routing ---
 func _on_line_edit_gui_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
-		if event.keycode in [KEY_UP, KEY_PAGEUP]:
+		if event.keycode == KEY_UP:
 			command_input.accept_event()
-			_navigate_history(-1)
-		elif event.keycode in [KEY_DOWN, KEY_PAGEDOWN]:
+			if current_matches.is_empty():
+				_navigate_history(-1)
+			else:
+				_navigate_suggestions(-1)
+		
+		elif event.keycode == KEY_DOWN:
 			command_input.accept_event()
-			_navigate_history(1)
+			if current_matches.is_empty():
+				_navigate_history(1)
+			else:
+				_navigate_suggestions(1)
+		
 		elif event.keycode == KEY_TAB:
 			command_input.accept_event()
-			_attempt_autocomplete()
+			if current_matches.size() > 0:
+				print("Tab Autocomplete triggered.")
+				# Grab the selected match (or the first one if none selected)
+				var match_text: String = current_matches[max(0, match_index)]
+				
+				# Update the text box and move the caret
+				command_input.text = match_text + " "
+				command_input.caret_column = command_input.text.length()
+				
+				# CRITICAL: Changing text via code does NOT trigger 'text_changed'.
+				# We must manually force it to update the next layer of suggestions!
+				_on_text_changed(command_input.text)
+				
+		elif event.keycode in [KEY_ENTER, KEY_KP_ENTER]:
+			command_input.accept_event()
+			_on_command_submitted(command_input.text)
+
+
+# --- HL2 Style Real-Time Suggestion Logic ---
+func _on_text_changed(new_text: String) -> void:
+	# If the user is just using arrow keys to cycle matches, don't re-trigger a search
+	if is_navigating_matches:
+		return
+
+	# Keep one trailing space if it exists so we can detect typing arguments
+	var search_text := new_text.lstrip(" ").replace("  ", " ")
+	
+	if search_text == "":
+		_reset_suggestions()
+		return
+
+	current_matches = _get_autocomplete_matches(search_text)
+	match_index = -1
+
+	if current_matches.is_empty():
+		suggestion_label.visible = false
+	else:
+		suggestion_label.visible = true
+		_update_suggestion_ui()
+		print("Console fetching suggestions for input: '", search_text, "' -> Found: ", current_matches.size())
+
+
+func _get_autocomplete_matches(current_text: String) -> Array[String]:
+	print("Console calculating autocomplete matches for: '", current_text, "'")
+	var parts := current_text.split(" ")
+	var matches: Array[String] = []
+
+	if parts.size() == 1:
+		var search_term := parts[0].to_lower()
+		var exact_starts: Array[String] = []
+		var partials: Array[String] = []
+
+		for cmd: String in valid_commands:
+			if cmd.begins_with(search_term):
+				exact_starts.append(cmd)
+			elif cmd.contains(search_term):
+				partials.append(cmd)
+
+		matches.append_array(exact_starts)
+		matches.append_array(partials)
+
+	elif parts.size() == 2:
+		var main_cmd := parts[0].to_lower()
+		var sub_term := parts[1].to_lower()
+		var arg_matches: Array[String] = []
+
+		if main_cmd == "colorblind":
+			arg_matches = valid_colorblind_args
+		elif main_cmd == "setfont":
+			arg_matches = valid_font_args
+		elif main_cmd in ["subtitles", "mono_audio", "photosensitivity", "highcontrast"]:
+			arg_matches = valid_on_off_args
+		elif main_cmd == "screenfilter":
+			arg_matches = valid_screenfilter_args
+
+		var exact_starts: Array[String] = []
+		var partials: Array[String] = []
+
+		# Apply the same smart-sorting to sub-arguments
+		for arg: String in arg_matches:
+			if arg.begins_with(sub_term):
+				exact_starts.append(main_cmd + " " + arg)
+			elif arg.contains(sub_term):
+				partials.append(main_cmd + " " + arg)
+
+		matches.append_array(exact_starts)
+		matches.append_array(partials)
+
+	return matches
+
+
+func _navigate_suggestions(direction: int) -> void:
+	print("Navigating console suggestions. Direction: ", direction)
+	
+	match_index += direction
+	if match_index < 0:
+		match_index = current_matches.size() - 1
+	elif match_index >= current_matches.size():
+		match_index = 0
+
+	# Flag prevents _on_text_changed from wiping our selection out
+	is_navigating_matches = true
+	command_input.text = current_matches[match_index] + " "
+	command_input.caret_column = command_input.text.length()
+	is_navigating_matches = false
+
+	_update_suggestion_ui()
+
+
+func _update_suggestion_ui() -> void:
+	var bbcode := ""
+	for i in range(current_matches.size()):
+		if i == match_index:
+			bbcode += "[color=yellow]> " + current_matches[i] + "[/color]\n"
+		else:
+			bbcode += "[color=gray]  " + current_matches[i] + "[/color]\n"
+	
+	suggestion_label.text = bbcode.strip_edges()
+
+
+func _reset_suggestions() -> void:
+	current_matches.clear()
+	match_index = -1
+	suggestion_label.visible = false
+	suggestion_label.text = ""
 
 
 # --- History Navigation Logic ---
@@ -178,6 +304,7 @@ func _navigate_history(direction: int) -> void:
 	if typed_history.is_empty():
 		return
 
+	print("Navigating console history. Direction: ", direction)
 	history_index += direction
 	history_index = clamp(history_index, 0, typed_history.size())
 
@@ -188,68 +315,9 @@ func _navigate_history(direction: int) -> void:
 		command_input.caret_column = command_input.text.length()
 
 
-# --- Autocomplete Logic ---
-func _attempt_autocomplete() -> void:
-	# Use lstrip instead of strip_edges so trailing spaces trigger argument autocompletion
-	var current_text := command_input.text.lstrip(" ")
-	if current_text == "":
-		return
-
-	# In Godot 4, split retains empty strings by default.
-	# E.g., "colorblind " becomes ["colorblind", ""] allowing empty arg matching.
-	var parts := current_text.split(" ")
-
-	# Autocomplete Main Command
-	if parts.size() == 1:
-		var search_term := parts[0].to_lower()
-		var matches := []
-
-		for cmd: String in valid_commands:
-			if cmd.begins_with(search_term):
-				matches.append(cmd)
-
-		if matches.size() == 1:
-			command_input.text = matches[0] + " "
-			command_input.caret_column = command_input.text.length()
-		elif matches.size() > 1:
-			write("Matches: " + ", ".join(matches), "yellow")
-
-	# Autocomplete Sub-commands
-	elif parts.size() == 2:
-		var main_cmd := parts[0].to_lower()
-		var sub_term := parts[1].to_lower()
-		var arg_matches := []
-
-		if main_cmd == "colorblind":
-			for arg: String in valid_colorblind_args:
-				if arg.begins_with(sub_term):
-					arg_matches.append(arg)
-
-		elif main_cmd == "setfont":
-			for arg: String in valid_font_args:
-				if arg.begins_with(sub_term):
-					arg_matches.append(arg)
-
-		elif main_cmd in ["subtitles", "mono_audio", "photosensitivity", "highcontrast"]:
-			for arg: String in valid_on_off_args:
-				if arg.begins_with(sub_term):
-					arg_matches.append(arg)
-
-		if arg_matches.size() == 1:
-			command_input.text = main_cmd + " " + arg_matches[0] + " "
-			command_input.caret_column = command_input.text.length()
-		elif arg_matches.size() > 1:
-			write("Matches: " + ", ".join(arg_matches), "yellow")
-
-		elif main_cmd == "screenfilter":
-			for arg: String in valid_screenfilter_args:
-				if arg.begins_with(sub_term):
-					arg_matches.append(arg)
-
 # --- LOGGING ---
 func write(message: String, color: String = "white") -> void:
-	print(message)
-
+	print("Console Output: ", message)
 	message_history.append({"text": message, "color": color})
 
 	if is_ui_ready and output_log:
@@ -269,10 +337,9 @@ func log_error(msg: String) -> void:
 
 
 # --- COMMAND PARSING ---
-
-
 func _on_command_submitted(text: String) -> void:
 	command_input.clear()
+	_reset_suggestions()
 
 	var clean_text := text.strip_edges()
 
@@ -287,9 +354,8 @@ func _on_command_submitted(text: String) -> void:
 		var command := parts[0].to_lower()
 		var args := parts.slice(1)
 
+		print("Executing Console Command: ", command, " | Args: ", args)
 		_process_command(command, args)
-
-	await get_tree().process_frame
 
 	if visible:
 		command_input.grab_focus()
@@ -298,7 +364,6 @@ func _on_command_submitted(text: String) -> void:
 func _process_command(cmd: String, _args: PackedStringArray) -> void:
 	match cmd:
 		"help":
-			# Dynamically joins the valid_commands array so you never have to manually update this list
 			write("Available commands: " + ", ".join(valid_commands), "green")
 		"clear":
 			output_log.clear()
@@ -343,10 +408,7 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 			write("Tommy! Remember the good old times?!")
 		"impulse":
 			if _args.size() > 0 and _args[0] == "101":
-				write(
-					"Bella doesn't need to hear about safety preconscious. She's a highly trained professional",
-					"white"
-				)
+				write("Bella doesn't need to hear about safety preconscious. She's a highly trained professional", "white")
 			else:
 				write("Usage: sv_cheats 1", "red")
 		"thegodfather":
@@ -372,16 +434,9 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 						material.set_shader_parameter("mode", 4)
 						write("Achromatopsia (Monochrome) filter enabled.", "green")
 					_:
-						write(
-							"Unknown type. Available: normal, protanopia, deuteranopia, tritanopia, mono, achromatopsia",
-							"red"
-						)
+						write("Unknown type. Available: normal, protanopia, deuteranopia, tritanopia, mono, achromatopsia", "red")
 			else:
-				write("Usage: colorblind <type>", "red")
-				write(
-					"Types: normal, protanopia, deuteranopia, tritanopia, mono, achromatopsia",
-					"yellow"
-				)
+				write("Usage: colorblind <type>\nTypes: normal, protanopia, deuteranopia, tritanopia, mono, achromatopsia", "yellow")
 		"gamespeed":
 			if _args.size() > 0:
 				var new_speed := _args[0].to_float()
@@ -399,7 +454,6 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 		"screenshake":
 			if _args.size() > 0:
 				var amount := _args[0].to_float()
-				# Example: GlobalSettings.shake_multiplier = clamp(amount, 0.0, 1.0)
 				write("Screenshake multiplier set to: " + str(clamp(amount, 0.0, 1.0)), "green")
 			else:
 				write("Usage: screenshake <0.0 to 1.0>", "yellow")
@@ -432,28 +486,23 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 		"setfont":
 			if _args.size() > 0:
 				var font_choice := _args[0].to_lower()
-
 				if font_choice in valid_font_args:
 					Events.font_changed.emit(font_choice)
 					write("Global font set to: " + font_choice, "green")
 				else:
 					write("Unknown font. Available: default, dyslexic, papyrus, comic", "red")
 			else:
-				write("Usage: setfont <font_name>", "yellow")
-				write("Available: default, dyslexic, papyrus, comic", "darkgray")
+				write("Usage: setfont <font_name>\nAvailable: default, dyslexic, papyrus, comic", "yellow")
 		"screenfilter":
 			if _args.size() > 0:
 				var filter_type := _args[0].to_lower()
-
 				if filter_type == "off":
 					screen_filter_rect.material = null
-					screen_filter_rect.visible = false # <-- HIDE IT HERE
+					screen_filter_rect.visible = false
 					write("Screen filter disabled.", "green")
 				elif filter_type in valid_screenfilter_args:
 					var mat := ShaderMaterial.new()
 					var shader_path := "res://assets/shaders/" + filter_type + ".gdshader"
-
-					# Cache the shader to maintain 60 FPS on subsequent loads
 					if not cached_shaders.has(filter_type):
 						if ResourceLoader.exists(shader_path):
 							cached_shaders[filter_type] = load(shader_path)
@@ -463,12 +512,11 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 
 					mat.shader = cached_shaders[filter_type] as Shader
 					screen_filter_rect.material = mat
-					screen_filter_rect.visible = true # <-- SHOW IT HERE
+					screen_filter_rect.visible = true
 					write(filter_type.to_upper() + " filter enabled.", "green")
 				else:
 					write("Unknown filter. Available: off, crt, vhs, pixelate, toon", "red")
 			else:
-				write("Usage: screenfilter <type>", "yellow")
-				write("Available: off, crt, vhs, pixelate, toon", "darkgray")
+				write("Usage: screenfilter <type>\nAvailable: off, crt, vhs, pixelate, toon", "yellow")
 		_:
 			write("Unknown command: '" + cmd + "'. Type 'help' for a list.", "red")

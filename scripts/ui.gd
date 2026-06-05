@@ -297,37 +297,26 @@ func _on_player_crouched(crouching: bool) -> void:
 
 
 # --- DEBUG & NOCLIP LOGIC ---
-func _input(event: InputEvent) -> void:
-	# Check for console key OR if the debug panel is open and ui_cancel is pressed
-	var console_pressed: bool = event.is_action_pressed("console")
-	var cancel_pressed: bool = event.is_action_pressed("ui_cancel")
-	
-	if console_pressed or (cancel_pressed and debug_panel.visible):
-		var is_open: bool = not debug_panel.visible
-		debug_panel.visible = is_open
-		get_tree().paused = is_open
-		
-		if is_open:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		else:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-			
-		Events.debug_menu_toggled.emit(is_open)
-		
-		# Prevent SystemMenuController from double-firing on the same Esc press
-		get_viewport().set_input_as_handled()
-#func _input(event: InputEvent) -> void:
-	#if event.is_action_pressed("console"):
-		#var is_open := not debug_panel.visible
+func _input(_event: InputEvent) -> void:
+	## Check for console key OR if the debug panel is open and ui_cancel is pressed
+	#var console_pressed: bool = event.is_action_pressed("console")
+	#var cancel_pressed: bool = event.is_action_pressed("ui_cancel")
+	#
+	#if console_pressed or (cancel_pressed and debug_panel.visible):
+		#var is_open: bool = not debug_panel.visible
 		#debug_panel.visible = is_open
 		#get_tree().paused = is_open
-#
+		#
 		#if is_open:
 			#Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		#else:
 			#Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-#
+			#
 		#Events.debug_menu_toggled.emit(is_open)
+		#
+		#if cancel_pressed:
+			#get_viewport().set_input_as_handled()
+	pass
 
 
 func _on_noclip_button_pressed() -> void:
@@ -406,6 +395,13 @@ func _on_metrics_button_pressed() -> void:
 
 # --- NEW CROSSHAIR ANIMATION ---
 func _on_terminal_mode_toggled(is_active: bool) -> void:
+	# 1. Sync the debug panel visibility with the console
+	debug_panel.visible = is_active
+	
+	# 2. Keep broadcasting your existing debug signal for other systems
+	Events.debug_menu_toggled.emit(is_active)
+
+	# 3. Handle your existing crosshair animation
 	if crosshair_tween and crosshair_tween.is_valid():
 		crosshair_tween.kill()
 
@@ -417,12 +413,29 @@ func _on_terminal_mode_toggled(is_active: bool) -> void:
 		var target_size := Vector2(16, 16)
 		crosshair_tween.tween_property(center_dot, "custom_minimum_size", target_size, 0.3)
 		crosshair_tween.tween_property(center_dot, "size", target_size, 0.3)
-
 	else:
 		crosshair_tween.tween_property(
 			center_dot, "custom_minimum_size", default_crosshair_size, 0.3
 		)
 		crosshair_tween.tween_property(center_dot, "size", default_crosshair_size, 0.3)
+#func _on_terminal_mode_toggled(is_active: bool) -> void:
+	#if crosshair_tween and crosshair_tween.is_valid():
+		#crosshair_tween.kill()
+#
+	#crosshair_tween = create_tween().set_parallel(true).set_trans(Tween.TRANS_CUBIC).set_ease(
+		#Tween.EASE_OUT
+	#)
+#
+	#if is_active:
+		#var target_size := Vector2(16, 16)
+		#crosshair_tween.tween_property(center_dot, "custom_minimum_size", target_size, 0.3)
+		#crosshair_tween.tween_property(center_dot, "size", target_size, 0.3)
+#
+	#else:
+		#crosshair_tween.tween_property(
+			#center_dot, "custom_minimum_size", default_crosshair_size, 0.3
+		#)
+		#crosshair_tween.tween_property(center_dot, "size", default_crosshair_size, 0.3)
 
 
 # --- COLLISION DEBUG LOGIC ---

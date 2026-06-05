@@ -92,6 +92,9 @@ func _ready() -> void:
 
 	# Lock the mouse into the game window!
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	
+	# Automatically hook up group-based environmental areas
+	_connect_waterfall_group()
 
 
 # --------------------------------------
@@ -192,8 +195,14 @@ func _physics_process(delta: float) -> void:
 		state_machine.set_process_unhandled_input(false)
 		system_menu.process_noclip(delta)
 		return
+		
+	# ---> ADD THIS NEW BLOCK HERE <---
+	# 3. Update Screen VFX (Rain drops, etc.)
+	if is_instance_valid(vfx_manager) and is_instance_valid(head):
+		# We pass the head's X rotation because that represents the camera's up/down pitch
+		vfx_manager.process_vfx(delta, head.rotation.x)
 
-	# 3. Normal Gameplay (Let the State Machine take the wheel!)
+	# 4. Normal Gameplay (Let the State Machine take the wheel!)
 	state_machine.set_physics_process(true)
 	state_machine.set_process_unhandled_input(true)
 
@@ -323,3 +332,67 @@ func load_save_data(data: Dictionary) -> void:
 			health_component.set("health", saved_health)
 			
 		_on_health_changed(saved_health)
+
+
+# --------------------------------------
+# WATERFALL OVERLAY TRIGGERS (Group Based)
+# --------------------------------------
+func _connect_waterfall_group() -> void:
+	print("Player is scanning for 'waterfall_area' group to connect signals...")
+	var connected_count: int = 0
+	
+	for node: Node in get_tree().get_nodes_in_group("waterfall_area"):
+		if node is Area3D:
+			var area: Area3D = node as Area3D
+			
+			# Use bind() to pass the Area3D along with the default body parameter
+			if not area.body_entered.is_connected(_on_waterfall_entered):
+				area.body_entered.connect(_on_waterfall_entered.bind(area))
+				
+			if not area.body_exited.is_connected(_on_waterfall_exited):
+				area.body_exited.connect(_on_waterfall_exited.bind(area))
+				
+			connected_count += 1
+			
+	print("Player successfully bound signals to ", connected_count, " waterfalls.")
+
+
+func _on_waterfall_entered(body: Node3D, area: Area3D) -> void:
+	# Ignore anything entering the waterfall that isn't the player
+	if body != self:
+		return
+		
+	print("Player entered waterfall: ", area.name)
+		
+	if not overlapping_waterfall_areas.has(area):
+		overlapping_waterfall_areas.append(area)
+		
+	if overlapping_waterfall_areas.size() == 1 and is_instance_valid(vfx_manager):
+		vfx_manager.enter_waterfall()
+
+
+func _on_waterfall_exited(body: Node3D, area: Area3D) -> void:
+	if body != self:
+		return
+		
+	print("Player exited waterfall: ", area.name)
+		
+	overlapping_waterfall_areas.erase(area)
+	
+	if overlapping_waterfall_areas.is_empty() and is_instance_valid(vfx_manager):
+		vfx_manager.exit_waterfall()
+
+
+# --------------------------------------
+# RAIN OVERLAY TRIGGERS
+# --------------------------------------
+func enter_rain_volume() -> void:
+	print("Player has entered a rain volume. Enabling rain VFX.")
+	if is_instance_valid(vfx_manager):
+		vfx_manager.set_rain_volume(true)
+
+
+func exit_rain_volume() -> void:
+	print("Player has exited a rain volume. Disabling rain VFX.")
+	if is_instance_valid(vfx_manager):
+		vfx_manager.set_rain_volume(false)
