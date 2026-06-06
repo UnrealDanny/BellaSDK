@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://bwx87famw5p7u"]
+
+[ext_resource type="PackedScene" uid="uid://mqae3mth7tfx" path="res://interactables/pickable_object.tscn" id="1_cfr4d"]
+[ext_resource type="Texture2D" uid="uid://6jbvqeu8qf1j" path="res://assets/images/dev_textures/standard_5_orange_512.png" id="2_yxn7w"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://vfx/unlit_outline_material.gdshader" id="3_bdkj8"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wxffa"]
+render_priority = 0
+shader = ExtResource("3_bdkj8")
+shader_parameter/highlight_color = Color(0.6669603, 0.7696019, 0.98834497, 1)
+shader_parameter/blink_speed = 8.00000038
+shader_parameter/min_intensity = 0.01
+shader_parameter/max_intensity = 0.02000000095
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fj5oh"]
+albedo_texture = ExtResource("2_yxn7w")
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_k01c1"]
+material = SubResource("StandardMaterial3D_fj5oh")
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_74l1t"]
+
+[node name="PickableBox" unique_id=594279821 instance=ExtResource("1_cfr4d")]
+collision_layer = 4
+collision_mask = 7
+mass = 5.0
+float_force = 1.5
+
+[node name="HighlightComponent" parent="." index="1" unique_id=1233358358]
+outline_material = SubResource("ShaderMaterial_wxffa")
+
+[node name="MeshInstance3D" parent="." index="2" unique_id=1239371319]
+mesh = SubResource("BoxMesh_k01c1")
+
+[node name="CollisionShape3D" parent="." index="3" unique_id=1677444331]
+shape = SubResource("BoxShape3D_74l1t")
+
+[node name="Marker3D" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="0" unique_id=1977258969]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.5, 0.5)
+
+[node name="Marker3D2" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="1" unique_id=1466183085]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, -0.5)
+
+[node name="Marker3D3" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="2" unique_id=865436627]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.5, -0.5)
+
+[node name="Marker3D4" parent="ProbeContainer" parent_id_path=PackedInt32Array(719013281) index="3" unique_id=1857240385]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, -0.5, 0.5)

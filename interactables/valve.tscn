@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://dudx3baxpmytw"]
+
+[ext_resource type="Script" uid="uid://dmt1r3bg7rmth" path="res://interactables/valve.gd" id="1_epeg1"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://vfx/unlit_outline_material.gdshader" id="2_bxo18"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://interactables/interact_component.gd" id="2_tqme0"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://environment/highlight_component.gd" id="3_bxo18"]
+[ext_resource type="PackedScene" uid="uid://djch67ud4o5fw" path="res://assets/props/valve_wheel/valve_wheel.fbx" id="5_iygui"]
+[ext_resource type="PackedScene" uid="uid://c5xcq2xug3ti" path="res://assets/props/valve_wheel/valve_base.fbx" id="6_mhmik"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sid1s"]
+render_priority = 0
+shader = ExtResource("2_bxo18")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 7.0000003325
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.02000000095
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_epeg1"]
+size = Vector3(0.6, 0.1, 0.6)
+
+[node name="Valve" type="StaticBody3D" unique_id=86858914 node_paths=PackedStringArray("label")]
+script = ExtResource("1_epeg1")
+is_back_and_forth = false
+label = NodePath("Label3D")
+
+[node name="Interact_Component" type="Node" parent="." unique_id=1430550788]
+script = ExtResource("2_tqme0")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="." unique_id=371993135]
+script = ExtResource("3_bxo18")
+outline_material = SubResource("ShaderMaterial_sid1s")
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="Label3D" type="Label3D" parent="." unique_id=1180216320]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.39249182, 0.2, 0.07568967)
+billboard = 1
+no_depth_test = true
+
+[node name="Wheel" parent="." unique_id=1857946508 instance=ExtResource("5_iygui")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0.27, 0)
+
+[node name="valve_base" parent="." unique_id=743200746 instance=ExtResource("6_mhmik")]
+transform = Transform3D(1.7, 0, 0, 0, 1.7, 0, 0, 0, 1.7, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1748411192]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.042541504, 0)
+shape = SubResource("BoxShape3D_epeg1")

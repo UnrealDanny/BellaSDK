@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://uwhga6c4q51o"]
+
+[ext_resource type="Script" uid="uid://qekanqevsr60" path="res://player/zipline.gd" id="1_nr4xa"]
+[ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://interactables/interact_component.gd" id="2_1tsh7"]
+[ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://environment/highlight_component.gd" id="3_v6pup"]
+[ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://vfx/unlit_outline_material.gdshader" id="4_um8yc"]
+[ext_resource type="AudioStream" uid="uid://b81edi4tvhu8f" path="res://assets/sounds/Zipline.wav" id="5_um8yc"]
+[ext_resource type="AudioStream" uid="uid://dgnxwid3n7ce3" path="res://assets/sounds/ClimbRope.wav" id="6_6k1gw"]
+
+[sub_resource type="Curve3D" id="Curve3D_6k1gw"]
+resource_local_to_scene = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -0.5033784, 7.850241, -1.3896141, 0, 0, 0, 0, 0, 0, 0.24442816, -3.2556992, 0.5654783),
+"tilts": PackedFloat32Array(0, 0)
+}
+point_count = 2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nr4xa"]
+resource_local_to_scene = true
+top_radius = 0.05
+bottom_radius = 0.05
+height = 11.301482
+radial_segments = 16
+rings = 0
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_1tsh7"]
+resource_local_to_scene = true
+height = 11.301482
+radius = 0.05
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_6k1gw"]
+render_priority = 0
+shader = ExtResource("4_um8yc")
+shader_parameter/highlight_color = Color(0, 1, 0.5, 1)
+shader_parameter/blink_speed = 4.0
+shader_parameter/min_intensity = 0.0
+shader_parameter/max_intensity = 0.5
+
+[node name="Zipline" type="Path3D" unique_id=862410081]
+curve = SubResource("Curve3D_6k1gw")
+script = ExtResource("1_nr4xa")
+metadata/_custom_type_script = "uid://co0yykjjmnb8w"
+
+[node name="WireMesh" type="MeshInstance3D" parent="." unique_id=639202577]
+transform = Transform3D(-0.9340086, -0.06616887, -0.35106927, 0, 0.98269767, -0.18521698, 0.35725054, -0.17299426, -0.91784805, -0.12947512, 2.2972713, -0.4120679)
+mesh = SubResource("CylinderMesh_nr4xa")
+
+[node name="InteractArea" type="StaticBody3D" parent="." unique_id=1624315724]
+collision_layer = 5
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="InteractArea" unique_id=89696706]
+transform = Transform3D(-0.9340086, -0.06616887, -0.35106927, 0, 0.98269767, -0.18521698, 0.35725054, -0.17299426, -0.91784805, -0.12947512, 2.2972713, -0.4120679)
+shape = SubResource("CylinderShape3D_1tsh7")
+
+[node name="Interact_Component" type="Node" parent="InteractArea" unique_id=74740240]
+script = ExtResource("2_1tsh7")
+metadata/_custom_type_script = "uid://cqawbvidns1th"
+
+[node name="HighlightComponent" type="Node" parent="InteractArea" unique_id=1213785366 node_paths=PackedStringArray("target_meshes")]
+script = ExtResource("3_v6pup")
+outline_material = SubResource("ShaderMaterial_6k1gw")
+target_meshes = [NodePath("../../WireMesh")]
+metadata/_custom_type_script = "uid://dgig0tamvkdxx"
+
+[node name="Label3D" type="Label3D" parent="InteractArea" unique_id=219650774]
+billboard = 1
+double_sided = false
+no_depth_test = true
+
+[node name="SlideAudio" type="AudioStreamPlayer3D" parent="." unique_id=879196766]
+stream = ExtResource("5_um8yc")
+
+[node name="ClimbAudio" type="AudioStreamPlayer3D" parent="." unique_id=405680289]
+stream = ExtResource("6_6k1gw")
