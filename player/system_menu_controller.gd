@@ -154,6 +154,10 @@ func toggle_noclip() -> void:
 		player_body.velocity.y = 0.0
 	else:
 		print("Noclip OFF")
+		# Kill all momentum to stop dead in tracks
+		player_body.velocity = Vector3.ZERO
+		# Clear last_velocity so StateAir doesn't calculate massive fall damage
+		player_body.last_velocity = Vector3.ZERO 
 
 	# Emit global and local signals to update the UI and resolve the warning
 	Events.noclip_toggled.emit(flying)

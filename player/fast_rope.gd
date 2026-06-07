@@ -28,6 +28,7 @@ var locked_z: float = 0.0
 # Track whether the player is currently going up or down
 var is_descending: bool = false
 var interact_key_name: String = "E"
+var interaction_cooldown: float = 0.0
 
 @onready var collision_shape: CollisionShape3D = $CollisionShape3D
 @onready var top_marker: Marker3D = $TopMarker
@@ -106,14 +107,18 @@ func _on_unfocused() -> void:
 		interact_label.hide()
 
 
-func _on_interacted(character: CharacterBody3D) -> void:
-	if not attached_player:
-		attach(character)
+#func _on_interacted(character: CharacterBody3D) -> void:
+	#if not attached_player:
+		#attach(character)
 
 
 func _physics_process(delta: float) -> void:
 	if Engine.is_editor_hint():
 		return
+
+	# Decrement cooldown universally
+	if interaction_cooldown > 0.0:
+		interaction_cooldown -= delta
 
 	# --- 1. MOVEMENT LOGIC ---
 	if attached_player:
@@ -130,11 +135,11 @@ func _physics_process(delta: float) -> void:
 		if is_descending:
 			attached_player.global_position.y -= ascend_speed * delta
 			if attached_player.global_position.y <= global_position.y:
-				detach(false)  # false = don't launch them into the floor
+				detach(false) 
 		else:
 			attached_player.global_position.y += ascend_speed * delta
 			if attached_player.global_position.y >= top_marker.global_position.y:
-				detach(true)  # true = apply launch velocity
+				detach(true) 
 
 	# --- 2. DYNAMIC UI POSITIONING ---
 	elif interact_comp and interact_comp.is_currently_focused and interact_label.visible:
@@ -146,11 +151,16 @@ func _physics_process(delta: float) -> void:
 			interact_label.global_position = final_pos
 
 
+func _on_interacted(character: CharacterBody3D) -> void:
+	# Check cooldown before allowing attachment
+	if not attached_player and interaction_cooldown <= 0.0:
+		attach(character)
+
+
 func attach(player: CharacterBody3D) -> void:
 	attached_player = player
 	attach_timer = 0.0
 
-	# Determine if we go up or down based on player height vs rope center
 	var mid_point: float = global_position.y + (rope_length / 2.0)
 	is_descending = player.global_position.y > mid_point
 
@@ -167,6 +177,15 @@ func attach(player: CharacterBody3D) -> void:
 	locked_z = global_position.z + (offset_dir.z * climb_radius)
 	# ------------------------------------
 
+	# 1. Break the floor contact immediately so is_on_floor() becomes false
+	if not is_descending:
+		attached_player.global_position.y += 0.15
+
+	# 2. Instantly disable the StairController to prevent 1-frame execution lag
+	var stair_ctrl: Node = attached_player.find_child("StairController", true, false)
+	if is_instance_valid(stair_ctrl):
+		stair_ctrl.is_enabled = false
+
 	attached_player.add_collision_exception_with(self)
 
 	if interact_label:
@@ -181,6 +200,13 @@ func attach(player: CharacterBody3D) -> void:
 func detach(reached_top: bool) -> void:
 	if not attached_player:
 		return
+
+	interaction_cooldown = 0.5 
+
+	# Re-enable the StairController instantly
+	var stair_ctrl: Node = attached_player.find_child("StairController", true, false)
+	if is_instance_valid(stair_ctrl):
+		stair_ctrl.is_enabled = true
 
 	attached_player.remove_collision_exception_with(self)
 

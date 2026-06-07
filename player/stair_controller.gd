@@ -7,6 +7,7 @@ const MIN_STEP_REACH: float = 0.3
 var time_since_step_up: float = 100.0
 var _snapped_to_stairs_last_frame: bool = false
 var _last_frame_was_on_floor: int = 0
+var is_enabled: bool = true
 
 var _up_test := PhysicsTestMotionResult3D.new()
 var _forward_test := PhysicsTestMotionResult3D.new()
@@ -24,6 +25,9 @@ func _ready() -> void:
 	_test_params.exclude_bodies = [player.get_rid()]
 
 func snap_up_stairs_check(delta: float) -> bool:
+	if not is_enabled:
+		return false
+		
 	time_since_step_up += delta
 	var was_snapped_last_frame: bool = _snapped_to_stairs_last_frame
 	_snapped_to_stairs_last_frame = false
@@ -95,6 +99,9 @@ func snap_up_stairs_check(delta: float) -> bool:
 	return false
 
 func snap_down_to_stairs_check() -> void:
+	if not is_enabled:
+		return
+		
 	# 0.2s debounce completely prevents fighting between up/down casts
 	if time_since_step_up < 0.2:
 		return
