@@ -67,8 +67,10 @@ func _ready() -> void:
 
 # --- THE SLOMO ENGINE ---
 func _set_slomo(target_scale: float) -> void:
-	if slomo_tween:
+	if slomo_tween and slomo_tween.is_valid():
 		slomo_tween.kill()
+
+	print("Rope: Engine time_scale transitioning to ", target_scale)
 
 	slomo_tween = create_tween()
 	slomo_tween.set_ignore_time_scale(true)
@@ -76,15 +78,14 @@ func _set_slomo(target_scale: float) -> void:
 
 
 func _physics_process(_delta: float) -> void:
-	if not is_inside_tree():
+	if not is_inside_tree() or interact_component == null:
 		return
 
-	var comp: Object = get_node_or_null("RopeBody/Interact_Component")
-
-	if comp and comp.get("is_currently_focused") == true and not player_on_rope:
+	# Use the pre-cached interact_component instead of querying the tree every frame
+	if interact_component.get("is_currently_focused") == true and not player_on_rope:
 		var cam: Camera3D = get_viewport().get_camera_3d()
 		if cam:
-			var hit_point_val: Variant = comp.get("last_hit_position")
+			var hit_point_val: Variant = interact_component.get("last_hit_position")
 			var hit_point: Vector3 = Vector3.ZERO
 
 			if hit_point_val is Vector3:

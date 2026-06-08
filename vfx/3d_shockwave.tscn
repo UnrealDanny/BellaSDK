@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bnenavtkhbxvh"]
+
+[ext_resource type="Shader" uid="uid://2u8ayaspl5uh" path="res://vfx/3Dshockwave.gdshader" id="1_amqop"]
+
+[sub_resource type="Gradient" id="Gradient_u5j46"]
+colors = PackedColorArray(0, 0, 0, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_aolua"]
+gradient = SubResource("Gradient_u5j46")
+
+[sub_resource type="Curve" id="Curve_amqop"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_u5j46"]
+curve = SubResource("Curve_amqop")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_uua0r"]
+direction = Vector3(0, 0, 0)
+gravity = Vector3(0, 0, 0)
+scale_min = 5.0
+scale_max = 5.0
+scale_curve = SubResource("CurveTexture_u5j46")
+color_ramp = SubResource("GradientTexture1D_aolua")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4m17v"]
+render_priority = 0
+shader = ExtResource("1_amqop")
+shader_parameter/distortion_strength = 0.1390000066025
+shader_parameter/rim_power = 0.91600004025012
+shader_parameter/aberration_strength = 0.80000001192093
+
+[sub_resource type="SphereMesh" id="SphereMesh_lu0na"]
+material = SubResource("ShaderMaterial_4m17v")
+radius = 2.0
+height = 4.0
+radial_segments = 32
+rings = 16
+
+[node name="3DShockwave" type="GPUParticles3D" unique_id=1451759977]
+amount = 1
+lifetime = 0.5
+process_material = SubResource("ParticleProcessMaterial_uua0r")
+draw_pass_1 = SubResource("SphereMesh_lu0na")

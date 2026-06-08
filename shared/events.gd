@@ -42,6 +42,9 @@ signal dyslexic_font_toggled(is_active: bool)
 @warning_ignore("unused_signal")
 signal player_health_changed(new_health: int)
 
+@warning_ignore("unused_signal")
+signal screenshake_requested(intensity: float, duration: float)
+
 # --- REPLACED FONT SIGNAL ---
 signal font_changed(font_name: String)
 

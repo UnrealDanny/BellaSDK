@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://2db87kewe2f2"]
 
 [ext_resource type="Script" uid="uid://ca4mn3j02b5bi" path="res://player/player.gd" id="1_34orh"]
+[ext_resource type="Script" uid="uid://dlrddmx144blj" path="res://player/camera_3d.gd" id="2_a2xo5"]
 [ext_resource type="PackedScene" uid="uid://cv4syvckbtm2f" path="res://ui/ui.tscn" id="2_k2mo6"]
 [ext_resource type="Script" uid="uid://f70me5087r7i" path="res://player/flashlight_controller.gd" id="3_b8lor"]
 [ext_resource type="Texture2D" uid="uid://dnv1e6gebl5gj" path="res://assets/images/UI/flashlight_pattern.png" id="3_di6f5"]
@@ -350,6 +351,7 @@ fall_gravity_multiplier = null
 default_lerp_speed = null
 air_lerp_speed = null
 ice_lerp_speed = null
+player_mass = 60.0
 
 [node name="Head" type="Node3D" parent="." unique_id=1584872370]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
@@ -357,6 +359,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
 [node name="Eyes" type="Node3D" parent="Head" unique_id=1925066158]
 
 [node name="Camera3D" type="Camera3D" parent="Head/Eyes" unique_id=1414380114]
+script = ExtResource("2_a2xo5")
 
 [node name="InteractShapeCast" type="ShapeCast3D" parent="Head/Eyes/Camera3D" unique_id=1917702885]
 unique_name_in_owner = true

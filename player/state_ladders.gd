@@ -15,12 +15,14 @@ var current_ladder: Node3D = null
 
 
 func enter(msg: Dictionary = {}) -> void:
+	print("StateLadder: Initializing ladder state.")
 	if msg.has("ladder_node"):
 		current_ladder = msg["ladder_node"]
 		_snap_to_ladder()
 
 
 func exit() -> void:
+	print("StateLadder: Exiting ladder state.")
 	current_ladder = null
 
 
@@ -138,32 +140,48 @@ func _handle_jump_input(input_dir: Vector2) -> void:
 		return
 
 	var look_dir: Vector3 = -player.camera.global_transform.basis.z
-	var right_dir: Vector3 = player.camera.global_transform.basis.x
-	var ladder_forward: Vector3 = current_ladder.global_transform.basis.z.normalized()
-
-	var dot_forward: float = look_dir.dot(ladder_forward)
-	var is_looking_down: bool = look_dir.y < -0.3
-	var is_looking_away: bool = dot_forward > -0.2
-	var strafe_input: float = input_dir.x
-
-	var flat_jump_dir: Vector3 = Vector3.ZERO
-
-	# CONDITION A: Side jump (Looking at the ladder, pressing A or D)
-	if absf(strafe_input) > 0.1 and not is_looking_away and not is_looking_down:
-		var flat_right := Vector3(right_dir.x, 0.0, right_dir.z).normalized()
-		player.velocity = (flat_right * strafe_input * 6.0)
-		player.global_position += (flat_right * strafe_input) * 0.2
-		state_machine.transition_to("Air")
+	
+	# CONDITION: Block jump entirely when looking up (Pitch threshold 0.3)
+	if look_dir.y > 0.3:
+		print("StateLadder: Jump blocked. Player is looking up.")
 		return
 
-	# CONDITION B: Detach jump (Looking down, away, or neutral)
-	flat_jump_dir = Vector3(look_dir.x, 0.0, look_dir.z).normalized()
-	var camera_lift: float = maxf(look_dir.y, 0.0) * 2.5
-	var vertical_hop: float = 4.5 + camera_lift
-
-	player.velocity = (flat_jump_dir * 6.0) + Vector3(0.0, vertical_hop, 0.0)
-	player.global_position += look_dir * 0.2
-	state_machine.transition_to("Air")
+	var right_dir: Vector3 = player.camera.global_transform.basis.x
+	var ladder_outward: Vector3 = current_ladder.global_transform.basis.z.normalized()
+	
+	# FLATTEN VECTORS
+	var flat_look: Vector3 = Vector3(look_dir.x, 0.0, look_dir.z).normalized()
+	var flat_outward: Vector3 = Vector3(ladder_outward.x, 0.0, ladder_outward.z).normalized()
+	var flat_right: Vector3 = Vector3(right_dir.x, 0.0, right_dir.z).normalized()
+	
+	var dot_outward: float = flat_look.dot(flat_outward)
+	var strafe_input: float = input_dir.x
+	
+	# ---------------------------------------------------------
+	# INTENT 1: SIDE JUMP (Ladder to Ladder)
+	# ---------------------------------------------------------
+	if absf(strafe_input) > 0.1:
+		print("StateLadder: Intentional Side Jump. Pushing laterally.")
+		player.velocity = (flat_right * strafe_input * 7.5) + Vector3(0.0, 4.5, 0.0)
+		player.move_and_slide() # Force impulse to register immediately
+		state_machine.transition_to("Air")
+		return
+		
+	# ---------------------------------------------------------
+	# INTENT 2: BACK EJECT (Looking away from the ladder)
+	# ---------------------------------------------------------
+	if dot_outward > 0.2:
+		print("StateLadder: Intentional Back Eject. Pushing in look direction.")
+		# Bumped lateral velocity slightly to 7.0 to ensure a clean break
+		player.velocity = (flat_look * 7.0) + Vector3(0.0, 4.5, 0.0)
+		player.move_and_slide() # Force impulse to register immediately
+		state_machine.transition_to("Air")
+		return
+		
+	# ---------------------------------------------------------
+	# INTENT 3: BLOCKED (Looking at the ladder)
+	# ---------------------------------------------------------
+	print("StateLadder: Jump blocked. Player is facing the ladder.")
 
 
 func _check_transitions() -> void:

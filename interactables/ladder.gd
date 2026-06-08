@@ -42,6 +42,7 @@ func _on_body_entered(body: Node3D) -> void:
 		return
 
 	if body.has_method("enter_ladder"):
+		print("LadderArea: '", body.name, "' has entered the ladder trigger.")
 		body.enter_ladder(self)
 
 
@@ -50,4 +51,5 @@ func _on_body_exited(body: Node3D) -> void:
 		return
 
 	if body.has_method("exit_ladder"):
+		print("LadderArea: '", body.name, "' has exited the ladder trigger.")
 		body.exit_ladder(self)

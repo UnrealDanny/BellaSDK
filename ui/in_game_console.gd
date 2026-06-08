@@ -454,9 +454,18 @@ func _process_command(cmd: String, _args: PackedStringArray) -> void:
 		"screenshake":
 			if _args.size() > 0:
 				var amount := _args[0].to_float()
-				write("Screenshake multiplier set to: " + str(clamp(amount, 0.0, 1.0)), "green")
+				var duration := 1.0 
+				
+				if _args.size() > 1:
+					duration = _args[1].to_float()
+					
+				Events.screenshake_requested.emit(amount, duration)
+				
+				# Updated clamping text output
+				var msg := "Screenshake: Intensity " + str(clampf(amount, 0.0, 16.0)) + ", Duration " + str(duration) + "s"
+				write(msg, "green")
 			else:
-				write("Usage: screenshake <0.0 to 1.0>", "yellow")
+				write("Usage: screenshake <intensity 0.0-16.0> [duration_in_seconds]", "yellow")
 		"subtitles":
 			if _args.size() > 0:
 				var active := _args[0].to_lower() == "on"

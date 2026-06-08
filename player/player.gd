@@ -21,6 +21,13 @@ extends CharacterBody3D
 @export var air_lerp_speed: float = 3.0
 @export var ice_lerp_speed: float = 1.5
 
+@export_category("Physics Properties")
+## How heavy the player is (in kg). Essential for weighing down pulley carts and platforms.
+@export var player_mass: float = 80.0
+
+# Spam protector for 60 FPS logging
+var _last_weighed_body: RigidBody3D = null
+
 # --------------------------------------
 # SHARED STATE VARIABLES
 # --------------------------------------
@@ -196,16 +203,19 @@ func _physics_process(delta: float) -> void:
 		system_menu.process_noclip(delta)
 		return
 		
-	# ---> ADD THIS NEW BLOCK HERE <---
 	# 3. Update Screen VFX (Rain drops, etc.)
 	if is_instance_valid(vfx_manager) and is_instance_valid(head):
-		# We pass the head's X rotation because that represents the camera's up/down pitch
 		vfx_manager.process_vfx(delta, head.rotation.x)
 
-	# 4. Normal Gameplay (Let the State Machine take the wheel!)
+	# 4. Normal Gameplay
 	state_machine.set_physics_process(true)
 	state_machine.set_process_unhandled_input(true)
-
+	
+	# 5. Apply body weight to dynamic platforms
+	_apply_weight_to_floor()
+	
+	# Send the true world-space position to the compute shader
+	SmokeManager.update_player_position(global_position)
 
 # --------------------------------------
 # ENVIRONMENTAL ADAPTERS
@@ -228,15 +238,17 @@ func _on_zipline_grabbed(zipline_ref: Node3D, start_pos: Vector3, end_pos: Vecto
 	)
 
 
-# 3. Ladders (Change the function name to whatever your ladder script tries to call)
+# 3. Ladders
 func enter_ladder(ladder_node: Node3D) -> void:
 	if vault_controller.is_vaulting:
 		return
+	print("Player: enter_ladder() called. Sending ladder node to StateMachine.")
 	state_machine.transition_to("Ladders", {"ladder_node": ladder_node})
 
 
 func exit_ladder(_ladder_node: Node3D) -> void:
 	if state_machine.state.name == "Ladders":
+		print("Player: exit_ladder() called. Kicking player to Air state.")
 		state_machine.transition_to("Air")
 
 
@@ -396,3 +408,32 @@ func exit_rain_volume() -> void:
 	print("Player has exited a rain volume. Disabling rain VFX.")
 	if is_instance_valid(vfx_manager):
 		vfx_manager.set_rain_volume(false)
+
+
+func _apply_weight_to_floor() -> void:
+	if not is_on_floor():
+		if is_instance_valid(_last_weighed_body):
+			print("Player: Stepped off rigid body. Ceasing downward weight force.")
+			_last_weighed_body = null
+		return
+
+	# Iterate through all slide collisions from the state machine's move_and_slide()
+	for i: int in range(get_slide_collision_count()):
+		var collision: KinematicCollision3D = get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+
+		# Check if the floor is a rigid body and we are standing on top of it
+		if collider is RigidBody3D and collision.get_normal().y > 0.5:
+			# Calculate true physical weight (mass * gravity)
+			var downward_force: float = player_mass * gravity
+			
+			# Apply force exactly where the feet touch, allowing platforms to tilt
+			var hit_position: Vector3 = collision.get_position() - collider.global_position
+			collider.apply_force(Vector3.DOWN * downward_force, hit_position)
+
+			# Print once when initially stepping on it
+			if _last_weighed_body != collider:
+				print("Player: Stepped onto ", collider.get_name(), ". Applying ", downward_force, " downward force.")
+				_last_weighed_body = collider
+				
+			return # Only weigh down one specific floor object at a time

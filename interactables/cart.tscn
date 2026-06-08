@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://cxcxbcyptxba2"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_jcjwr"]
+size = Vector3(2, 0.2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_t3xjy"]
+size = Vector3(2, 0.2, 2)
+
+[node name="Cart" type="RigidBody3D" unique_id=838928258]
+axis_lock_linear_x = true
+axis_lock_linear_z = true
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+axis_lock_angular_z = true
+mass = 50.0
+
+[node name="Visuals" type="MeshInstance3D" parent="." unique_id=116899383]
+mesh = SubResource("BoxMesh_jcjwr")
+
+[node name="Floor_Collision" type="CollisionShape3D" parent="." unique_id=190431216]
+shape = SubResource("BoxShape3D_t3xjy")
+
+[node name="Cable_Anchor" type="Marker3D" parent="." unique_id=1680560779]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.101879954, 0)
