@@ -2,7 +2,7 @@
 
 <b>BellaSDK</b> - a modern replacement for Hammer/Source to help noobs quickly start prototyping their next masterpiece instead of wasting valuable months trying to add fucking crouching mechanic to a 35 year old engine that was specifically made for FPS! Fuck Unreal you fucking sack of shit!!!
 
-[COMPILED PROJECT](https://drive.google.com/drive/folders/1EIplMuRXGZBpfP5XdidS_mtlFUrvjh8J?usp=sharing) - will be updated infrequently.
+[COMPILED PROJECT](https://drive.google.com/drive/folders/1EIplMuRXGZBpfP5XdidS_mtlFUrvjh8J?usp=sharing) (no longer necessary since I figured out how to create releases)- will be updated infrequently.
 There you can also find the ASSETS.zip - just unzip it into the main folder
 
 ## <u>BellaSDK - a fun project</u>
@@ -24,7 +24,7 @@ Anyway, all I wanna say is that <i>"The client is always right"</i> and if our m
 
 And so I decided to create BellaSDK - a free Source/Hammer killer to help noobs quickly get into GD/LD using modern day tools. Hammer was a good hoor. A total beast! Great memories but it's time to move on. Unity keeps shooting itself in the foot and Unreal is a huge pile of shit that is thousands of years old. Everybody pooped there: mammonths, seals, birds, the whales and the snail, and even Gary The Stinky Pooper. You know who I'm talking about.  
 
-Back to BellaSDK: I want this sweet little princess to have everything: all the gameplay mechanics such as boom-sticks, interactions, movements, AI, physics, puzzles, dialogue systems, handholding, (at least) 5 kids, a nice house, plenty of sausages, a good economy around, you name it. 
+Back to BellaSDK: I want this sweet little princess to have everything: all the gameplay mechanics such as boom-sticks, interactions, movements, AI, physics, puzzles, dialogue systems, handholding, (at least) 5 kids, a nice house, plenty of sausages, a good economy around, you name it. High level of interactivity and hand-crafted approach all the way through!
 
 Besides that I also want textures, models (especially barrels), sounds, animations, VFX, elves, good and easy-to-use scripting system, doors that always open AWAY from you (if you are into that sort of thing)! 
 
