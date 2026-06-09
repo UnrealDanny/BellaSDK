@@ -49,87 +49,86 @@ func equip_to_player(p_node: CharacterBody3D) -> void:
 
 # --- SHOOT LOGIC (The Pro Way) ---
 func shoot(player_camera: Camera3D) -> void:
+	print("Shotgun: shoot() called by player.")
+
 	if not is_equipped:
 		return
 
-	var current_time := Time.get_ticks_msec()
+	var current_time: float = Time.get_ticks_msec()
 	if current_time - last_shot_time < fire_rate * 1000.0:
-		return  # Too soon! Abort the function.
+		return
 
 	last_shot_time = current_time
 
-	# --- PLAY FIRE SOUND ---
 	if shotgun_fire:
+		print("Shotgun: Playing fire sound.")
 		shotgun_fire.play()
 
-	# 1. Get access to the raw Physics Engine
-	var space_state := get_world_3d().direct_space_state
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var origin: Vector3 = player_camera.global_position
 
-	# 2. Get the exact center of the player's screen
-	var origin := player_camera.global_position
-
-	# The negative Z axis of the camera's basis is always exactly "forward"
-	var forward_dir := -player_camera.global_transform.basis.z
-	var cam_right := player_camera.global_transform.basis.x
-	var cam_up := player_camera.global_transform.basis.y
+	var forward_dir: Vector3 = -player_camera.global_transform.basis.z.normalized()
+	var cam_right: Vector3 = player_camera.global_transform.basis.x.normalized()
+	var cam_up: Vector3 = player_camera.global_transform.basis.y.normalized()
 
 	# ----------------------------------------------------
-	# NEW: TELL THE SMOKE MANAGER WE FIRED A SHOTGUN BLAST
+	# TELL ALL SMOKE MANAGERS WE FIRED A SHOTGUN BLAST
 	# ----------------------------------------------------
-	if SmokeManager:
-		SmokeManager.add_bullet_hole(origin, forward_dir, max_range, 3.0)
+	var atmos_manager: Node = get_node_or_null("/root/SmokeManager")
+	if atmos_manager and atmos_manager.has_method("add_bullet_hole"):
+		print("Shotgun: Sending forward_dir to atmospheric SmokeManager.")
+		atmos_manager.add_bullet_hole(origin, forward_dir, max_range, 4.5)
 
-	# 3. Calculate and fire each pellet
-	for i in range(pellet_count):
-		# Generate random spread angles
-		var random_x := deg_to_rad(randf_range(-spread_angle, spread_angle))
-		var random_y := deg_to_rad(randf_range(-spread_angle, spread_angle))
+	var grenade_manager: Node = get_node_or_null("/root/SmokeGrenadeManager")
+	if grenade_manager and grenade_manager.has_method("process_bullet_trajectory"):
+		print("Shotgun: Sending trajectory to SmokeGrenadeManager.")
+		var end_pos: Vector3 = origin + (forward_dir * max_range)
+		grenade_manager.process_bullet_trajectory(origin, end_pos, 4.5)
+	else:
+		print("Shotgun: Could not find process_bullet_trajectory on manager.")
 
-		# Apply the spread to our forward direction
-		var pellet_dir := forward_dir.rotated(cam_right, random_y).rotated(cam_up, random_x)
-		var end_point := origin + (pellet_dir * max_range)
+	# ----------------------------------------------------
+	# PELLET RAYCASTING
+	# ----------------------------------------------------
+	for i: int in range(pellet_count):
+		var random_x: float = deg_to_rad(randf_range(-spread_angle, spread_angle))
+		var random_y: float = deg_to_rad(randf_range(-spread_angle, spread_angle))
 
-		# 4. Create a math-based raycast
-		var query := PhysicsRayQueryParameters3D.create(origin, end_point)
-		# Ignore the player so we don't shoot ourselves!
+		var pellet_dir: Vector3 = forward_dir.rotated(cam_right, random_y).rotated(cam_up, random_x)
+		var end_point: Vector3 = origin + (pellet_dir * max_range)
+
+		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(origin, end_point)
 		query.exclude = [player_camera.owner.get_rid()]
 
-		# 5. Ask the physics engine what we hit
-		var result := space_state.intersect_ray(query)
+		var result: Dictionary = space_state.intersect_ray(query)
 
 		if result:
 			var collider: Object = result.collider
+			print("Shotgun: Pellet hit " + str(collider.name) + " at " + str(result.position))
 
-			# --- THE DAMAGE & PHYSICS CHECK ---
 			if collider.has_method("take_damage"):
-				# We pass the damage AND the direction the pellet was flying!
 				collider.take_damage(damage_per_pellet, pellet_dir)
-
 			elif collider is RigidBody3D:
-				# If it doesn't take damage, but IS a physics object (like your box), push it!
-				var hit_offset: Vector3 = result.position - collider.global_position
-				collider.apply_impulse(pellet_dir * 2.0, hit_offset)
+				var hit_offset: Vector3 = result.position - (collider as RigidBody3D).global_position
+				(collider as RigidBody3D).apply_impulse(pellet_dir * 2.0, hit_offset)
 
-			# --- VISUAL EFFECTS ---
 			if collider.has_method("leak_at"):
 				collider.leak_at(result.position)
 
-			var dot := DEBUG_PELLET.instantiate()
+			var dot: Node3D = DEBUG_PELLET.instantiate() as Node3D
 			get_tree().current_scene.add_child(dot)
 			dot.global_position = result.position
-			Console.write(
-				"Pellet hit: " + str(collider.name) + " at " + str(result.position), "orange"
-			)
 
 
 func _on_interact_component_interacted(_player: CharacterBody3D = null) -> void:
-	print("picking up shotgun")
+	print("Shotgun: _on_interact_component_interacted() called. Picking up shotgun.")
+	
 	# 1. Don't let us pick it up twice!
 	if is_equipped:
 		return
 
-	# 2. Find the player using the group we set up earlier
-	var player := get_tree().get_first_node_in_group("player")
+	# 2. Find the player using the group and strictly cast it
+	var player: CharacterBody3D = get_tree().get_first_node_in_group("player") as CharacterBody3D
 
 	# 3. Tell the shotgun to run its equip logic on that player
 	if player:
