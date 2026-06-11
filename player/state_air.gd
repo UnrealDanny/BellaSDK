@@ -168,6 +168,20 @@ func _handle_landing() -> void:
 	if player.last_velocity.y <= -20.0:
 		player.health_component.take_damage(player.health_component.max_health)
 
+	# 1. Intercept the landing to check for a slide surface
+	for i: int in range(player.get_slide_collision_count()):
+		var collision: KinematicCollision3D = player.get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+		
+		# ADD THIS DEBUG PRINT:
+		print("Debug - Collided with node: ", collider.name, " | Groups: ", collider.get_groups())
+		
+		if collider is Node and collider.is_in_group("slide_surface"):
+			print("StateAir: Slide surface detected on landing. Transitioning to StateSlide.")
+			state_machine.transition_to("Slide")
+			return
+
+	# 2. If no slide surface is found, proceed to Ground normally
 	var msg: Dictionary = {}
 	if jump_buffer_timer > 0.0:
 		msg["jump_buffered"] = true

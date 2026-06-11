@@ -24,6 +24,16 @@ func enter(msg: Dictionary = {}) -> void:
 
 
 func physics_update(delta: float) -> void:
+	# 0. Slide Surface Detection
+	for i: int in range(player.get_slide_collision_count()):
+		var collision: KinematicCollision3D = player.get_slide_collision(i)
+		var collider: Object = collision.get_collider()
+		
+		if collider is Node and collider.is_in_group("slide_surface"):
+			print("StateGround: Slide surface detected via collision. Transitioning to Slide.")
+			state_machine.transition_to("Slide")
+			return
+			
 	# 1. State Transitions (Leaving the Ground)
 	var is_recently_stepped: bool = player.stair_controller.time_since_step_up < 0.2
 	

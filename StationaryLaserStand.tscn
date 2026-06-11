@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://g4evrb4isbwd"]
 
 [ext_resource type="Script" uid="uid://bgfrkky6ktf6s" path="res://StationaryLaserStand.gd" id="1_3nf4h"]
+[ext_resource type="Shader" uid="uid://jn5ny2fhowtg" path="res://vfx/beam.gdshader" id="2_1cv0y"]
 [ext_resource type="Script" uid="uid://cqawbvidns1th" path="res://interactables/interact_component.gd" id="2_2bfhh"]
 [ext_resource type="Script" uid="uid://dgig0tamvkdxx" path="res://environment/highlight_component.gd" id="3_bowf1"]
 [ext_resource type="Shader" uid="uid://f54os6ddxea8" path="res://vfx/unlit_outline_material.gdshader" id="4_xidcn"]
@@ -8,13 +9,30 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_yubuw"]
 size = Vector3(0.5, 2.1274414, 0.5)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_71oyk"]
-shading_mode = 0
-albedo_color = Color(1, 0, 0, 1)
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_1cv0y"]
 
-[sub_resource type="BoxMesh" id="BoxMesh_onubs"]
-material = SubResource("StandardMaterial3D_71oyk")
-size = Vector3(0.05, 0.05, 1)
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ogymw"]
+noise = SubResource("FastNoiseLite_1cv0y")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_78d5i"]
+render_priority = 0
+shader = ExtResource("2_1cv0y")
+shader_parameter/beam_color = Color(1, 0.100000024, 0.3399998, 1)
+shader_parameter/sparkle_color = Color(1, 0.23921569, 0.23921569, 1)
+shader_parameter/emission_strength = 3.34
+shader_parameter/core_thickness = 0.4310000204725
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_ogymw")
+shader_parameter/sparkle_density = 0.218000010355
+shader_parameter/sparkle_speed = 3.0
+shader_parameter/sparkle_scale = 15.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_hymf2"]
+material = SubResource("ShaderMaterial_78d5i")
+top_radius = 0.01
+bottom_radius = 0.01
+height = 1.0
+radial_segments = 8
+rings = 0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_2c5bn"]
 render_priority = 0
@@ -26,6 +44,8 @@ shader_parameter/max_intensity = 0.050000002375
 
 [node name="StationaryLaserStand" type="StaticBody3D" unique_id=537276294]
 script = ExtResource("1_3nf4h")
+max_distance = 10.0
+max_bounces = null
 rotation_speed = 1.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=902953235]
@@ -44,8 +64,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -0.1)
 size = Vector3(0.4, 0.4, 0.4)
 
 [node name="BeamMesh" type="MeshInstance3D" parent="Turret" unique_id=1083674601]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
-mesh = SubResource("BoxMesh_onubs")
+transform = Transform3D(1, 0, 0, 0, 1.3113416e-07, -1, 0, 1, 1.3113416e-07, 0, 0, -0.5)
+mesh = SubResource("CylinderMesh_hymf2")
 
 [node name="LaserOrigin" type="Marker3D" parent="Turret" unique_id=1316763259]
 

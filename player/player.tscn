@@ -41,6 +41,7 @@
 [ext_resource type="Script" uid="uid://i3kw0oxxm0jm" path="res://player/state_fast_rope.gd" id="38_c0asu"]
 [ext_resource type="Script" uid="uid://cmnw5toa1h643" path="res://player/state_vault.gd" id="39_fq1a3"]
 [ext_resource type="Script" uid="uid://dvouurrwuii16" path="res://player/stair_controller.gd" id="40_gu4mg"]
+[ext_resource type="Script" uid="uid://fu6m53wtps66" path="res://player/state_slide.gd" id="42_art4l"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_cw2d6"]
 radius = 0.1
@@ -587,6 +588,9 @@ script = ExtResource("38_c0asu")
 
 [node name="Vault" type="Node" parent="StateMachine" unique_id=1605824677]
 script = ExtResource("39_fq1a3")
+
+[node name="Slide" type="Node" parent="StateMachine" unique_id=1312106719]
+script = ExtResource("42_art4l")
 
 [connection signal="area_entered" from="WaterDetector" to="." method="_on_water_detector_area_entered"]
 [connection signal="area_exited" from="WaterDetector" to="." method="_on_water_detector_area_exited"]
