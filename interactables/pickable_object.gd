@@ -62,30 +62,47 @@ func _ready() -> void:
 		if not interact_comp.unfocused.is_connected(_on_interact_component_unfocused):
 			interact_comp.unfocused.connect(_on_interact_component_unfocused)
 
+	# --- SHADER WARM-UP (Fixes the first-pickup frame drop) ---
+	if mesh:
+		_set_model_transparency(mesh, held_transparency)
+		_revert_warmup_deferred()
+
+
+func _revert_warmup_deferred() -> void:
+	print("PickableObject: _revert_warmup_deferred() executing shader compilation.")
+	
+	# Wait for the GPU to actually render the transparent pipeline state
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	if is_instance_valid(mesh):
+		_set_model_transparency(mesh, 0.0)
+
 
 func pick_up(target: Marker3D, player: Node3D) -> void:
 	if is_locked:
 		return
+		
+	print("PickableObject: pick_up() called. Grabbed: ", name)
 	_grab_time = Time.get_ticks_msec()
 	is_held = true
 	hold_target = target
 	holder = player
+	
 	if label:
 		label.hide()
 
-	#PhysicsServer3D.body_set_state(self.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, target.global_transform)
 	linear_velocity = Vector3.ZERO
 	angular_velocity = Vector3.ZERO
 	freeze = false
 	gravity_scale = 0.0
-	#if mesh: mesh.transparency = held_transparency
+	
 	if mesh:
 		_set_model_transparency(mesh, held_transparency)
 
 	if interact_comp:
 		interact_comp.is_currently_focused = false
 		interact_comp.unfocused.emit()
-		# --- NEW: Disable interaction while holding ---
 		interact_comp.process_mode = Node.PROCESS_MODE_DISABLED
 
 	add_collision_exception_with(holder)
@@ -94,6 +111,8 @@ func pick_up(target: Marker3D, player: Node3D) -> void:
 func drop() -> void:
 	if Time.get_ticks_msec() - _grab_time < 100:
 		return
+		
+	print("PickableObject: drop() called. Releasing: ", name)
 	is_held = false
 
 	if interact_comp:
@@ -107,7 +126,6 @@ func drop() -> void:
 
 	freeze = false
 	gravity_scale = 1.0
-	#if mesh: mesh.transparency = 0.0
 	if mesh:
 		_set_model_transparency(mesh, 0.0)
 
@@ -117,23 +135,18 @@ func drop() -> void:
 
 		var cam_forward: Vector3 = -holder.camera.global_transform.basis.z
 		var flat_cam_forward := Vector3(cam_forward.x, 0.0, cam_forward.z)
-
 		var push_dir := flat_cam_forward.normalized()
 
-		# --- NEW: VELOCITY COMPENSATION ---
-		# Calculate how far the player will travel during our 0.15s tween
+		# Velocity Compensation
 		var player_vel: Vector3 = holder.velocity if "velocity" in holder else Vector3.ZERO
 		var velocity_offset := Vector3(player_vel.x, 0.0, player_vel.z) * 0.15
 
-		# --- NEW: SMART OBJECT NUDGE (Looking Down Check) ---
+		# Smart Object Nudge (Looking Down Check)
 		var is_nudging := false
 		if cam_forward.y < -0.2:
 			var space_state := get_world_3d().direct_space_state
-
-			# Combine our base push (0.35) with the distance the player is about to run!
 			var intended_slide := (push_dir * 0.35) + velocity_offset
-
-			# Check slightly further ahead than the intended slide to ensure we don't clip a wall
+			
 			var check_dir := intended_slide.normalized()
 			var check_dist := intended_slide.length() + 0.1
 			var ray_end := global_position + (check_dir * check_dist)
@@ -145,87 +158,49 @@ func drop() -> void:
 			var target_pos := global_position
 
 			if result:
-				# Wall found! Slide it as far as possible before hitting the wall
 				var safe_dist := global_position.distance_to(result.position) - 0.1
 				if safe_dist > 0:
 					target_pos += check_dir * safe_dist
 			else:
-				# Open space! Slide it the full intended amount (Push + Player Speed)
 				target_pos += intended_slide
 
-			# --- THE TWEEN ---
 			if target_pos != global_position:
 				is_nudging = true
-
-				# Zero out rotational velocity so it doesn't spin wildly while sliding
 				angular_velocity = Vector3.ZERO
 
 				var nudge_tween := create_tween()
 				(
 					nudge_tween
-					. tween_property(self, "global_position:x", target_pos.x, 0.15)
-					. set_trans(Tween.TRANS_SINE)
-					. set_ease(Tween.EASE_OUT)
+					.tween_property(self, "global_position:x", target_pos.x, 0.15)
+					.set_trans(Tween.TRANS_SINE)
+					.set_ease(Tween.EASE_OUT)
 				)
 				(
 					nudge_tween
-					. parallel()
-					. tween_property(self, "global_position:z", target_pos.z, 0.15)
-					. set_trans(Tween.TRANS_SINE)
-					. set_ease(Tween.EASE_OUT)
+					.parallel()
+					.tween_property(self, "global_position:z", target_pos.z, 0.15)
+					.set_trans(Tween.TRANS_SINE)
+					.set_ease(Tween.EASE_OUT)
 				)
 
-				# Wait for the slide to finish, THEN apply the pop impulse
 				nudge_tween.tween_callback(
 					func() -> void:
 						var toss_dir := push_dir
 						toss_dir.y = 0.5
 						apply_central_impulse(toss_dir * 5.0)
 				)
-		# ----------------------------------------------------
 
-		# If we didn't tween it (looking forward/up), toss it immediately!
+		# Standard toss if we didn't tween it
 		if not is_nudging:
 			push_dir.y = 0.5
 			apply_central_impulse(push_dir * 5.0)
 
-		if "interaction_scanner" in holder:
+		# CORRECTED: Safely clear the player's reference to this item
+		if "held_item" in holder:
+			holder.held_item = null
+			
+		if "interaction_scanner" in holder and "held_object" in holder.interaction_scanner:
 			holder.interaction_scanner.held_object = null
-		elif "held_object" in holder:
-			holder.held_object = null
-
-		#var push_dir := flat_cam_forward.normalized()
-
-		## --- NEW: SMART OBJECT NUDGE (Looking Down Check) ---
-		## If we are looking down, the object is squeezed at our feet.
-		#if cam_forward.y < -0.2:
-		#var space_state := get_world_3d().direct_space_state
-		#var check_distance := 0.8 # How far ahead to check for a wall
-		#var ray_end := global_position + (push_dir * check_distance)
-		#
-		#var query := PhysicsRayQueryParameters3D.create(global_position, ray_end)
-		#query.exclude = [self.get_rid(), holder.get_rid()]
-		#
-		#var result := space_state.intersect_ray(query)
-		#
-		#if result:
-		## There is a wall! Move the box as close to the wall as safely possible.
-		#var safe_dist := global_position.distance_to(result.position) - 0.2
-		#if safe_dist > 0:
-		#global_position += push_dir * safe_dist
-		#else:
-		## No wall! Instantly bump the object forward out of our personal space.
-		#global_position += push_dir * 0.75
-		## ----------------------------------------------------
-
-		# Now apply the standard toss impulse
-		push_dir.y = 0.5
-		apply_central_impulse(push_dir * 5.0)
-
-		if "held_object" in holder:
-			holder.held_object = null
-		elif "grabbed_object" in holder:
-			holder.grabbed_object = null
 
 		var previous_holder := holder
 		_wait_to_enable_collision(previous_holder)
@@ -253,6 +228,7 @@ func _attempt_enable_collision(player: Node3D) -> void:
 
 
 func throw(impulse_vector: Vector3) -> void:
+	print("PickableObject: throw() called. Throwing: ", name, " with force: ", impulse_vector.length())
 	drop()
 	if not is_locked:
 		apply_central_impulse(impulse_vector)

@@ -21,10 +21,7 @@ var _original_friction: float = 1.0
 
 
 func _ready() -> void:
-	# Save the default 3kg mass so we can restore it later
 	_original_mass = mass
-
-	# Safely grab the original friction if you are using a PhysicsMaterial
 	if physics_material_override:
 		_original_friction = physics_material_override.friction
 
@@ -33,10 +30,21 @@ func _ready() -> void:
 	if label:
 		label.hide()
 
-	# Wire up the hover interactions
 	if interact_comp:
-		interact_comp.focused.connect(_on_focus)
-		interact_comp.unfocused.connect(_on_unfocus)
+		if not interact_comp.focused.is_connected(_on_focus):
+			interact_comp.focused.connect(_on_focus)
+		if not interact_comp.unfocused.is_connected(_on_unfocus):
+			interact_comp.unfocused.connect(_on_unfocus)
+
+	# --- FULL PLUG SHADER WARM-UP ---
+	# By passing 'self' instead of 'mesh', we recursively compile 
+	# every single mesh attached to this plug, not just the main one.
+	_set_model_transparency(self, held_transparency)
+	
+	# We yield twice to ensure the renderer catches the state
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_set_model_transparency(self, 0.0)
 
 
 # --- UI & HIGHLIGHT LOGIC ---
@@ -101,8 +109,8 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	var dist := to_anchor.length()
 
 	if dist > (max_cable_length + 0.1):
-		if is_held:
-			drop()
+		#if is_held:
+			#drop()
 
 		var dir := to_anchor.normalized()
 		var overshoot := dist - max_cable_length
@@ -133,14 +141,16 @@ func on_released() -> void:
 # Modifies the physics state of the trailing plug
 func set_trailing_mode(is_trailing: bool) -> void:
 	if is_trailing:
-		mass = 0.2  # Drop to 200g
+		mass = 0.01          # 10 grams. Practically non-existent.
+		gravity_scale = 0.0  # Stop it from dragging on the floor entirely!
 
 		if physics_material_override:
-			# Make sure the material is unique so it doesn't affect the held plug
+			# Duplicate so we don't accidentally freeze the held plug's friction
 			physics_material_override = physics_material_override.duplicate()
-			physics_material_override.friction = 0.0  # Slide like ice
+			physics_material_override.friction = 0.0
 	else:
 		mass = _original_mass
+		gravity_scale = 1.0
 
 		if physics_material_override:
 			physics_material_override.friction = _original_friction

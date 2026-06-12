@@ -141,46 +141,54 @@ func _handle_jump_input(input_dir: Vector2) -> void:
 
 	var look_dir: Vector3 = -player.camera.global_transform.basis.z
 	
-	# CONDITION: Block jump entirely when looking up (Pitch threshold 0.3)
 	if look_dir.y > 0.3:
 		print("StateLadder: Jump blocked. Player is looking up.")
 		return
 
-	var right_dir: Vector3 = player.camera.global_transform.basis.x
 	var ladder_outward: Vector3 = current_ladder.global_transform.basis.z.normalized()
+	# NEW: Grab the ladder's literal right vector, ignoring the camera
+	var ladder_right: Vector3 = current_ladder.global_transform.basis.x.normalized() 
 	
-	# FLATTEN VECTORS
 	var flat_look: Vector3 = Vector3(look_dir.x, 0.0, look_dir.z).normalized()
 	var flat_outward: Vector3 = Vector3(ladder_outward.x, 0.0, ladder_outward.z).normalized()
-	var flat_right: Vector3 = Vector3(right_dir.x, 0.0, right_dir.z).normalized()
+	var flat_ladder_right: Vector3 = Vector3(ladder_right.x, 0.0, ladder_right.z).normalized()
 	
 	var dot_outward: float = flat_look.dot(flat_outward)
 	var strafe_input: float = input_dir.x
 	
 	# ---------------------------------------------------------
-	# INTENT 1: SIDE JUMP (Ladder to Ladder)
+	# INTENT 1: PURE SIDE JUMP
 	# ---------------------------------------------------------
 	if absf(strafe_input) > 0.1:
-		print("StateLadder: Intentional Side Jump. Pushing laterally.")
-		player.velocity = (flat_right * strafe_input * 7.5) + Vector3(0.0, 4.5, 0.0)
-		player.move_and_slide() # Force impulse to register immediately
-		state_machine.transition_to("Air")
+		print("StateLadder: Intentional Side Jump. Pushing strictly laterally.")
+		# Multiply the ladder's perfect right vector by the input direction (-1 for A, 1 for D)
+		var jump_dir: Vector3 = (flat_ladder_right * sign(strafe_input)).normalized()
+		
+		player.velocity = (jump_dir * 7.5) + Vector3(0.0, 4.5, 0.0)
+		
+		# Apply specific cooldown
+		player.last_ladder = current_ladder
+		player.ladder_cooldown = 0.5 
+		
+		player.move_and_slide() 
+		state_machine.transition_to("Air", {"jump": true, "release_dir": jump_dir})
 		return
 		
 	# ---------------------------------------------------------
-	# INTENT 2: BACK EJECT (Looking away from the ladder)
+	# INTENT 2: BACK / SIDE EJECT
 	# ---------------------------------------------------------
-	if dot_outward > 0.2:
-		print("StateLadder: Intentional Back Eject. Pushing in look direction.")
-		# Bumped lateral velocity slightly to 7.0 to ensure a clean break
+	if dot_outward > -0.2:
+		print("StateLadder: Intentional Eject. Pushing in look direction.")
 		player.velocity = (flat_look * 7.0) + Vector3(0.0, 4.5, 0.0)
-		player.move_and_slide() # Force impulse to register immediately
-		state_machine.transition_to("Air")
+		
+		# Apply specific cooldown
+		player.last_ladder = current_ladder
+		player.ladder_cooldown = 0.5
+		
+		player.move_and_slide() 
+		state_machine.transition_to("Air", {"jump": true, "release_dir": flat_look})
 		return
 		
-	# ---------------------------------------------------------
-	# INTENT 3: BLOCKED (Looking at the ladder)
-	# ---------------------------------------------------------
 	print("StateLadder: Jump blocked. Player is facing the ladder.")
 
 

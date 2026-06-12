@@ -7,7 +7,11 @@
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kw1l2"]
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4dxby"]
+albedo_color = Color(0.46666667, 0.92156863, 0.13725491, 1)
+
 [sub_resource type="PrismMesh" id="PrismMesh_84l6x"]
+material = SubResource("StandardMaterial3D_4dxby")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j8qkd"]
 render_priority = 0

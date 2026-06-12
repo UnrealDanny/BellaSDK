@@ -153,15 +153,21 @@ func _check_transitions() -> void:
 		state_machine.transition_to("Swim")
 		return
 
-	if player.velocity.y < 2.0 and not player.vault_controller.is_vaulting:
-		player.vault_controller.process_vault_scan()
-		if player.vault_controller.can_vault_current_ledge:
-			if player.vault_controller.try_vault(player.crouching):
-				print("StateAir: Vaulting ledge mid-air.")
-				state_machine.transition_to("Vault")
-				return
-	
-	# Transition to Glide if holding the glider and falling
+	# NEW CONDITION: Check if the player is holding an object.
+	# This prevents the vault scanner from detecting the held box as a ledge,
+	# completely eliminating the prop-flying exploit.
+	var is_holding_item: bool = is_instance_valid(player.held_item)
+
+	# Requiring ladder_cooldown <= 0.2 gives the player 0.3 seconds to clear the wall geometry.
+	if player.velocity.y < 2.0 and not player.vault_controller.is_vaulting and player.ladder_cooldown <= 0.2:
+		if not is_holding_item:
+			player.vault_controller.process_vault_scan()
+			if player.vault_controller.can_vault_current_ledge:
+				if player.vault_controller.try_vault(player.crouching):
+					print("StateAir: Vaulting ledge mid-air.")
+					state_machine.transition_to("Vault")
+					return
+
 	if player.held_item is GliderItem and player.velocity.y < 0.0:
 		print("StateAir: Player is holding a GliderItem and falling. Transitioning to Glide.")
 		state_machine.transition_to("Glide")

@@ -62,6 +62,8 @@ var throw_strength: float = 15.0
 var active_waterfalls: Array[Area3D] = []
 
 var is_operating_machine: bool = false
+var ladder_cooldown: float = 0.0
+var last_ladder: Node3D = null
 
 # --------------------------------------
 # COMPONENT REFERENCES
@@ -140,34 +142,33 @@ func _unhandled_input(event: InputEvent) -> void:
 	if system_menu.is_paused or system_menu.is_menu_open or system_menu.get("is_stunned"):
 		return
 		
-	# Drop glider with interact key if on the ground
-	if event.is_action_pressed("interact") and is_instance_valid(held_item) and held_item is GliderItem:
-		if is_on_floor():
-			_drop_held_item()
+	# 2. Item Dropping (Priority over new interactions)
+	if event.is_action_pressed("interact") and is_instance_valid(held_item):
+		# Specific rule to prevent dropping gliders mid-air
+		if held_item is GliderItem and not is_on_floor():
 			return
+			
+		print("Player: Interact action pressed while holding item. Dropping it.")
+		_drop_held_item()
+		return
 
-	# 2. Item Throwing (Mapped to 'G' via the 'throw' action)
-	if event.is_action_pressed("grenade_throw") and is_instance_valid(held_item):
-		print("Player: 'grenade_throw' action pressed. Throwing the held physics object.")
+	# 3. Item Throwing ('G' or Left Mouse Button)
+	if (event.is_action_pressed("grenade_throw") or event.is_action_pressed("shoot")) and is_instance_valid(held_item):
+		print("Player: Throw action pressed. Throwing the held physics object.")
 		_throw_held_item()
 		return
 
-	# 3. Item Pickup (Priority over general interactions)
+	# 4. Item Pickup (Priority over general interactions)
 	if event.is_action_pressed("interact") and not is_instance_valid(held_item):
 		if _try_pick_up():
 			return # Block scanner if we successfully picked up a physics object
 
-	# 4. Route standard Interactions and Combat to the Scanner
+	# 5. Route standard Interactions and Combat to the Scanner
 	if event.is_action_pressed("interact"):
 		print("Player: Routing interact input to interaction scanner.")
 		interaction_scanner.handle_interact_input()
 
 	if event.is_action_pressed("shoot"):
-		# Prevent shooting if holding an interactable item
-		if is_instance_valid(held_item):
-			print("Player: Shoot action blocked. Player is holding an interactable item.")
-			return
-
 		print("Player: Routing shoot input to interaction scanner.")
 		interaction_scanner.handle_shoot_input()
 
@@ -221,12 +222,16 @@ func _throw_held_item() -> void:
 	throw_dir.y += 0.2
 	var throw_force: Vector3 = throw_dir.normalized() * throw_strength
 
-	held_item.throw_item(throw_force, get_tree().current_scene)
+	# Support both standard physics objects and special items
+	if held_item.has_method("throw"):
+		held_item.throw(throw_force)
+	elif held_item.has_method("throw_item"):
+		held_item.throw_item(throw_force, get_tree().current_scene)
 	
-	# NEW: Restore sprint if they drop the glider
 	if held_item is GliderItem:
-		print("Player: Dropped GliderItem. Restoring ability to sprint.")
+		print("Player: Threw GliderItem. Restoring ability to sprint.")
 		can_sprint = true
+		interaction_scanner.is_heavy_lifting = false
 		
 	held_item = null
 	_set_weapon_active(true)
@@ -276,6 +281,11 @@ func _physics_process(delta: float) -> void:
 		zipline_cooldown -= delta
 	if monkey_bar_cooldown > 0.0:
 		monkey_bar_cooldown -= delta
+		
+	if ladder_cooldown > 0.0:
+		ladder_cooldown -= delta
+		if ladder_cooldown <= 0.0:
+			last_ladder = null  # Free the reference once cooldown is over
 
 	# 1. Handle Pauses, Stuns & Machines
 	# Added "is_operating_machine" here to lock the player in place
@@ -332,6 +342,11 @@ func enter_ladder(ladder_node: Node3D) -> void:
 	print("Player: enter_ladder() called. Sending ladder node to StateMachine.")
 	if vault_controller.is_vaulting:
 		return
+		
+	# ONLY block if we are trying to grab the exact ladder we just jumped off
+	if ladder_node == last_ladder and ladder_cooldown > 0.0:
+		return
+		
 	state_machine.transition_to("Ladders", {"ladder_node": ladder_node})
 
 func exit_ladder(_ladder_node: Node3D) -> void:
@@ -496,6 +511,15 @@ func _apply_weight_to_floor() -> void:
 		var collider: Object = collision.get_collider()
 
 		if collider is RigidBody3D and collision.get_normal().y > 0.5:
+			# Check if the body should be ignored
+			var is_cable_or_socket: bool = "CableLink" in collider.name or "Socket" in collider.name
+			
+			if is_cable_or_socket or collider.is_in_group("ignore_weight"):
+				if _last_weighed_body != collider:
+					print("Player: Stepped on ", collider.get_name(), ". Ignoring weight application.")
+					_last_weighed_body = collider
+				return
+
 			var downward_force: float = player_mass * gravity
 			var hit_position: Vector3 = collision.get_position() - collider.global_position
 			
@@ -530,8 +554,10 @@ func set_machine_lock(locked: bool) -> void:
 func _drop_held_item() -> void:
 	print("Player: _drop_held_item() called. Placing item on the ground.")
 	
-	if held_item.has_method("drop_item"):
-		# Drop it at the player's current global position
+	# Support both standard physics objects and special items
+	if held_item.has_method("drop"):
+		held_item.drop()
+	elif held_item.has_method("drop_item"):
 		held_item.drop_item(get_tree().current_scene, global_position)
 		
 	if held_item is GliderItem:
